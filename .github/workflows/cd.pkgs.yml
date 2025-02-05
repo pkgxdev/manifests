@@ -1,0 +1,74 @@
+name: cd·pkgs
+
+on:
+  push:
+    branches:
+      main
+    paths:
+      projects/**/build.ts
+  workflow_dispatch:
+    inputs:
+      pkgs:
+        required: true
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.computer.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/plan
+        id: computer
+        with:
+          pkgs: ${{ github.event.inputs.pkgs }}
+
+  bottle:
+    needs: ingest
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    name: build ${{ matrix.pkg }} ${{ matrix.platform.tinyname }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pkgxdev/setup@v3
+
+      - name: build
+        run: bin/build ${{ matrix.pkg }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: test
+        run: bin/check ${{ matrix.pkg }}
+
+      - name: bottle
+        run: |
+          OWD=$PWD
+          cd $PREFIX
+          pkgx +xz tar cJf $OWD/v$VERSION.tar.xz . --transform 's,^./,,'
+          pkgx tar czf $OWD/v$VERSION.tar.gz . --transform 's,^./,,'
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: s3 sync
+        run: |
+          pkgx aws s3 cp v$VERSION.tar.gz s3://dist.tea.xyz/$PLATFORM/$PROJECT/v$VERSION.tar.gz
+          pkgx aws s3 cp v$VERSION.tar.xz s3://dist.tea.xyz/$PLATFORM/$PROJECT/v$VERSION.tar.xz
+          .github/scripts/generate-versions.ts $PLATFORM/$PROJECT > versions.txt
+          pkgx aws s3 cp versions.txt s3://dist.tea.xyz/$PLATFORM/$PROJECT/versions.txt
+
+      - name: cf invalidate
+        run: pkgx aws cloudfront create-invalidation
+          --distribution-id EWF6XUK8J11DP
+          --paths
+          /$PLATFORM/$PROJECT/versions.txt
+          /$PLATFORM/$PROJECT/v$VERSION.tar.gz
+          /$PLATFORM/$PROJECT/v$VERSION.tar.xz

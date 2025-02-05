@@ -1,0 +1,29 @@
+#!/bin/sh
+
+d="$(cd "$(dirname "$0")"/.. && pwd)"
+img="ghcr.io/pkgxdev/bldbot:latest"
+
+case $1 in
+build|test)
+  cmd=$1
+  shift
+  exec /usr/local/bin/docker run  --rm -v "$d:/work" -w /work $img bin/$cmd "$@"
+  ;;
+''|--help)
+  echo "usage:" >&2
+  echo "  docker build|test <pkgspec> [args]" >&2
+  echo "  docker pull|etc. [docker_args]" >&2
+  echo >&2
+  echo "> if not \`build\` or `\test` we pass through to system docker with our image set" >&2
+  exit 1
+  ;;
+run)
+  shift
+  exec /usr/local/bin/docker run -it --rm -v "$d:/work" -w /work $img "$@"
+  ;;
+*)
+  cmd=$1
+  shift
+  exec /usr/local/bin/docker $cmd "$@" $img
+  ;;
+esac

@@ -1,0 +1,57 @@
+name: cd·docker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/cd.docker.yml
+      - .github/Dockerfile
+      - lib/*.ts
+      - bin/private/*.ts
+
+concurrency:
+  group: docker
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: docker/auth
+        run: echo "${{ github.token }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/bldbot
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: docker/buildx
+        run: |
+          docker buildx build \
+            --push \
+            --tag ghcr.io/${{ github.repository_owner }}/bldbot:latest \
+            --platform linux/amd64,linux/arm64 \
+            --file .github/Dockerfile \
+            .
+
+  prune:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: bldbot
+          package-type: container
+          min-versions-to-keep: 10
+          # ^^ despite telling it to only delete untagged versions
+          # it deletes images attached to latest like a lolfactory
+          delete-only-untagged-versions: true

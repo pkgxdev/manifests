@@ -1,0 +1,46 @@
+runs:
+  using: composite
+  steps:
+    - id: changed-files
+      uses: tj-actions/changed-files@v45
+      with:
+        files: |
+          projects/**/build.ts
+          projects/**/test.ts
+          projects/**/versions.ts
+
+    - name: crunch diff
+      id: cruncher
+      run: |
+        PROJECTS=()
+        declare -A SEEN
+        for x in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          x="$(dirname "${x#projects/}")"
+          if [ -z "${SEEN[$x]}" ]; then
+            PROJECTS+=("$x")
+            SEEN["$x"]=1
+          fi
+        done
+        echo "projects=${PROJECTS[@]}" >> "$GITHUB_OUTPUT"
+
+      shell: bash
+      if: ${{ ! inputs.pkgs }}
+
+    - name: compute matrix
+      id: computer
+      run: |
+        ${GITHUB_ACTION_PATH}/compute-matrix.js ${{ inputs.pkgs || steps.cruncher.outputs.projects }}
+      shell: bash
+      if: ${{ inputs.compute-matrix }}
+
+inputs:
+  compute-matrix:
+    default: true
+  pkgs:
+    required: false
+
+outputs:
+  projects:
+    value: ${{ steps.cruncher.outputs.projects }}
+  matrix:
+    value: ${{ steps.computer.outputs.matrix }}

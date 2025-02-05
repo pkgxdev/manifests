@@ -1,0 +1,26 @@
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: pkgx
+        path: tmp
+
+    - run: |
+        mv tmp/pkgx-$(uname) /usr/local/bin/pkgx
+        rm -rf tmp
+      shell: bash
+
+    - run: |
+        case $(cat /etc/debian_version 2>/dev/null) in
+        buster/sid|10.*)
+          # $HOME is different from the docker image and in github actions
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
+          ;;
+        *)
+          # curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
+          find lib bin .github -name \*.ts | xargs pkgx deno^2 cache
+          ;;
+        esac
+      shell: bash

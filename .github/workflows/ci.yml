@@ -1,0 +1,39 @@
+name: ci
+
+on:
+  pull_request:
+    paths:
+      - projects/**/*.ts
+
+concurrency:
+  group: ci/${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.compute.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/plan
+        id: compute
+
+  validate:
+    needs: plan
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    name: ${{ matrix.pkg }} ${{ matrix.platform.tinyname }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - run: bin/pkg build ${{ matrix.pkg }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: bin/pkg test

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ ! "$1" ]; then
+  echo "Usage: $0 build|test <pkgspec>"
+  exit 1
+fi
+
+cmd=$1
+shift
+cmd="/work/bin/$cmd"
+
+d="$(cd "$(dirname "$0")"/.. && pwd)"
+
+exec /usr/local/bin/docker run  --rm -v "$d:/work" -w /work ghcr.io/pkgxdev/bldbot $cmd "$@"

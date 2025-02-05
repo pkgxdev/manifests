@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true
+  },
+  "pkgx": "deno~2.1",
+  "imports": {
+    "brewkit": "./brewkit/mod.ts",
+    "fixup": "./brewkit/fixup.ts"
+  },
+  "fmt": {
+    "exclude": ["builds", "products"]
+  }
+}

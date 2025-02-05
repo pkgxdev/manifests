@@ -1,0 +1,111 @@
+#!/bin/bash
+
+set -eo pipefail
+
+SRCROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PKGSPEC="$1"
+
+if [ "$PKGSPEC" ]; then
+  if [[ $PKGSPEC == *\* ]]; then
+    PROJECT="${PKGSPEC%\*}"
+    CONSTRAINT='*'
+  elif [[ $PKGSPEC =~ ^([^@^~=]+)([@^~=].*)$ ]]; then
+    PROJECT="${BASH_REMATCH[1]}"
+    CONSTRAINT="${BASH_REMATCH[2]}"
+  elif [ -f "$SRCROOT/projects/$PKGSPEC/package.yml" ]; then
+    PROJECT="$PKGSPEC"
+    CONSTRAINT='*'
+  else
+    echo "pkgspec invalid" >&2
+    exit 1
+  fi
+  for x in "$SRCROOT/products/$(uname)/$(uname -m)/$PROJECT/"v*; do
+    PREFIX="$x"
+  done
+elif [ ! "$PROJECT" -o ! "$PREFIX" ]; then
+  echo "Usage: $0 <project>"
+  exit 1
+fi
+
+
+case $(uname) in
+Linux)
+  cd "$(mktemp -d -t pkgx.XXXXXX)"
+  mkdir -p .pkgx
+  cp -r $SRCROOT/brewkit/toolchain .pkgx/bin
+  cd .pkgx/bin
+  # these must be symlinks or they don’t behave like eg. gcc
+  ln -s "$(./pkgx +llvm.org -- which clang)" cc
+  ln -s "$(./pkgx +llvm.org -- which clang)" gcc
+  ln -s "$(./pkgx +llvm.org -- which clang++)" c++
+  ln -s "$(./pkgx +llvm.org -- which clang++)" g++
+  ln -s "$(./pkgx +llvm.org -- which clang-cpp)" cpp
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld.lld
+  ln -s "$(./pkgx +llvm.org -- which lld-link)" lld-link
+  ln -s "$(./pkgx +llvm.org -- which llvm-ar)" ar
+  ln -s "$(./pkgx +llvm.org -- which llvm-as)" as
+  ln -s "$(./pkgx +llvm.org -- which llvm-nm)" nm
+  ln -s "$(./pkgx +llvm.org -- which llvm-objcopy)" objcopy
+  ln -s "$(./pkgx +llvm.org -- which llvm-ranlib)" ranlib
+  ln -s "$(./pkgx +llvm.org -- which llvm-readelf)" readelf
+  ln -s "$(./pkgx +llvm.org -- which llvm-strings)" strings
+  ln -s "$(./pkgx +llvm.org -- which llvm-strip)" strip
+  cd ../..
+  ;;
+Darwin)
+  cd "$(mktemp -d  /tmp/pkgx.XXXXXX)"
+  cd "$(realpath .)"  # resolves the symlink and stops deno complaining about writes to a slightly different directory
+  mkdir -p .pkgx/bin
+  cp /usr/local/bin/pkgx .pkgx/bin
+esac
+
+for x in "$SRCROOT"/projects/$PROJECT/*; do
+  if [ "$(basename "$x")" = 'package.yml' ]; then
+    true
+  elif [[ "$x" == *.ts ]]; then
+    true
+  elif [ -f "$x" ]; then
+    cp "$x" .
+  fi
+done
+
+cat << EoTS > .pkgx/run-test.ts
+import run_test from '$SRCROOT/projects/$PROJECT/test.ts';
+import { Path, SemVer } from 'brewkit';
+const prefix = new Path(Deno.args[0]);
+const version = new SemVer(prefix.basename());
+await run_test(prefix, version);
+EoTS
+
+echo "{\"imports\": {\"brewkit\": \"$SRCROOT/brewkit/mod.ts\"}}" > .pkgx/deno.json
+
+deno="$(.pkgx/bin/pkgx +deno^2 -- which deno)"
+
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PWD/.pkgx/bin"
+
+rm -f build/pantry*.db  #FIXME this is platform specific
+env_out="$(PKGX_PANTRY_DIR="$SRCROOT/builds/pantry" PKGX_DIST_URL="https://dist.pkgx.dev/v2" PKGX_DIR="$SRCROOT/products/$(uname)/$(uname -m)" pkgx +$PROJECT)"
+set -a
+eval "$env_out"
+set +a
+
+if [ "$GITHUB_ACTIONS" ]; then
+  echo "::group::env"
+  env
+  echo "::endgroup::"
+fi
+
+"$deno" \
+  run \
+  --quiet \
+  --allow-read="$PWD" \
+  --allow-run \
+  --allow-env=HOME,TMP,TEMP,TMPDIR,TEMPDIR,PWD \
+  --allow-write="$PWD" \
+  --allow-net \
+  --ext=ts \
+  .pkgx/run-test.ts \
+  "$PREFIX"
+
+rm -rf "$PWD"

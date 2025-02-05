@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "strict": true
+  },
+  "pkgx": "deno~2.1",
+  "imports": {
+    "brewkit": "./lib/mod.ts"
+  }
+}

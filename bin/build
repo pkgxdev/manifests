@@ -1,0 +1,131 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [ "$GITHUB_ACTIONS" ]; then
+ echo "::group::prep"
+fi
+
+if [ "$CI" ]; then
+  set -x
+fi
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+PROJECT="$1"
+
+if [ $(uname) = Darwin ]; then
+  # more readable paths (thanks anyway Apple)
+  cd "$(mktemp -d /tmp/pkgx.XXXXXX)"
+else
+  cd "$(mktemp -d -t pkgx.XXXXXX)"
+fi
+
+mkdir .pkgx
+
+echo "import versions from '$SRCROOT/projects/$PROJECT/versions.ts';" > .pkgx/go.ts
+echo "import build from '$SRCROOT/projects/$PROJECT/build.ts';" >> .pkgx/go.ts
+cat "$SRCROOT/lib/build-template.ts" >> .pkgx/go.ts
+echo "{\"imports\": {\"brewkit\": \"$SRCROOT/lib/mod.ts\"}}" > .pkgx/deno.json
+
+if [ $(uname) = Darwin ]; then
+  mkdir .pkgx/bin
+  cp /usr/local/bin/pkgx .pkgx/bin
+  deno="$(/usr/local/bin/pkgx +deno^2.1 -- which deno)"
+fi
+
+case $(uname) in
+Linux)
+  cp -r $SRCROOT/bin/toolchain .pkgx/bin
+  cd .pkgx/bin
+  # these must be symlinks or they don’t behave like eg. gcc
+  ln -s "$(./pkgx +llvm.org -- which clang)" cc
+  ln -s "$(./pkgx +llvm.org -- which clang)" gcc
+  ln -s "$(./pkgx +llvm.org -- which clang++)" c++
+  ln -s "$(./pkgx +llvm.org -- which clang++)" g++
+  ln -s "$(./pkgx +llvm.org -- which clang-cpp)" cpp
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld.lld
+  ln -s "$(./pkgx +llvm.org -- which lld-link)" lld-link
+  ln -s "$(./pkgx +llvm.org -- which llvm-ar)" ar
+  ln -s "$(./pkgx +llvm.org -- which llvm-as)" as
+  ln -s "$(./pkgx +llvm.org -- which llvm-nm)" nm
+  ln -s "$(./pkgx +llvm.org -- which llvm-objcopy)" objcopy
+  ln -s "$(./pkgx +llvm.org -- which llvm-ranlib)" ranlib
+  ln -s "$(./pkgx +llvm.org -- which llvm-readelf)" readelf
+  ln -s "$(./pkgx +llvm.org -- which llvm-strings)" strings
+  ln -s "$(./pkgx +llvm.org -- which llvm-strip)" strip
+  jq="pkgx jq"
+  deno="pkgx deno^2.1"
+  ./pkgx +msgfmt >/dev/null  #FIXME remove this, is temporary to work around pkgx 2.2.0 bug
+  cd ../..
+  ;;
+
+Darwin)
+  # prevent build scripts from dipping into Homebrew or /usr/local
+  cat <<EoSB > .pkgx/sandbox.sb
+(version 1)
+(allow default)
+(deny file-read* (subpath "/opt/homebrew"))
+(deny file-read* (subpath "/usr/local"))
+EoSB
+  deno="sandbox-exec -f .pkgx/sandbox.sb $deno"
+  jq="$(which jq)"
+  ;;
+esac
+
+# sanitize PATH before adding deps
+export PATH="$PWD/.pkgx/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+eval "$($SRCROOT/bin/private/deps-env.ts $PROJECT)"
+
+# we need full allow-read and write because Deno.symlink sucks
+# TODO make our own implementation
+
+# we need full --allow-env to allow build scripts to set environment
+# TODO they can do this some other way!
+
+if [ "$GITHUB_ACTIONS" ]; then
+  set +x
+  echo "::endgroup::"
+fi
+
+$deno run \
+  --quiet \
+  --allow-read \
+  --allow-run \
+  --allow-env \
+  --allow-write \
+  --allow-net \
+  --ext=ts \
+  .pkgx/go.ts \
+  "$PROJECT" \
+  "$PWD" \
+  "$SRCROOT/projects/$PROJECT"
+
+PROJECT="$(cat .pkgx/build-receipt.json | $jq -r .project)"
+VERSION="$(cat .pkgx/build-receipt.json | $jq -r .version)"
+PLATFORM="$(cat .pkgx/build-receipt.json | $jq -r .platform_triple)"
+
+if [ -f "$GITHUB_ENV" ]; then
+  echo "VERSION=$VERSION" >> $GITHUB_ENV
+  echo "PROJECT=$PROJECT" >> $GITHUB_ENV
+  echo "PREFIX=$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION" >> $GITHUB_ENV
+  echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
+
+  case $(uname)/$(uname -m) in
+  Darwin/x86_64) echo "OLD_PLATFORM_KEY=darwin/x86-64" >> $GITHUB_ENV;;
+  Darwin/arm64) echo "OLD_PLATFORM_KEY=darwin/aarch64" >> $GITHUB_ENV;;
+  Linux/x86_64) echo "OLD_PLATFORM_KEY=linux/x86-64" >> $GITHUB_ENV;;
+  Linux/arm64|Linux/aarch64) echo "OLD_PLATFORM_KEY=linux/aarch64" >> $GITHUB_ENV;;
+  esac
+fi
+
+rm -rf "$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION"
+mkdir -p "$SRCROOT/products/$PLATFORM/$PROJECT"
+mv "$PWD/.pkgx/$PROJECT"/* "$SRCROOT/products/$PLATFORM/$PROJECT"
+
+rm -rf "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+mkdir -p "$SRCROOT/builds/$PLATFORM/$PROJECT"
+mv "$PWD" "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+mv "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION/.pkgx/build-receipt.json" "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+rm -rf "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION/.pkgx"

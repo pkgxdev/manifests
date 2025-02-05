@@ -1,0 +1,75 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [ "$CI" ]; then
+  set -x
+fi
+
+SRCROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT="$1"
+
+case $(uname) in
+Darwin)
+  platform=darwin
+  ;;
+Linux)
+  platform=linux
+  ;;
+esac
+
+for x in "$SRCROOT"/products/*-$platform-*/$PROJECT/v*; do
+  if [ -d "$x" ] && [ ! -L "$x" ]; then
+    PREFIX="$x"
+  fi
+done
+
+if [ $(uname) = Darwin ]; then
+  cd "$(mktemp -d  /tmp/pkgx.XXXXXX)"
+  cd "$(realpath .)"  # resolves the symlink and stops deno complaining about writes to a slightly different directory
+else
+  cd "$(mktemp -d -t pkgx.XXXXXX)"
+fi
+
+mkdir -p .pkgx/bin
+
+for x in "$SRCROOT"/products/$PROJECT/*; do
+  ln -s "$x" .pkgx
+done
+
+cat << EoTS > .pkgx/go.ts
+import check from '$SRCROOT/projects/$PROJECT/check.ts';
+import { parse } from "jsr:@std/semver@^1";
+import { Path } from 'brewkit';
+const prefix = new Path(Deno.args[0]);
+const version = parse(prefix.basename());
+await check(prefix, version);
+EoTS
+
+echo "{\"imports\": {\"brewkit\": \"$SRCROOT/lib/mod.ts\"}}" > .pkgx/deno.json
+
+if [ $(uname) = Darwin ]; then
+  cp "$(which pkgx)" .pkgx/bin
+else
+  cp "$SRCROOT/bin/toolchain/pkgx" .pkgx/bin
+fi
+
+deno="$(.pkgx/bin/pkgx +deno^2.1 -- which deno)"
+
+export PATH="$PREFIX/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PWD/.pkgx/bin"
+
+eval "$($SRCROOT/bin/private/deps-env.ts $PROJECT)"
+
+"$deno" \
+  run \
+  --quiet \
+  --allow-read="$PWD" \
+  --allow-run \
+  --allow-env=HOME,TMP,TEMP,TMPDIR,TEMPDIR,PWD \
+  --allow-write="$PWD" \
+  --allow-net \
+  --ext=ts \
+  .pkgx/go.ts \
+  "$PREFIX"
+
+rm -rf "$PWD"

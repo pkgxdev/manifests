@@ -1,0 +1,38 @@
+name: cd·pantry.tgz
+run-name: cd·pantry.tgz
+
+on:
+  push:
+    branches: main
+    paths:
+      - projects/**/*
+      - .github/workflows/cd.pantry.tgz.yml
+
+concurrency:
+  group: cd.pantry.tgz
+  cancel-in-progress: true
+
+jobs:
+  tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - uses: actions/checkout@v4
+      - uses: pkgxdev/setup@v3
+
+      - run: bin/pkg-convert
+
+      - run: tar -C artifacts/pantry -czf pantry.tgz projects
+
+      - run: aws s3 cp
+          ./pantry.tgz
+          s3://dist.tea.xyz/v2/pantry.tgz
+
+      - run: aws cloudfront create-invalidation
+          --distribution-id EWF6XUK8J11DP
+          --paths /v2/pantry.tgz

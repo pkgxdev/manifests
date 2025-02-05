@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  pull_request:
+    paths:
+      - projects/**/*.ts
+      - .github/workflows/ci.yml
+
+concurrency:
+  group: ci/${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+env:
+  PKGX_DIST_URL: https://dist.tea.xyz/v2
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.compute.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/plan
+        id: compute
+        with:
+          default: zlib.net
+
+  validate:
+    needs: plan
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    name: ${{ matrix.pkg }} (${{ matrix.platform.tinyname }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pkg-build ${{ matrix.pkg }}
+      - run: pkg-test

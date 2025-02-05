@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "strict": true
+  },
+  "pkgx": "deno~2.1",
+  "imports": {
+    "brewkit": "./brewkit/mod.ts"
+  },
+  "fmt": {
+    "exclude": [
+      "builds",
+      "artifacts",
+      "**/*.md" // we actually would like this but we want 80 columns for
+      // readability and you can’t have one setting for ts and one
+      // for md
+    ],
+    "lineWidth": 120
+  }
+}

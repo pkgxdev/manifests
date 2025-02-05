@@ -1,0 +1,77 @@
+#!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -R
+
+import { parse, stringify } from "jsr:@std/yaml@^1";
+
+const yaml = convert(Deno.args[0]);
+if (yaml) {
+  const data = stringify(yaml);
+  console.log(data.trim());
+}
+
+function convert(path: string) {
+  const data = Deno.readTextFileSync(path);
+  const yaml = parse(data) as any;
+  const rv: Record<string, any> = {};
+
+  // if (!Array.isArray(yaml.platforms) && yaml.platforms != '*') throw new Error("platforms must be specified");
+  // if (!yaml.platforms.includes(Deno.build.os) && yaml.platforms != '*') return;
+
+  if (yaml.name) rv["display-name"] = yaml.name;
+  if (yaml.dependencies) {
+    rv.dependencies = yaml.dependencies;
+  }
+  if (yaml.linux?.dependencies) {
+    rv.dependencies ??= {};
+    rv.dependencies.linux = yaml.linux.dependencies;
+  }
+  if (yaml.darwin?.dependencies) {
+    rv.dependencies ??= {};
+    rv.dependencies.darwin = yaml.darwin.dependencies;
+  }
+  if (yaml.windows?.dependencies) {
+    rv.dependencies ??= {};
+    rv.dependencies.windows = yaml.windows.dependencies;
+  }
+  if (yaml.companions) {
+    rv.companions = {};
+    for (const project of yaml.companions) {
+      rv.companions[project] = "*";
+    }
+  }
+  if (yaml.linux?.companions) {
+    rv.companions ??= {};
+    rv.companions.linux = {};
+    for (const companion of yaml.linux.companions) {
+      rv.companions.linux[companion] = "*";
+    }
+  }
+  if (yaml.darwin?.companions) {
+    rv.companions ??= {};
+    rv.companions.darwin = {};
+    for (const companion of yaml.darwin.companions) {
+      rv.companions.darwin[companion] = "*";
+    }
+  }
+  if (yaml.windows?.companions) {
+    rv.companions ??= {};
+    rv.companions.windows = {};
+    for (const companion of yaml.windows.companions) {
+      rv.companions.windows[companion] = "*";
+    }
+  }
+  if (yaml.env) {
+    rv.runtime = { env: yaml.env };
+  }
+  if (yaml.programs) {
+    rv.provides = yaml.programs;
+  }
+  if (yaml.platforms == "*") {
+    rv.platforms = ["linux/x86-64", "darwin/aarch64", "windows/x86-64"];
+  } else if (yaml.platforms) {
+    rv.platforms = yaml.platforms;
+  } else {
+    rv.platforms = '[]'
+  }
+
+  return rv;
+}

@@ -1,0 +1,267 @@
+#!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -A
+
+import { walk_pkgx_dir, parse, Path, SemVer, undent, backticks_quiet, platform_partial_path, PackageRequirement } from "brewkit";
+import { find_in_PATH } from "../brewkit/env-include.ts";
+import { expandGlob } from "jsr:@std/fs@1/expand-glob";
+import parse_deps from "../brewkit/deps-env.ts";
+import { fromFileUrl } from "jsr:@std/path@^1";
+
+if (import.meta.main) {
+  const pkg = parse(Deno.args[0]);
+  const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
+  const tmpdir = mktempd();
+  const deno = find_in_PATH("deno")!.string;
+
+  console.error("%cstage:", "color: yellow", tmpdir);
+  console.error(
+    "%cpkgspec:",
+    "color: yellow",
+    `${pkg.project}${pkg.constraint}`,
+  );
+
+  try {
+    await prep_toolchain(tmpdir, srcroot);
+    await prep_deps(pkg, tmpdir, srcroot);
+    await prep_script(pkg, tmpdir, srcroot);
+    await run(pkg, tmpdir, srcroot, deno);
+    await post(pkg, tmpdir, srcroot);
+
+    if (!Deno.args.includes("--keep-stage")) {
+      tmpdir.rm('rf');
+    } else {
+      console.error("%c!", "color:green", "keeping stage directory:", tmpdir);
+    }
+  } catch (e) {
+    console.error("%c!", "color:green", "keeping stage directory:", tmpdir);
+    throw e;
+  }
+}
+
+async function prep_toolchain(tmpdir: Path, srcroot: Path) {
+  const bin = tmpdir.join("bin");
+  srcroot.join("brewkit/toolchain", Deno.build.os).cp({ to: bin });
+  find_in_PATH("pkgx")!.cp({ into: bin });
+
+  switch (Deno.build.os) {
+  case 'linux':
+    const llvm_bin = new Path(await backticks_quiet`pkgx -q +llvm.org -- which clang`).parent();
+    const ln = (tool: string, llvm_tool: string) =>
+      bin.join(tool).ln('s', { target: llvm_bin.join(llvm_tool) });
+    ln('cc', 'clang');
+    ln('gcc', 'clang');
+    ln('clang', 'clang');
+    ln('c++', 'clang++');
+    ln('g++', 'clang++');
+    ln('clang++', 'clang++');
+    ln('cpp', 'clang-cpp');
+    ln('ld', 'ld.lld');
+    ln('ar', 'llvm-ar');
+    ln('as', 'llvm-as');
+    ln('nm', 'llvm-nm');
+    ln('strings', 'llvm-strings');
+
+    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    // stops ./configure from erroring in our container
+    Deno.env.set("FORCE_UNSAFE_CONFIGURE", "1");
+    break;
+
+  case 'darwin':
+    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    Deno.env.set("MACOSX_DEPLOYMENT_TARGET", "11.0");
+    break;
+
+  case 'windows':
+    Deno.env.set("PATH", `${bin};${Deno.env.get("PATH")}`);
+  }
+
+  Deno.env.set("PKGX_BIN", bin.string);
+}
+
+async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
+  let src = "";
+  const root = srcroot.join("projects", pkg.project);
+
+  let foo: Path | undefined;
+  if (foo = root.join("versions.ts").isFile()) {
+    src += `import versions from "${foo.fileURL()}";\n`;
+  } else {
+    src += "import { default_versions } from 'brewkit';\n";
+    src += `const versions = default_versions("${root.join("package.yml").string.replaceAll("\\", "\\\\")}");\n`;
+  }
+  if (foo = root.join("fixup.ts").isFile()) {
+    src += `import process_fixup from "${foo.fileURL()}";\n`;
+  } else {
+    src += "const process_fixup = () => true;\n";
+  }
+
+  src += `import build from "${root.join("build.ts").fileURL()}";\n`;
+  src += srcroot.join("brewkit/build-template.ts").read();
+
+  tmpdir.join("run-build.ts").write(src);
+
+  tmpdir.join("deno.json").write(
+    `{"imports": {"brewkit": "${srcroot.join("brewkit/mod.ts").fileURL()}"}}`,
+  );
+
+  srcroot.join("deno.lock").cp({ into: tmpdir });
+}
+
+async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
+  // symlink prebuilt (for dev) and predownloaded (for efficiency) pkgs into our deps dir
+  await setup_deps(tmpdir, srcroot);
+
+  Deno.env.set("PKGX_PANTRY_DIR", srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string);
+  Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
+  Deno.env.set("PKGX_DIR", tmpdir.join("pkgs").string);
+
+  const json = await parse_deps(pkg.project);
+
+  if (json) {
+    const SEP = Deno.build.os == "windows" ? ";" : ":";
+
+    for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
+      let value = paths.join(SEP);
+      if (Deno.env.get(key)) {
+        value += `${SEP}${Deno.env.get(key)}`;
+      }
+      Deno.env.set(key, value);
+    }
+
+    //FIXME for the love of god make `pkgx` expand these (needs a --json=v2 version bump)
+    for (const [_pkg, env_dict] of Object.entries(json.runtime_env)) {
+      for (let [key, value] of Object.entries(env_dict as any)) {
+        const { path, version } = json.pkgs.find(({ project }: any) => project === _pkg);
+        value = (value as string).replaceAll("{{prefix}}", path);
+        value = (value as string).replaceAll("{{version}}", version);
+        value = (value as string).replace(new RegExp(`:\\$${key}$`), ""); //FIXME subst
+        value = (value as string).replace(`\$${key}`, ""); //FIXME subst
+        Deno.env.set(key, (value as string).trim());
+      }
+    }
+
+    const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
+    Deno.env.set("PKGS", pkgs.join(SEP));
+  }
+}
+
+async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: string) {
+  let [cmd, ...args]: string[] = (() => {
+    if (Deno.build.os !== 'darwin') return [deno];
+
+    let sb = undent`
+      (version 1)
+      (allow default)
+      (deny file-write*
+        (subpath "/opt/homebrew")
+        (subpath "${srcroot}")
+        (subpath "/usr/local"))
+        (subpath "${tmpdir}/pkgs")
+      (allow file-write*
+        (subpath "${srcroot}/srcs"))
+      (deny file-read*
+        (subpath "/opt/homebrew")
+        (subpath "/usr/local"))
+      (deny process-exec*
+        (subpath "/opt/homebrew")
+        (subpath "/usr/local"))
+      `;
+
+    let foo: Path | undefined;
+    if (foo = srcroot.join("projects", pkg.project, "sandbox.sb").isFile()) {
+      sb += foo.read();
+    }
+    if (foo = srcroot.join("projects", pkg.project, "sandbox.sb.in").isFile()) {
+      sb += foo.read().replaceAll("{{prefix}}", tmpdir.join("dst", pkg.project).string);
+    }
+
+    return ['sandbox-exec', '-f', tmpdir.join("sandbox.sb").write(sb).string, deno];
+  })();
+
+  //NOTE --allow-all is required for Windows, dunno why but whatever
+  args.push(
+    "run",
+    "--quiet",
+    "--allow-all",
+    tmpdir.join("run-build.ts").string,
+    `${pkg.project}${pkg.constraint.toString() == "*" ? "" : pkg.constraint}`,
+    tmpdir.join("src").string,
+    srcroot.join("projects", pkg.project).string,
+    tmpdir.join("pkgs").string,
+    tmpdir.join("dst").string,
+  );
+
+  if (Deno.env.get("GITHUB_ACTIONS")) {
+    console.log("::group::env");
+    Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(`${key}=${value}`));
+    console.log("::endgroup::");
+  }
+
+  const proc = new Deno.Command(cmd, { args }).spawn();
+  const { code, success } = await proc.status;
+  if (!success) {
+    Deno.exit(code);
+  }
+}
+
+async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
+  const receipt = tmpdir.join("build-receipt.json");
+  const version = new SemVer(JSON.parse(await receipt.read()).version);
+  const root = srcroot.join("artifacts", platform_partial_path(), pkg.project).mkdir("p");
+  const dstdir = root.join(`v${version}`).rm('rf');
+
+  const needs_cp =
+       Deno.build.os == "windows" && tmpdir.drive() != dstdir.drive()
+    || Deno.build.os == 'linux' && Path.root.join(".dockerenv").isFile();
+
+  if (needs_cp) {
+    tmpdir.join("dst", pkg.project, `v${version}`).cp({ to: dstdir });
+    receipt.cp({ into: dstdir });
+  } else {
+    tmpdir.join("dst", pkg.project, `v${version}`).mv({ to: dstdir.rm("rf") });
+    receipt.mv({ into: dstdir });
+  }
+
+  if (Deno.build.os != 'windows') {
+    dstdir.parent().join(`v${version.major}`).rm().ln("s", { target: dstdir.basename() });
+  }
+
+  for await (const { path } of expandGlob("README*", {root: tmpdir.join("src").string})) {
+    new Path(path).cp({ into: dstdir.parent() });
+  }
+
+  if (Deno.env.get("GITHUB_ENV")) {
+    Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `VERSION=${version}\n`, { append: true });
+    Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PROJECT=${pkg.project}\n`, { append: true });
+    Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PREFIX=${dstdir}\n`, { append: true });
+    Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PLATFORM=${platform_partial_path()}\n`, { append: true });
+  }
+}
+
+function mktempd() {
+  const dir = Deno.build.os == 'darwin' ? '/tmp' : undefined;
+  return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
+}
+
+export async function setup_deps(tmpdir: Path, srcroot: Path) {
+  const deps_srcs = [srcroot.join("artifacts", platform_partial_path())];
+  if (Deno.env.get("PKGX_DIST_URL")?.endsWith('/v2')) {
+    deps_srcs.push(Path.home().join(".pkgx"));
+  }
+  for (const PKGX_DIR of deps_srcs) {
+    if (!PKGX_DIR.isDirectory()) continue;
+    for await (const installation of walk_pkgx_dir(PKGX_DIR)) {
+      const dst = tmpdir.join("pkgs", installation.path.relative({ to: PKGX_DIR }))
+      if (dst.exists()) continue;
+      if (Deno.build.os != 'windows') {
+        // we have to symlink the contents rather than the v1.2.3 directory
+        // because pkgx skips symlinks when evaluating cellar paths
+        for await (const [path, {name}] of installation.path.ls()) {
+          dst.mkdir('p').join(name).ln("s", { target: path });
+        }
+        dst.parent().join(`v${installation.pkg.version.major}`).rm().ln("s", { target: dst.basename() });
+      } else {
+        installation.path.cp({ to: dst });
+      }
+    }
+  }
+}

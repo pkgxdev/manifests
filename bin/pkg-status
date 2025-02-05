@@ -1,0 +1,56 @@
+#!/usr/bin/env -S pkgx -q +git deno run --allow-run --allow-read
+
+export default function main() {
+  // Get the divergence SHA
+  const divergenceSha = new TextDecoder().decode(
+    new Deno.Command("git", {
+      args: ["merge-base", "HEAD", "origin/main"],
+      stdout: "piped",
+    }).outputSync().stdout
+  ).trim();
+
+  // Get changed files
+  const changedFiles = new TextDecoder().decode(
+    new Deno.Command("git", {
+      args: ["diff", "--name-only", divergenceSha],
+      stdout: "piped",
+    }).outputSync().stdout
+  ).trim().split("\n");
+
+  const untrackedFiles = new TextDecoder().decode(
+    new Deno.Command("git", {
+      args: ["status", "--untracked-files", "--porcelain"],
+      stdout: "piped",
+    }).outputSync().stdout
+  ).trim().split("\n").map(line => line.replace(/^..\s*/, ""));
+
+  const allFiles = [...changedFiles, ...untrackedFiles].filter(Boolean);
+
+  const projects = new Set<string>();
+  const outputPaths = new Set<string>();
+
+  for (const file of allFiles) {
+    const match = file.match(/^projects\/(.*)\/(package\.yml|build\.ts)$/);
+    if (match) {
+      const project = match[1];
+      if (Deno.args.includes("--print-paths")) {
+        outputPaths.add(file);
+      } else {
+        projects.add(project);
+      }
+    }
+  }
+
+  return [projects, outputPaths];
+}
+
+if (import.meta.main) {
+  const [projects, outputPaths] = main();
+  if (projects.size === 0 && outputPaths.size === 0) {
+    console.error("no new or modified manifests found");
+    Deno.exit(1);
+  } else {
+    const output = [...(outputPaths.size ? outputPaths : projects)].sort().join("\n");
+    console.log(output);
+  }
+}

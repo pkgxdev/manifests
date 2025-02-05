@@ -1,0 +1,43 @@
+runs:
+  using: composite
+  steps:
+    # unavoidable for some projects on windows
+    # TODO we can probs save 20s and make a TS function to add this env
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'
+
+    - run: |
+        Invoke-WebRequest -Uri "https://pkgx.sh/Windows/x86_64.tgz" -OutFile .\\x86_64.tgz
+        tar xf .\\x86_64.tgz
+        mv .\\pkgx.exe .\\bin
+        rm .\\x86_64.tgz
+
+        "$PWD\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+        Get-ChildItem -Path brewkit -Recurse -Filter *.ts | ForEach-Object { .\\bin\\pkgx deno -q cache $_.FullName }
+        .\\bin\\pkgx deno -q cache .\\.github\\scripts\\generate-versions
+      shell: pwsh
+      if: runner.os == 'Windows'
+
+    - run: |
+        case $(uname) in
+        Linux)
+          # $HOME is different in the docker image vs. github actions
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
+          ;;
+        Darwin)
+          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
+          find brewkit -name \*.ts | xargs pkgx deno^2 --quiet cache
+          pkgx deno^2 --quiet cache .github/scripts/generate-versions
+          ;;
+        esac
+
+        case $(uname) in
+        Linux|Darwin)
+          echo "$PWD/bin" >> $GITHUB_PATH
+        esac
+
+        # we have to run this inside git-bash on Windows
+        ./bin/pkg-convert
+      shell: bash

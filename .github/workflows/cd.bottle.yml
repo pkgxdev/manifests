@@ -1,0 +1,114 @@
+name: cd·bottle
+run-name: cd·bottle ${{inputs.pkgs}}
+
+on:
+  #TODO re-enable
+  # push:
+  #   branches:
+  #     main
+  #   paths:
+  #     projects/**/*/build.ts
+  workflow_dispatch:
+    inputs:
+      pkgs:
+        required: true
+      platforms:
+        required: false
+
+env:
+  PKGX_DIST_URL: https://dist.tea.xyz/v2
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.computer.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/plan
+        id: computer
+        with:
+          pkgs: ${{ github.event.inputs.pkgs }}
+          platforms: ${{ github.event.inputs.platforms }}
+
+  bottle:
+    needs: ingest
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    name: build ${{ matrix.pkg }} (${{ matrix.platform.tinyname }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      - run: pkg-build ${{ matrix.pkg }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: pkg-test ${{env.PROJECT}}=${{env.VERSION}}
+
+      - run: |
+          eval "$(pkgx +aws +xz)"
+          echo "$PATH" >> "$GITHUB_PATH"
+        if: ${{ runner.os == 'Linux' }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+        # FIXME this uploads for each platform and even though it should be the same file—it’s lame
+      - name: cp README
+        run: |
+          cd $PREFIX/..
+          set -- README*
+          if [ "$1" != "README*" ]; then
+            for x in "$@"; do
+              aws s3 cp "$x" "s3://dist.tea.xyz/$PROJECT/$x"
+            done
+          fi
+        if: ${{ runner.os != 'Windows' }}
+
+      - name: bottle
+        run: |
+          OLDWD="$PWD"
+
+          if [ $(uname) = Darwin ]; then
+            # pkgx cannot untar into read only directories on macOS
+            # NOTE the true fix would be to make the dirs writable when
+            # untarring and then make them read only again after
+            find "$PREFIX" -type f -exec chmod -w {} +
+          else
+            # we had weird issues with python where it could not for some
+            # reason make sitecustomize.py read only and would thus abort
+            find "$PREFIX" -exec chmod -w {} + || true
+          fi
+
+          cd $(mktemp -d)
+          mkdir -p $PROJECT
+          mv "$PREFIX" $PROJECT
+
+          tar czf $OLDWD/v$VERSION.tar.gz *
+          tar cJf $OLDWD/v$VERSION.tar.xz *
+        shell: bash
+
+      - name: s3 sync
+        run: |
+          aws s3 cp v${{env.VERSION}}.tar.gz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.gz
+          aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
+          .github/scripts/generate-versions v2/${{env.PROJECT}}/${{env.PLATFORM}} > versions.txt
+          aws s3 cp versions.txt s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/versions.txt
+
+      - name: cf invalidate
+        run:
+          aws cloudfront create-invalidation
+          --distribution-id EWF6XUK8J11DP
+          --paths
+          /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/versions.txt
+          /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.gz
+          /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.xz

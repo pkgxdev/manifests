@@ -1,0 +1,20 @@
+#!/usr/bin/env -S pkgx make -f
+
+.PHONY: all debug
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+SRCROOT := $(abspath $(MAKEFILE_DIR)/..)
+PKG_FILES := $(shell find $(SRCROOT)/projects -name package.yml)
+OUTPUTS := $(PKG_FILES:$(SRCROOT)/projects/%=$(SRCROOT)/builds/pantry/projects/%)
+
+# Default target
+all: $(OUTPUTS)
+
+# Rule to process each package.yml file
+$(SRCROOT)/builds/pantry/projects/%: $(SRCROOT)/projects/%
+	@mkdir -p $(dir $@)
+	$(SRCROOT)/brewkit/scripts/convert-package.yml.ts "$<" > "$@"
+
+debug:
+	@echo "PKG_FILES: $(PKG_FILES)"
+	@echo "OUTPUTS: $(OUTPUTS)"
+	@echo "SRCROOT: $(SRCROOT)"

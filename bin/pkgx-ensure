@@ -1,0 +1,13 @@
+#!/usr/bin/env -S pkgx bash -eo pipefail
+
+MISSING=()
+
+for x in $@; do
+  if ! /usr/bin/which $x >/dev/null 2>&1; then
+    MISSING+=("+$x")
+  fi
+done
+
+if [ "${#MISSING[@]}" -gt 0 ]; then
+  pkgx "${MISSING[@]}"
+fi

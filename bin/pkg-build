@@ -1,0 +1,154 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [ "$GITHUB_ACTIONS" ]; then
+ echo "::group::prep"
+fi
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+PKGSPEC="$1"
+PLATFORM="$(uname)/$(uname -m)"
+
+# DO **NOT** EXPORT THIS!
+PKGX_DIR="$SRCROOT/products/$PLATFORM"
+
+if [[ $PKGSPEC == *\* ]]; then
+  PROJECT="${PKGSPEC%\*}"
+elif [[ $PKGSPEC =~ ^([^@^~=]+)([@^~=].*)$ ]]; then
+  PROJECT="${BASH_REMATCH[1]}"
+  CONSTRAINT="${BASH_REMATCH[2]}"
+elif [ -f "$SRCROOT/projects/$PKGSPEC/package.yml" ]; then
+  PROJECT="$PKGSPEC"
+fi
+
+if [ -z "$PKGSPEC" ]; then
+  echo "pkgspec invalid" >&2
+  exit 1
+fi
+
+if [ ! -f "$SRCROOT/projects/$PROJECT/package.yml" ]; then
+  echo "package not found" >&2
+  exit 1
+fi
+
+if [ ! -f "$SRCROOT/builds/pantry/projects/$PROJECT/package.yml" ]; then
+  echo "run \`pkg convert\` first" >&2
+  exit 1
+fi
+
+deno="$(pkgx -q +deno^2 -- which deno)"
+
+case $(uname) in
+Linux)
+  cd "$(mktemp -d -t pkgx.XXXXXX)"
+  mkdir .pkgx
+  cp -r $SRCROOT/brewkit/toolchain/linux .pkgx/bin
+  cd .pkgx/bin
+  # these must be symlinks or they don’t behave like eg. gcc
+  ln -s "$(./pkgx +llvm.org -- which clang)" cc
+  ln -s "$(./pkgx +llvm.org -- which clang)" gcc
+  ln -s "$(./pkgx +llvm.org -- which clang++)" c++
+  ln -s "$(./pkgx +llvm.org -- which clang++)" g++
+  ln -s "$(./pkgx +llvm.org -- which clang-cpp)" cpp
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld
+  ln -s "$(./pkgx +llvm.org -- which ld.lld)" ld.lld
+  ln -s "$(./pkgx +llvm.org -- which lld-link)" lld-link
+  ln -s "$(./pkgx +llvm.org -- which llvm-ar)" ar
+  ln -s "$(./pkgx +llvm.org -- which llvm-as)" as
+  ln -s "$(./pkgx +llvm.org -- which llvm-nm)" nm
+  ln -s "$(./pkgx +llvm.org -- which llvm-objcopy)" objcopy
+  ln -s "$(./pkgx +llvm.org -- which llvm-ranlib)" ranlib
+  ln -s "$(./pkgx +llvm.org -- which llvm-readelf)" readelf
+  ln -s "$(./pkgx +llvm.org -- which llvm-strings)" strings
+  ln -s "$(./pkgx +llvm.org -- which llvm-strip)" strip
+  jq="pkgx -q jq"
+  deno_exec="$deno"
+  cd ../..
+  ;;
+
+Darwin)
+  cd "$(mktemp -d /tmp/pkgx.XXXXXX)"
+  mkdir .pkgx
+  cp -r $SRCROOT/brewkit/toolchain/darwin .pkgx/bin
+  cp /usr/local/bin/pkgx .pkgx/bin
+  # prevent build scripts from dipping into Homebrew or /usr/local
+  cat <<EoSB > .pkgx/sandbox.sb
+(version 1)
+(allow default)
+(deny file-read* (subpath "/opt/homebrew"))
+(deny file-read* (subpath "/usr/local"))
+EoSB
+  deno_exec="sandbox-exec -f .pkgx/sandbox.sb $deno"
+  jq="$(which jq)"
+  export MACOS_DEPLOYMENT_TARGET=11
+  ;;
+esac
+
+echo "import versions from '$SRCROOT/projects/$PROJECT/versions.ts';" > .pkgx/run-build.ts
+echo "import build from '$SRCROOT/projects/$PROJECT/build.ts';" >> .pkgx/run-build.ts
+cat "$SRCROOT/brewkit/build-template.ts" >> .pkgx/run-build.ts
+echo "{\"imports\": {\"brewkit\": \"$SRCROOT/brewkit/mod.ts\", \"fixup\": \"$SRCROOT/brewkit/fixup.ts\" }}" > .pkgx/deno.json
+
+# sanitize PATH before adding deps
+export PATH="$PWD/.pkgx/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+rm -f build/pantry*.db  #FIXME this is platform specific
+out="$(PATH="$(dirname "$deno"):$PWD/.pkgx/bin" PKGX_PANTRY_DIR="$SRCROOT/builds/pantry" PKGX_DIST_URL="https://dist.pkgx.dev/v2" PKGX_DIR="$PKGX_DIR" $SRCROOT/brewkit/scripts/deps-env.ts $PKGSPEC)"
+eval "$out"
+
+# we need full allow-read and write because Deno.symlink sucks
+# TODO make our own implementation
+
+# we need full --allow-env to allow build scripts to set environment
+# TODO they can do this some other way!
+
+if [ "$GITHUB_ACTIONS" ]; then
+  echo "::endgroup::"
+fi
+
+$deno_exec run \
+  --quiet \
+  --allow-read \
+  --allow-run \
+  --allow-env \
+  --allow-write \
+  --allow-net \
+  --ext=ts \
+  .pkgx/run-build.ts \
+  "$PKGSPEC" \
+  "$PWD" \
+  "$SRCROOT/projects/$PROJECT" \
+  "$PKGX_DIR"
+
+PROJECT="$(cat .pkgx/build-receipt.json | $jq -r .project)"
+VERSION="$(cat .pkgx/build-receipt.json | $jq -r .version)"
+
+if [ -f "$GITHUB_ENV" ]; then
+  echo "VERSION=$VERSION" >> $GITHUB_ENV
+  echo "PROJECT=$PROJECT" >> $GITHUB_ENV
+  echo "PREFIX=$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION" >> $GITHUB_ENV
+  echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
+
+  case "$(uname)/$(uname -m)" in
+    Linux/x86_64) echo "DIST_PLATFORM=linux/x86-64" >> $GITHUB_ENV;;
+    Darwin/x86_64) echo "DIST_PLATFORM=darwin/x86-64" >> $GITHUB_ENV;;
+    Linux/arm64|Linux/aarch64) echo "DIST_PLATFORM=linux/aarch64" >> $GITHUB_ENV;;
+    Darwin/arm64) echo "DIST_PLATFORM=darwin/aarch64" >> $GITHUB_ENV;;
+  esac
+fi
+
+if [ -d "$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION" ]; then
+  chmod -R +w "$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION"
+  rm -rf "$SRCROOT/products/$PLATFORM/$PROJECT/v$VERSION"
+else
+  mkdir -p "$SRCROOT/products/$PLATFORM/$PROJECT"
+fi
+
+mv "$PWD/.pkgx/$PROJECT"/* "$SRCROOT/products/$PLATFORM/$PROJECT"
+
+rm -rf "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+mkdir -p "$SRCROOT/builds/$PLATFORM/$PROJECT"
+mv "$PWD" "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+mv "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION/.pkgx/build-receipt.json" "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION"
+rm -rf "$SRCROOT/builds/$PLATFORM/$PROJECT/v$VERSION/.pkgx"

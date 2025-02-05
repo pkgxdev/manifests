@@ -1,0 +1,57 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [ -z "$1" ]; then
+  echo 'usage: pkg [btcd] <pkgspec>' >&2
+  exit 2
+fi
+
+cmd="$1"
+shift
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+
+if [ -f "$SRCROOT/bin/pkg-$cmd" ]; then
+  case $cmd in build|test)
+    if [ -z "$1" ]; then
+      exec "$SRCROOT/bin/pkg-$cmd" "$(cd "$SRCROOT" && bin/pkg-status)"
+    fi ;;
+  esac
+  exec "$SRCROOT/bin/pkg-$cmd" "$@"
+else
+  if [[ $cmd =~ c ]]; then
+    "$SRCROOT/bin/pkg-convert"
+    if [ $cmd = c ]; then
+      exit
+    fi
+  fi
+
+  if [ -z "$1" ]; then
+    args="$("$SRCROOT"/bin/pkg-status)"
+  else
+    args="$@"
+  fi
+
+  if [[ $cmd =~ d ]]; then
+    if [[ $cmd =~ b ]]; then
+      "$SRCROOT"/bin/pkg-docker build "$args"
+    fi
+    if [[ $cmd =~ t ]]; then
+      "$SRCROOT"/bin/pkg-docker test "$args"
+    fi
+  else
+    if [[ $cmd =~ b ]]; then
+
+      # or invariably github complains as we have to do a lot of API calls
+      if [ -d $HOME/.pkgx/cli.github.com ] && gh auth status >/dev/null 2>&1; then
+        export GH_TOKEN=$(gh auth token)
+      fi
+
+      "$SRCROOT"/bin/pkg-build "$args"
+    fi
+    if [[ $cmd =~ t ]]; then
+      "$SRCROOT"/bin/pkg-test "$args"
+    fi
+  fi
+fi

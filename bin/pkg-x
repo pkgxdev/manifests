@@ -1,0 +1,9 @@
+#!/bin/sh
+
+SRCROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+export PKGX_DIR="$SRCROOT/artifacts/Darwin/aarch64"
+export PKGX_PANTRY_DIR="$SRCROOT/artifacts/pantry"
+export PKGX_DIST_URL="https://dist.pkgx.dev/v2"
+
+exec pkgx "$@"

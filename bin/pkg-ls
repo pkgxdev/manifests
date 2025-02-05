@@ -1,0 +1,10 @@
+#!/bin/sh
+
+cd "$(dirname "$0")/.."
+
+find projects -type f -name package.yml | while read -r file; do
+    last_commit=$(git log -1 --format="%at %H" -- "$file")
+    file=${file#projects/}
+    file=${file%/package.yml}
+    echo "$last_commit $file"
+done | sort -n | awk '{for (i=3; i<=NF; ++i) printf "%s%s", $i, (i<NF ? " " : "\n")}'

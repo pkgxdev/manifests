@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+  echo "usage: pkg edit <pkg...>" >&2
+  exit 2
+fi
+
+d="$(cd "$(dirname "$0")"/.. && pwd)"
+
+PKGS=()
+for PKG in "$@"; do
+  PKG="$d/projects/$PKG"
+
+  if [ ! -f "$PKG/package.yml" ]; then
+    echo "error: no such package: $1" >&2
+    exit 1
+  fi
+
+  PKGS+=("$PKG")
+done
+
+if [ -z "$EDITOR" ]; then
+  if command -v code >/dev/null; then
+    EDITOR="code"
+  elif command -v vim >/dev/null; then
+    EDITOR="vim"
+  elif command -v vi >/dev/null; then
+    EDITOR="vi"
+  elif command -v emacs >/dev/null; then
+    EDITOR="emacs"
+  else
+    echo "error: \`\$EDITOR\` is not set" >&2
+    exit 1
+  fi
+elif [ "$EDITOR" = code_wait ]; then
+  # this is for mxcl who generally prefers his editor to wait
+  # but not in this case. #perks-of-making-the-thing
+  EDITOR=code
+fi
+
+if [ "$EDITOR" = code ]; then
+  ARGS=()
+  for PKG in "${PKGS[@]}"; do
+    ARGS+=("$PKG" "$PKG/build.ts" "$PKG/package.yml")
+  done
+
+  exec $EDITOR "$d" "${ARGS[@]}"
+else
+  exec $EDITOR "${PKGS[@]}"
+fi

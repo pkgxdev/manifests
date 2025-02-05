@@ -1,0 +1,30 @@
+#!/bin/sh
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+
+eval "$(pkgx mash pkgx/ensure +git +column +sort +uniq)"
+
+# sadly we seemingly need to reference origin/main
+DIVERGENCE_SHA="$(git merge-base HEAD origin/main)"
+CHANGED_FILES="$(git diff --name-only "$DIVERGENCE_SHA") $(git status --untracked-files --porcelain)"
+
+OUTPUT=""
+
+for CHANGED_FILE in $CHANGED_FILES; do
+  PROJECT=$(echo "$CHANGED_FILE" | sed -n 's#projects/\(.*\)/package\.yml$#\1#p')
+  if test -z "$PROJECT"
+  then
+    true # noop
+  elif test "$1" = "--print-paths"; then
+    OUTPUT="$OUTPUT $CHANGED_FILE"
+  else
+    OUTPUT="$OUTPUT $PROJECT"
+  fi
+done
+
+if [ -z "$OUTPUT" ]; then
+  echo "no new or modified manifests found" >&2
+  exit 1
+else
+  echo $OUTPUT | tr ' ' '\n' | sort | uniq | column
+fi

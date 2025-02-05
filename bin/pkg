@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+  echo "Usage: pkg [btcd] <pkgspec>"
+  exit 2
+fi
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+
+_main() {
+  cmd="$1"
+  shift
+
+  case $cmd in
+  convert)
+    _convert;;
+  docker)
+    case $1 in
+    run)
+      exec docker run -it --rm -v $SRCROOT:/work  -w /work ghcr.io/pkgxdev/bldbot;;
+    pull)
+      exec docker pull ghcr.io/pkgxdev/bldbot;;
+    *)
+      echo "Usage: pkg docker [run|pull]"
+      exit 2;;
+    esac;;
+  build)
+    _build "$@";;
+  test)
+    _test "$@";;
+  *)
+    if [[ $cmd =~ c ]]; then
+      _convert
+    fi
+
+    if [[ $cmd =~ d ]]; then
+      if [[ $cmd =~ b ]]; then
+        docker run --rm -v $SRCROOT:/work ghcr.io/pkgxdev/bldbot -w /work /work/bin/private/build.sh "$@"
+      fi
+      if [[ $cmd =~ t ]]; then
+        docker run --rm -v $SRCROOT:/work ghcr.io/pkgxdev/bldbot -w /work /work/bin/private/test.sh "$@"
+      fi
+    elif [[ $cmd =~ b ]]; then
+      _build "$@"
+    elif [[ $cmd =~ t ]]; then
+      _test "$@"
+    fi;;
+  esac
+}
+
+_convert() {
+  exec make --directory "$SRCROOT" --file "$SRCROOT/bin/private/Makefile"
+}
+
+_build() {
+  exec "$SRCROOT"/bin/private/build.sh "$@"
+}
+
+_test() {
+  exec "$SRCROOT"/bin/private/test.sh "$@"
+}
+
+_main "$@"

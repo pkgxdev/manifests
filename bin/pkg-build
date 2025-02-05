@@ -1,0 +1,226 @@
+#!/bin/bash
+
+set -eo pipefail
+
+_main() {
+  [ "$GITHUB_ACTIONS" ] && echo "::group::prep"
+
+  _prep_env "$@"
+  _prep_stage
+  _prep_deps
+  _prep_script
+
+  [ "$GITHUB_ACTIONS" ] && echo "::endgroup::"
+
+  _run
+
+  _post
+}
+
+_prep_env() {
+  SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+  PKGSPEC="$1"
+  PLATFORM="$(uname)/$(uname -m)"
+
+  if [[ $PKGSPEC == *\* ]]; then
+    # pkgx^2 bug doesn’t parse the `*`
+    PROJECT="${PKGSPEC%\*}"
+  elif [[ $PKGSPEC =~ ^([^@^~=]+)([@^~=].*)$ ]]; then
+    PROJECT="${BASH_REMATCH[1]}"
+    CONSTRAINT="${BASH_REMATCH[2]}"
+  elif [ -f "$SRCROOT/projects/$PKGSPEC/package.yml" ]; then
+    PROJECT="$PKGSPEC"
+  fi
+
+  if [ -z "$PKGSPEC" ]; then
+    echo "pkgspec invalid" >&2
+    exit 2
+  fi
+
+  if [ ! -f "$SRCROOT/projects/$PROJECT/package.yml" ]; then
+    echo "package.yml not found for \`$PKGSPEC\`" >&2
+    exit 2
+  fi
+
+  if [ ! -f "$SRCROOT/artifacts/pantry/projects/$PROJECT/package.yml" ]; then
+    echo "run \`pkg convert\` first" >&2
+    exit 2
+  fi
+
+  export PKGX_PANTRY_DIR="$SRCROOT/artifacts/$(uname)/pantry"
+  export PKGX_DIST_URL="https://dist.pkgx.dev/v2"
+
+  if [ ! -e "$SRCROOT/artifacts/$(uname)/pantry/projects" ]; then
+    mkdir -p "$SRCROOT/artifacts/$(uname)/pantry"
+    ln -sf ../../pantry/projects "$SRCROOT/artifacts/$(uname)/pantry/projects"
+  fi
+
+  deno="$(pkgx -q +deno^2 -- which deno)"
+}
+
+_prep_stage() {
+  case $(uname) in
+  Linux)
+    TMPDIR="$(mktemp -d -t pkgx.XXXXXX)"
+    cd "$TMPDIR"
+    cp -r "$SRCROOT/brewkit/toolchain/linux" bin
+    cp /usr/local/bin/pkgx bin
+    # these must be symlinks or they don’t behave like eg. gcc
+    ln -s "$(pkgx -q +llvm.org -- which clang)" bin/cc
+    ln -s "$(pkgx -q +llvm.org -- which clang)" bin/gcc
+    ln -s "$(pkgx -q +llvm.org -- which clang++)" bin/c++
+    ln -s "$(pkgx -q +llvm.org -- which clang++)" bin/g++
+    ln -s "$(pkgx -q +llvm.org -- which clang-cpp)" bin/cpp
+    ln -s "$(pkgx -q +llvm.org -- which ld.lld)" bin/ld
+    ln -s "$(pkgx -q +llvm.org -- which llvm-ar)" bin/ar
+    ln -s "$(pkgx -q +llvm.org -- which llvm-as)" bin/as
+    ln -s "$(pkgx -q +llvm.org -- which llvm-nm)" bin/nm
+    ln -s "$(pkgx -q +llvm.org -- which llvm-strings)" bin/strings
+    jq="pkgx -q jq"
+    deno_exec="$deno"
+    ;;
+
+  Darwin)
+    TMPDIR="$(mktemp -d /tmp/pkgx.XXXXXX)"
+    cd "$TMPDIR"
+    cp -r "$SRCROOT/brewkit/toolchain/darwin" bin
+    cp /usr/local/bin/pkgx bin
+    # prevent build scripts from dipping into Homebrew or /usr/local
+    cat <<EoSB > sandbox.sb
+(version 1)
+(allow default)
+(deny file-write*
+  (subpath "/opt/homebrew")
+  (subpath "$SRCROOT")
+  (subpath "/usr/local"))
+(allow file-write*
+  (subpath "$SRCROOT/srcs"))
+(deny file-read*
+  (subpath "/opt/homebrew")
+  (subpath "/usr/local"))
+(deny process-exec*
+  (subpath "/opt/homebrew")
+  (subpath "/usr/local"))
+EoSB
+    if [ -f "$SRCROOT/projects/$PROJECT/sandbox.sb" ]; then
+      cat "$SRCROOT/projects/$PROJECT/sandbox.sb" >> sandbox.sb
+    fi
+    if [ -f $SRCROOT/projects/$PROJECT/sandbox.sb.in ]; then
+      sed "s|{{prefix}}|$PREFIX|g" $SRCROOT/projects/$PROJECT/sandbox.sb.in >> sandbox.sb
+    fi
+
+    deno_exec="sandbox-exec -f ./sandbox.sb $deno"
+    jq="$(which jq)"
+    export MACOSX_DEPLOYMENT_TARGET=11.0
+    ;;
+  esac
+
+  export PKGX_BIN="$PWD/bin"
+}
+
+_prep_deps() {
+    # copy anything built to the build’s pkgx dir since
+  # some of it may not be at dist.pkgx.dev yet
+  # FIXME symlinks would be faster but we don’t want builds to have write access to there
+  # FIXME ideally deps-env script would copy what we need to speed things up
+  if [ -d "$SRCROOT/artifacts/$PLATFORM" ]; then
+    cp -aR "$SRCROOT/artifacts/$PLATFORM" deps
+  fi
+
+  # sanitize PATH before adding deps
+  export PATH="$PWD/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+  # use this as PKGX_DIR from now on
+  # TODO ideally would do for whole script but would mean instaalling llvm/deno everytime (though that can be improved)
+  export PKGX_DIR="$PWD/deps"
+
+  pkgenv="$($deno run --allow-read="$SRCROOT" --allow-run "$SRCROOT/brewkit/scripts/deps-env.ts" $PKGSPEC)"
+  eval "$pkgenv"
+}
+
+_prep_script() {
+  if [ -f "$SRCROOT/projects/$PROJECT/versions.ts" ]; then
+    echo "import versions from '$SRCROOT/projects/$PROJECT/versions.ts';" > run-build.ts
+  else
+    echo "import { default_versions } from 'brewkit';" > run-build.ts
+    echo "const versions = default_versions('$SRCROOT/projects/$PROJECT/package.yml');" >> run-build.ts
+  fi
+
+  if [ -f "$SRCROOT/projects/$PROJECT/fixup.ts" ]; then
+    echo "import process_fixup from '$SRCROOT/projects/$PROJECT/fixup.ts';" >> run-build.ts
+  else
+    echo "const process_fixup = () => true;" >> run-build.ts
+  fi
+
+  echo "import build from '$SRCROOT/projects/$PROJECT/build.ts';" >> run-build.ts
+  cat "$SRCROOT/brewkit/build-template.ts" >> run-build.ts
+  echo "{\"imports\": {\"brewkit\": \"$SRCROOT/brewkit/mod.ts\"}}" > deno.json
+  # ensures deno uses the deps we already cached
+  cp "$SRCROOT/deno.lock" .
+}
+
+_run() {
+  # we need full allow-read and write because Deno.symlink sucks
+  # TODO make our own implementation
+
+  # we need full --allow-env to allow build scripts to set environment
+  # TODO they can do this some other way!
+
+  $deno_exec run \
+      --quiet \
+      --allow-read \
+      --allow-run \
+      --allow-env \
+      --allow-write \
+      --allow-net \
+    ./run-build.ts \
+      "$PKGSPEC" \
+      "$PWD/src" \
+      "$SRCROOT/projects/$PROJECT" \
+      "$PWD/deps" \
+      "$PWD/prefix"
+}
+
+_post() {
+  PROJECT="$(cat build-receipt.json | $jq -r .project)"
+  VERSION="$(cat build-receipt.json | $jq -r .version)"
+
+  if [ -f "$GITHUB_ENV" ]; then
+    echo "VERSION=$VERSION" >> $GITHUB_ENV
+    echo "PROJECT=$PROJECT" >> $GITHUB_ENV
+    echo "PREFIX=$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$VERSION" >> $GITHUB_ENV
+    echo "PLATFORM=$PLATFORM" >> $GITHUB_ENV
+
+    case "$PLATFORM" in
+      Linux/x86_64) echo "DIST_PLATFORM=linux/x86-64" >> $GITHUB_ENV;;
+      Darwin/x86_64) echo "DIST_PLATFORM=darwin/x86-64" >> $GITHUB_ENV;;
+      Linux/arm64|Linux/aarch64) echo "DIST_PLATFORM=linux/aarch64" >> $GITHUB_ENV;;
+      Darwin/arm64) echo "DIST_PLATFORM=darwin/aarch64" >> $GITHUB_ENV;;
+    esac
+  fi
+
+  rm -rf "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$VERSION"
+  rm -f  "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$(echo "$VERSION" | sed -E 's/\.[0-9]+$//')"
+  rm -f  "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$(echo "$VERSION" | sed -E 's/\.[0-9]+\.[0-9]+$//')"
+  mkdir -p "$SRCROOT/artifacts/$PLATFORM/$PROJECT"
+
+  if [ $(uname) = Linux -a -f /.dockerenv ]; then
+    # do the below via tar instead of mv because Docker’s overlayfs
+    # doesn’t (100%) support moving files between directories
+    tar cf - ./prefix | tar -C "$SRCROOT/artifacts/$PLATFORM/$PROJECT" -xf -
+    mv "$SRCROOT/artifacts/$PLATFORM/$PROJECT/prefix" "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$VERSION"
+  else
+    mv prefix "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$VERSION"
+  fi
+
+  mv build-receipt.json "$SRCROOT/artifacts/$PLATFORM/$PROJECT/v$VERSION"
+
+  cd "$SRCROOT/artifacts"
+  rm -f _latest
+  ln -s $PLATFORM/$PROJECT/v$VERSION _latest
+  ln -s v$VERSION $PLATFORM/$PROJECT/v$(echo "$VERSION" | sed -E 's/\.[0-9]+$//')
+  ln -s v$VERSION $PLATFORM/$PROJECT/v$(echo "$VERSION" | sed -E 's/\.[0-9]+\.[0-9]+$//')
+
+  rm -rf "$TMPDIR"
+}
+
+_main "$@"

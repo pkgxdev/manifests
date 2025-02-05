@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -eo pipefail
+
+TMPDIR=$(mktemp -d)
+cd "$TMPDIR"
+
+echo '
+await fixup(
+  prefix,
+  { prefixes: deps_prefixes, PKGX_DIR },
+  PKGX_DIR,
+);' >> run-fixup.ts
+

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+img=ghcr.io/pkgxdev/bldbot
+cmd=$1
+shift
+
+eval "$(pkgx mash pkgx/ensure +docker)"
+
+case $cmd in
+build)
+  exec docker run --rm -v $SRCROOT:/work -w /work -e GITHUB_TOKEN $img bin/pkg-build "$@"
+  ;;
+test)
+  exec docker run --rm -v $SRCROOT:/work -w /work -e GITHUB_TOKEN $img bin/pkg-test "$@"
+  ;;
+run)
+  exec docker run \
+    --rm \
+    --volume $SRCROOT:/work \
+    -w /work \
+    -e GITHUB_TOKEN \
+    -e PATH="/work/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin" \
+    -it \
+     $img
+  ;;
+pull)
+  exec docker pull $img
+  ;;
+*)
+  echo "usage: pkg docker [build|test|run|pull]" >&2
+  exit 2
+  ;;
+esac

@@ -1,0 +1,67 @@
+#!/usr/bin/env -S pkgx -q +gum /bin/bash -eo pipefail
+
+SRCROOT="$(cd "$(dirname "$0")"/.. && pwd)"
+PREFIX="$1"
+
+if [[ ! "$PREFIX" == /* ]]; then
+  PREFIX="$PWD/$PREFIX"
+fi
+PREFIX="${PREFIX%/}"
+
+PLATFORM="$(echo "$PREFIX" | sed "s|^$SRCROOT/artifacts/||" | cut -d'/' -f1-2)"
+PROJECT="$(echo "$PREFIX" | sed "s|^$SRCROOT/artifacts/||" | cut -d'/' -f3-)"
+VERSION="$(basename "$PREFIX")"
+
+PROJECT="$(dirname "$PROJECT")"
+
+export AWS_REGION=us-east-1
+
+gum format '# config' \
+  $PREFIX \
+  $PLATFORM \
+  $PROJECT \
+  $VERSION
+
+echo  #spacer
+
+case "$PLATFORM" in
+  Linux/x86_64) DIST_PLATFORM=linux/x86-64;;
+  Darwin/x86_64) DIST_PLATFORM=darwin/x86-64;;
+  Linux/arm64|Linux/aarch64) DIST_PLATFORM=linux/aarch64;;
+  Darwin/arm64) DIST_PLATFORM=darwin/aarch64;;
+esac
+
+eval "$(pkgx mash pkgx/ensure +xz +aws)"
+
+TMPDIR="$(mktemp -d)"
+cd "$TMPDIR"
+echo $PWD
+mkdir -p $PROJECT
+ditto "$PREFIX" $PROJECT/$VERSION
+
+if [[ $PLATFORM == Darwin/* ]]; then
+  # pkgx cannot untar into read only directories on macOS
+  # NOTE the true fix would be to make the dirs writable when
+  # untarring and then make them read only again after
+  find "$PROJECT/$VERSION" -type f -print0 | xargs -0 chmod -w
+else
+  chmod -R -w "$PROJECT/$VERSION"
+fi
+
+gum spin --title 'tar czf' -- tar czf $VERSION.tar.gz *
+aws s3 cp $VERSION.tar.gz s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/$VERSION.tar.gz
+
+rm $VERSION.tar.gz
+gum spin --title 'tar cJf' -- tar cJf $VERSION.tar.xz *
+aws s3 cp $VERSION.tar.xz s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/$VERSION.tar.xz
+
+"$SRCROOT/.github/scripts/generate-versions.ts" v2/$PROJECT/$DIST_PLATFORM > versions.txt
+aws s3 cp versions.txt s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/versions.txt
+
+chmod -R +w .
+cd /
+rm -rf "$TMPDIR"
+
+aws cloudfront create-invalidation \
+  --distribution-id EWF6XUK8J11DP \
+  --paths "/v2/$PROJECT/$DIST_PLATFORM/$VERSION.tar.gz" "/v2/$PROJECT/$DIST_PLATFORM/$VERSION.tar.xz" "/v2/$PROJECT/$DIST_PLATFORM/versions.txt"

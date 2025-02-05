@@ -1,0 +1,95 @@
+name: cd·pkgs
+run-name: cd·pkgs ${{inputs.pkgs}}
+
+on:
+  push:
+    branches:
+      main
+    paths:
+      projects/**/build.ts
+  workflow_dispatch:
+    inputs:
+      pkgs:
+        required: true
+
+env:
+  PKGX_DIST_URL: https://dist.tea.xyz/v2
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.computer.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/plan
+        id: computer
+        with:
+          pkgs: ${{ github.event.inputs.pkgs }}
+
+  bottle:
+    needs: ingest
+    runs-on: ${{ matrix.platform.os }}
+    container: ${{ matrix.platform.container }}
+    name: build ${{ matrix.pkg }} ${{ matrix.platform.tinyname }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      - run: pkg-build ${{ matrix.pkg }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - run: pkg-test
+
+      - name: bottle
+        run: |
+          eval "$(pkgx mash pkgx/ensure +xz)"
+
+          OLDWD="$PWD"
+
+          if [ $(uname) = Darwin ]; then
+            # pkgx cannot untar into read only directories on macOS
+            # NOTE the true fix would be to make the dirs writable when
+            # untarring and then make them read only again after
+            find "$PREFIX" -type f | xargs chmod -w
+          else
+            chmod -R -w "$PREFIX"
+          fi
+
+          cd $(mktemp -d)
+          mkdir -p $PROJECT
+          mv "$PREFIX" $PROJECT
+
+          tar czf $OLDWD/v$VERSION.tar.gz *
+          tar cJf $OLDWD/v$VERSION.tar.xz *
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: s3 sync
+        run: |
+          eval "$(pkgx mash pkgx/ensure +aws)"
+
+          aws s3 cp v$VERSION.tar.gz s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/v$VERSION.tar.gz
+          aws s3 cp v$VERSION.tar.xz s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/v$VERSION.tar.xz
+          .github/scripts/generate-versions.ts v2/$PROJECT/$DIST_PLATFORM > versions.txt
+          aws s3 cp versions.txt s3://dist.tea.xyz/v2/$PROJECT/$DIST_PLATFORM/versions.txt
+
+      - name: cf invalidate
+        run: |
+          pkgx mash pkgx/ensure \
+            aws cloudfront create-invalidation \
+              --distribution-id EWF6XUK8J11DP \
+              --paths \
+              /v2/$PROJECT/$DIST_PLATFORM/versions.txt \
+              /v2/$PROJECT/$DIST_PLATFORM/v$VERSION.tar.gz \
+              /v2/$PROJECT/$DIST_PLATFORM/v$VERSION.tar.xz

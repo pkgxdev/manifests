@@ -1,0 +1,77 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if [[ -z "$1" ]]; then
+  echo 'usage: pkg [btcd] <pkgspec>' >&2
+  exit 2
+fi
+
+cmd="$1"
+shift
+
+SRCROOT="$(cd "$(dirname "$0")/.." && pwd)"
+B="$SRCROOT/bin"
+
+# Enable verbose mode if 'v' is in the command
+[[ "$cmd" =~ v ]] && export VERBOSE=1
+
+# If a direct pkg command exists, run it
+if [ -x "$B/pkg-$cmd" ]; then
+  case "$cmd" in
+  build|test|edit)
+    exec "$B/pkg-$cmd" ${@:-$("$B/pkg-status")}
+    ;;
+  *)
+    exec "$B/pkg-$cmd" "$@"
+  esac
+fi
+
+# Handle 'convert' (c) command
+if [[ "$cmd" =~ c ]]; then
+  "$B/pkg-convert"
+  [[ "$cmd" == "c" ]] && exit
+fi
+
+# Handle 'edit' (e) command
+if [[ "$cmd" =~ e ]]; then
+  "$B/pkg-edit" ${@:-$("$B"/pkg-status)}
+  [[ "$cmd" == "e" ]] && exit
+fi
+
+# Handle 'docker' (d) commands
+if [[ "$cmd" =~ d ]]; then
+  if [[ "$cmd" =~ a ]]; then
+    for pkg in $("$B/pkg-ls"); do
+      pkgx gum format "# $pkg"
+      if [[ "$cmd" =~ b ]] && [ ! -d "$SRCROOT/artifacts/Linux/x86_64/$pkg" ]; then
+        "$B/pkg-docker" build $pkg
+      fi
+      [[ "$cmd" =~ t ]] && "$B/pkg-docker" test $pkg
+    done
+  else
+    [[ "$cmd" =~ b ]] && "$B/pkg-docker" build ${@:-$("$B/pkg-status")}
+    [[ "$cmd" =~ t ]] && "$B/pkg-docker" test ${@:-$("$B/pkg-status")}
+  fi
+  exit 0
+fi
+
+if [[ -d "$HOME/.pkgx/cli.github.com" && $(gh auth status >/dev/null 2>&1) ]]; then
+  export GH_TOKEN="$(gh auth token)"
+fi
+
+if [[ "$cmd" =~ a ]]; then
+  for pkg in $("$B/pkg-ls"); do
+    pkgx gum format "# $pkg"
+    if [[ "$cmd" =~ b ]] && [ ! -d "$SRCROOT/artifacts/$(uname)/$(uname -m)/$pkg" ] || [[ "$cmd" =~ A ]]; then
+      "$B/pkg-build" $pkg
+    fi
+    [[ "$cmd" =~ t ]] && "$B/pkg-test" $pkg
+  done
+else
+  [[ "$cmd" =~ b ]] && "$B/pkg-build" ${@:-$("$B/pkg-status")}
+  [[ "$cmd" =~ t ]] && "$B/pkg-test" ${@:-$("$B/pkg-status")}
+fi
+
+exit 0
+#TODO error if invalid command!

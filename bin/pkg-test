@@ -1,0 +1,166 @@
+#!/bin/bash
+
+set -eo pipefail
+
+SRCROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PKGSPEC="$1"
+PLATFORM="$(uname)/$(uname -m)"
+deno="$(pkgx +deno^2 -- which deno)"
+
+export PKGX_PANTRY_DIR="$SRCROOT/artifacts/$(uname)/pantry"
+export PKGX_DIST_URL="https://dist.pkgx.dev/v2"
+
+if [ "$PKGSPEC" ]; then
+  if [[ $PKGSPEC == *\* ]]; then
+    PROJECT="${PKGSPEC%\*}"
+    CONSTRAINT='*'
+  elif [[ $PKGSPEC =~ ^([^@^~=]+)([@^~=].*)$ ]]; then
+    PROJECT="${BASH_REMATCH[1]}"
+    CONSTRAINT="${BASH_REMATCH[2]}"
+  elif [ -f "$SRCROOT/projects/$PKGSPEC/package.yml" ]; then
+    PROJECT="$PKGSPEC"
+    CONSTRAINT='*'
+  else
+    echo "pkgspec invalid" >&2
+    exit 1
+  fi
+  for x in "$SRCROOT/artifacts/$PLATFORM/$PROJECT/"v*; do
+    PREFIX="$x"
+  done
+elif [ ! "$PROJECT" -o ! "$PREFIX" ]; then
+  echo "Usage: $0 <project>"
+  exit 1
+fi
+
+case $(uname) in
+Linux)
+  TMPDIR="$(mktemp -d -t pkgx.XXXXXX)"
+  cd "$TMPDIR"
+  cp -r $SRCROOT/brewkit/toolchain/linux bin
+  cp /usr/local/bin/pkgx bin
+  # these must be symlinks or they don’t behave like eg. gcc
+  ln -s "$(pkgx -q +llvm.org -- which clang)" bin/cc
+  ln -s "$(pkgx -q +llvm.org -- which clang)" bin/gcc
+  ln -s "$(pkgx -q +llvm.org -- which clang++)" bin/c++
+  ln -s "$(pkgx -q +llvm.org -- which clang++)" bin/g++
+  ln -s "$(pkgx -q +llvm.org -- which clang-cpp)" bin/cpp
+  ln -s "$(pkgx -q +llvm.org -- which ld.lld)" bin/ld
+  ln -s "$(pkgx -q +llvm.org -- which llvm-ar)" bin/ar
+  ln -s "$(pkgx -q +llvm.org -- which llvm-as)" bin/as
+  ln -s "$(pkgx -q +llvm.org -- which llvm-nm)" bin/nm
+  ln -s "$(pkgx -q +llvm.org -- which llvm-strings)" bin/strings
+  deno_exec="$deno"
+  ;;
+Darwin)
+  TMPDIR="$(mktemp -d  /tmp/pkgx.XXXXXX)"
+  cd "$(realpath "$TMPDIR")"  # resolves the symlink and stops deno complaining about writes to a slightly different directory
+  cp -r "$SRCROOT/brewkit/toolchain/darwin" bin
+  cp /usr/local/bin/pkgx bin
+
+    cat <<EoSB > sandbox.sb
+(version 1)
+(allow default)
+(deny file-write*
+  (subpath "/opt/homebrew")
+  (subpath "$SRCROOT")
+  (subpath "/usr/local"))
+(deny file-read*
+  (subpath "/opt/homebrew")
+  (subpath "/usr/local"))
+(deny process-exec*
+  (subpath "/opt/homebrew")
+  (subpath "/usr/local"))
+EoSB
+  if [ -f $SRCROOT/projects/$PROJECT/sandbox.sb ]; then
+    cat $SRCROOT/projects/$PROJECT/sandbox.sb >> sandbox.sb
+  fi
+  if [ -f $SRCROOT/projects/$PROJECT/sandbox.sb.in ]; then
+    sed "s|{{prefix}}|$PREFIX|g" $SRCROOT/projects/$PROJECT/sandbox.sb.in >> sandbox.sb
+  fi
+
+  deno_exec="sandbox-exec -f "$PWD/sandbox.sb" $deno"
+esac
+
+cat << EoTS > run-test.ts
+import test_runner from '$SRCROOT/projects/$PROJECT/test.ts';
+import { Path, SemVer } from 'brewkit';
+const prefix = new Path(Deno.args[0]);
+const version = new SemVer(prefix.basename());
+await test_runner({prefix, version});
+EoTS
+
+echo "{\"imports\": {\"brewkit\": \"$SRCROOT/brewkit/mod.ts\"}}" > deno.json
+cp "$SRCROOT/deno.lock" .
+
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin"
+
+if [ $(uname) != "Darwin" ]; then
+  export PATH="$PWD/bin:$PATH"
+fi
+
+if [ -d "$SRCROOT/artifacts/$PLATFORM" ]; then
+  cp -aR "$SRCROOT/artifacts/$PLATFORM" deps
+fi
+
+mkdir -p "$SRCROOT/artifacts/$(uname)/pantry"
+cd "$SRCROOT/artifacts/$(uname)/pantry"
+ln -sf ../../pantry/projects
+cd -
+
+env_out="$(PKGX_DIR="$SRCROOT/artifacts/$PLATFORM" /usr/local/bin/pkgx +$PROJECT)"
+set -a
+eval "$env_out"
+set +a
+
+if [ $(uname) = "Darwin" ]; then
+  # we need our cc/ld to be first because they add our RPATH linkage flags
+  # and without those nothing compiles/links. This isn’t required on Linux
+  # since Linux doesn’t have a ”id” system.
+  export PATH="$PWD/bin:$PATH"
+fi
+
+if [ "$GITHUB_ACTIONS" ]; then
+  echo "::group::env"
+  env
+  echo "::endgroup::"
+fi
+
+mkdir stage
+cd stage
+
+for x in "$SRCROOT"/projects/$PROJECT/*; do
+  if [[ "$x" = */package.yml ]]; then
+    true
+  elif [[ "$x" == *.ts ]]; then
+    true
+  elif [ -f "$x" ]; then
+    cp "$x" .
+  fi
+done
+
+allow_env=()
+allow_rw=()
+for key in PWD TMP TEMP TMPDIR TEMPDIR; do
+  if [ -n "${!key}" ]; then
+    allow_env+=("$key")
+    allow_rw+=("${!key}")
+  fi
+done
+allow_env+=("HOME")
+allow_rw=$(IFS=,; echo "${allow_rw[*]}")
+allow_env=$(IFS=,; echo "${allow_env[*]}")
+
+
+$deno_exec \
+  run \
+  --quiet \
+  --allow-read="$allow_rw" \
+  --allow-run \
+  --allow-env="${allow_env}" \
+  --allow-write="${allow_rw}" \
+  --allow-net \
+  --ext=ts \
+  ../run-test.ts \
+  "$PREFIX"
+
+rm -rf "$TMPDIR"

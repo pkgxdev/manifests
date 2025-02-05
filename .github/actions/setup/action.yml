@@ -1,0 +1,22 @@
+runs:
+  using: composite
+  steps:
+    - run: |
+        case $(cat /etc/debian_version 2>/dev/null) in
+        buster/sid|10.*)
+          # $HOME is different from the docker image and in github actions
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
+          ;;
+        *)
+          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
+          find brewkit -name \*.ts | xargs pkgx deno^2 cache
+          ;;
+        esac
+      shell: bash
+
+    - run: |
+        cd $GITHUB_ACTION_PATH/../../..
+        bin/pkg-convert
+        echo "$PWD/bin" >> $GITHUB_PATH
+      shell: bash

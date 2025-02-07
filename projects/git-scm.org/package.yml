@@ -1,0 +1,18 @@
+repository:
+  https://github.com/git/git
+
+name:
+  Git
+
+# we ignore the other programs as they are mostly misplaced in `bin` rather
+# than libexec which is where all the other `git-foo` programs are.
+programs:
+  - git
+
+# indeed macOS has no deps, notably CommonCrypto instead of OpenSSL
+linux:
+  dependencies:
+    curl.se>=5
+    zlib.net^1
+#    gnu.org/gettext^0.21
+#    libexpat.github.io

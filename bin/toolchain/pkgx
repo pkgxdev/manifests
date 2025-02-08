@@ -2,7 +2,7 @@
 
 #FIXME! embed the cert for dist.pkgx.dev in `pkgx^2`
 if [ $(uname) = Linux ]; then
-  export SSL_CERT_FILE="$HOME/.pkgx/curl.se/ca-certs/v*/ssl/cert.pem"
+  export SSL_CERT_FILE="$HOME"/.pkgx/curl.se/ca-certs/v\*/ssl/cert.pem
 fi
 
 exec /usr/local/bin/pkgx "$@"

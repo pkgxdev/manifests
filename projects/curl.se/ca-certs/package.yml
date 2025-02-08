@@ -1,0 +1,6 @@
+homepage:
+  https://curl.se/docs/caextract.html
+description:
+  Certificates for authenticating and verifying secure TLS/SSL connections
+name:
+  CA Certficates

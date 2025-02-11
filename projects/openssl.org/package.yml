@@ -1,0 +1,17 @@
+name:
+  OpenSSL
+
+repository:
+  https://github.com/openssl/openssl
+
+linux:
+  companions:
+    - curl.se/ca-certs
+
+programs:
+  - bin/openssl
+  - bin/c_rehash
+
+limited:
+  - "@1.1.1"
+  - "^3"

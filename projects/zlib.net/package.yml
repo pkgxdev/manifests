@@ -1,0 +1,9 @@
+name:
+  zlib
+
+repository:
+  https://github.com/madler/zlib
+
+platforms:
+  - darwin
+  - linux

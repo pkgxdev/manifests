@@ -1,0 +1,23 @@
+name:
+  OpenSSL
+
+repository:
+  https://github.com/openssl/openssl
+
+linux:
+  dependencies:
+    curl.se/ca-certs: "*"
+
+# TODO should be possible to use the system ca-certs (like on macOS)
+windows:
+  dependencies:
+    curl.se/ca-certs: "*"
+
+programs:
+  - bin/openssl
+  - bin/c_rehash
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64

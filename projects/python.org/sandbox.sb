@@ -1,0 +1,3 @@
+(deny process-exec*
+  (literal "/usr/bin/pip3")
+  (literal "/usr/bin/python3"))

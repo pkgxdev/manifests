@@ -1,0 +1,40 @@
+name:
+  Python
+
+repository:
+  https://github.com/python/cpython
+
+# companions:
+#   - python.org/pip
+
+dependencies:
+  openssl.org: ^3
+  tukaani.org/xz: ^5
+
+linux:
+  dependencies:
+    github.com/libexpat: ^2
+    sourceware.org/bzip2: ^1
+    gnu.org/readline: ^7,^8
+    invisible-island.net/ncurses: ^6
+    zlib.net: ^1
+    tukaani.org/xz: ^5
+    sqlite.org: ^3
+    sourceware.org/libffi: ^3
+  # TODO
+  # bytereef.org/mpdecimal: 2
+  # tcl-lang.org: 8
+programs:
+  - bin/python
+  - bin/python-config
+  - bin/pydoc
+#TODO
+#- bin/python{{ version.major }}
+#- bin/python{{ version.marketing }}
+
+platforms:
+  - darwin
+  - linux
+
+knobs:
+  - side-by-side

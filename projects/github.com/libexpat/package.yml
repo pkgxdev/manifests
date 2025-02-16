@@ -1,0 +1,12 @@
+name:
+  Expat
+
+repository:
+  https://github.com/libexpat/libexpat
+
+programs:
+  - bin/xmlwf
+
+platforms:
+  - darwin
+  - linux

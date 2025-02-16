@@ -1,0 +1,22 @@
+name:
+  Bzip2
+
+repository:
+  https://gitlab.com/federicomenaquintero/bzip2
+
+programs:
+  - bin/bunzip2
+  - bin/bzcat
+  - bin/bzcmp
+  - bin/bzdiff
+  - bin/bzgrep
+  - bin/bzegrep
+  - bin/bzfgrep
+  - bin/bzip2
+  - bin/bzip2recover
+  - bin/bzmore
+  - bin/bzless
+
+platforms:
+  - darwin
+  - linux

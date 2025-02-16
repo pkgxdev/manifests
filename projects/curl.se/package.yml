@@ -1,0 +1,23 @@
+repository:
+  https://github.com/curl/curl
+
+name:
+  cURL
+
+linux:
+  dependencies:
+    openssl.org: ^3
+    zlib.net: ^1.2.11
+
+windows:
+  dependencies:
+    zlib.net: ^1.2.11
+
+programs:
+  - bin/curl
+  - bin/curl-config
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64

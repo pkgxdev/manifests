@@ -1,0 +1,47 @@
+name:
+  LLVM
+
+repository:
+  https://github.com/llvm/llvm-project
+
+programs:
+  - bin/clang
+  - bin/clang++
+  - bin/clang-cl
+  - bin/clang-cpp
+  - bin/lld
+  - bin/ld.lld
+  - bin/ld64.lld
+  - bin/lld-link
+  - bin/wasm-ld
+  - bin/llvm-ar
+  - bin/llvm-as
+  - bin/llvm-cov
+  - bin/llvm-nm
+  - bin/llvm-objdump
+  - bin/llvm-profdata
+  - bin/llvm-readobj
+  - bin/llvm-size
+  - bin/llvm-strings
+  # bintools symlinks
+  - bin/ar
+  - bin/as
+  - bin/cc
+  - bin/c++
+  - bin/objdump
+  - bin/nm
+  - bin/strings
+
+darwin:
+  programs:
+    - bin/llvm-dwarfdump
+
+linux:
+  dependencies:
+    zlib.net: ^1
+    gnu.org/gcc/libstdcxx: ^14
+
+# works on all platforms but is very slow to build
+# and we only *need* it on Linux
+platforms:
+  - linux/x86-64

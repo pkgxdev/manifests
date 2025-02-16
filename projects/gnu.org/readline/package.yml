@@ -1,0 +1,16 @@
+name:
+  GNU Readline
+
+homepage:
+  https://www.gnu.org/software/readline/
+
+repository:
+  https://git.savannah.gnu.org/cgit/readline.git/
+
+linux:
+  dependencies:
+    invisible-island.net/ncurses: ^6
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

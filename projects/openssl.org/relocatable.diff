@@ -1,0 +1,47 @@
+diff --git i/crypto/x509/x509_def.c w/crypto/x509/x509_def.c
+index 7d5b642..f65fa3c 100644
+--- i/crypto/x509/x509_def.c
++++ w/crypto/x509/x509_def.c
+@@ -95,13 +95,41 @@ const char *X509_get_default_cert_dir(void)
+ #endif
+ }
+
++#if !defined (_WIN32)
++static pthread_once_t pkgx_cert_file_once = PTHREAD_ONCE_INIT;
++static const char *pkgx_cert_file = X509_CERT_FILE;
++
++#ifdef __linux__
++#define __USE_GNU
++#endif
++#include <dlfcn.h>    /* dladdr */
++#include <libgen.h>   /* dirname */
++
++static void init_pkgx_cert_file(void) {
++    Dl_info info;
++    if (!dladdr(X509_get_default_cert_file, &info)) return;
++    const char *openssl_prefix = dirname(dirname(info.dli_fname));
++    #define PEM_FILE_PARTIAL_PATH "/share/ca-certs.pem"
++    char *cert_file = malloc(strlen(openssl_prefix) + sizeof(PEM_FILE_PARTIAL_PATH));
++    if (!cert_file) return;
++    strcpy(cert_file, openssl_prefix);
++    strcat(cert_file, PEM_FILE_PARTIAL_PATH);
++    if (access(cert_file, R_OK) == 0) {
++        pkgx_cert_file = cert_file;
++    } else {
++        free(cert_file);
++    }
++}
++#endif
++
+ const char *X509_get_default_cert_file(void)
+ {
+ #if defined (_WIN32)
+     RUN_ONCE(&openssldir_setup_init, do_openssldir_setup);
+     return x509_cert_fileptr;
+ #else
+-    return X509_CERT_FILE;
++    pthread_once(&pkgx_cert_file_once, init_pkgx_cert_file);
++    return pkgx_cert_file;
+ #endif
+ }
+

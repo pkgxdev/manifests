@@ -1,0 +1,10 @@
+name:
+  GNU Make
+
+programs:
+  - bin/make
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64

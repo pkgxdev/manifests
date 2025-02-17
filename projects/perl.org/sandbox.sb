@@ -1,0 +1,2 @@
+(deny process-exec* (subpath "/usr/bin/perl*"))
+(deny file-read* (subpath "/System/Library/Perl/*"))

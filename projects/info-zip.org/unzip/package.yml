@@ -1,0 +1,16 @@
+name:
+  unzip
+
+homepage:
+  https://info-zip.org
+
+programs:
+  - bin/unzip
+  - bin/funzip
+  - bin/unzipsfx
+  - bin/zipgrep
+  - bin/zipinfo
+
+platforms:
+  - darwin
+  - linux

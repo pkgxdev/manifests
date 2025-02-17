@@ -1,0 +1,44 @@
+name: Perl
+
+repository:
+  https://github.com/perl/perl5
+
+programs:
+  - bin/perl
+  - bin/corelist
+  - bin/cpan
+  - bin/enc2xs
+  - bin/encguess
+  - bin/h2ph
+  - bin/h2xs
+  - bin/instmodsh
+  - bin/json_pp
+  - bin/libnetcfg
+  - bin/perlbug
+  - bin/perldoc
+  - bin/perlivp
+  - bin/perlthanks
+  - bin/piconv
+  - bin/pl2pm
+  - bin/pod2html
+  - bin/pod2man
+  - bin/pod2text
+  - bin/pod2usage
+  - bin/podchecker
+  - bin/prove
+  - bin/ptar
+  - bin/ptardiff
+  - bin/ptargrep
+  - bin/shasum
+  - bin/splain
+  - bin/streamzip
+  - bin/xsubpp
+  - bin/zipdetails
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64
+
+knobs:
+  - side-by-side

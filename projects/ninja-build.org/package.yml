@@ -1,0 +1,12 @@
+name:
+  Ninja
+
+programs:
+  - bin/ninja
+
+repository:
+  https://github.com/ninja-build/ninja
+
+platforms:
+  - darwin
+  - linux

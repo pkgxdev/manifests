@@ -1,0 +1,15 @@
+name:
+  GNU m4
+
+repository:
+  https://git.savannah.gnu.org/r/m4.git/
+
+homepage:
+  https://www.gnu.org/software/m4/
+
+programs:
+  - bin/m4
+
+platforms:
+  - darwin
+  - linux

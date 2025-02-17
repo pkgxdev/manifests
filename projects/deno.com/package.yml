@@ -1,0 +1,17 @@
+name:
+  deno
+
+repository:
+  https://github.com/denoland/deno
+
+programs:
+  - bin/deno
+
+linux:
+  companions:
+    - info-zip.org/unzip
+
+platforms:
+  - darwin
+  - linux
+  - windows

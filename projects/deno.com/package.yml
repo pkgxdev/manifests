@@ -1,0 +1,24 @@
+name:
+  Deno
+
+repository:
+  https://github.com/denoland/deno
+
+programs:
+  - bin/deno
+
+linux:
+  companions:
+    - info-zip.org/unzip
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64
+
+deprecated-names:
+  - deno.land
+
+# TODO compile deno ourselves and make this the default
+env:
+  DENO_INSTALL_ROOT: "{{home}}/.local/bin"

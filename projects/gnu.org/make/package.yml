@@ -1,0 +1,9 @@
+name:
+  GNU Make
+
+programs:
+  - bin/make
+
+platforms:
+  - darwin
+  - linux

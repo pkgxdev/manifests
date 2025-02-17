@@ -1,0 +1,21 @@
+repository:
+  https://github.com/Kitware/CMake
+
+programs:
+  - bin/cmake
+  - bin/cpack
+  - bin/ctest
+
+darwin:
+  programs:
+    - bin/ccmake
+
+linux:
+  dependencies:
+    curl.se: ">=5"
+    zlib.net: ^1
+    sourceware.org/bzip2: ^1
+
+platforms:
+  - linux
+  - darwin

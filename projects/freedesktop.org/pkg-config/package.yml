@@ -1,0 +1,15 @@
+name:
+  pkg-config
+
+repository:
+  https://gitlab.freedesktop.org/pkg-config/pkg-config
+
+homepage:
+  https://www.freedesktop.org/wiki/Software/pkg-config/
+
+programs:
+  - bin/pkg-config
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

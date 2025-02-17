@@ -1,0 +1,19 @@
+repository:
+  https://github.com/Kitware/CMake
+
+programs:
+  - bin/cmake
+  - bin/cpack
+  - bin/ctest
+
+darwin:
+  programs:
+    - bin/ccmake
+
+# NOTE that we choose to vendor all dependencies to prevent unintended leakage
+# of libraries into the projects that cmake builds
+
+platforms:
+  - linux/x86-64
+  - darwin/aarch64
+  - windows/x86-64

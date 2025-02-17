@@ -1,0 +1,12 @@
+name:
+  jq
+
+repository:
+  https://github.com/stedolan/jq
+
+programs:
+  - bin/jq
+
+platforms:
+  - darwin
+  - linux

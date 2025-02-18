@@ -1,0 +1,13 @@
+name:
+  GNU Libtool
+
+homepage:
+  https://www.gnu.org/software/libtool/
+
+programs:
+  - bin/libtool
+  - bin/libtoolize
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

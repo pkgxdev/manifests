@@ -1,0 +1,12 @@
+name:
+  AWS CLI
+
+homepage:
+  https://aws.amazon.com/cli
+
+programs:
+  - bin/aws
+
+platforms:
+  - darwin
+  - linux

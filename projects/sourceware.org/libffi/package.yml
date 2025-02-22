@@ -1,0 +1,9 @@
+name:
+  libffi
+
+repository:
+  https://github.com/libffi/libffi
+
+platforms:
+  - darwin
+  - linux

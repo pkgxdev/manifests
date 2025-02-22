@@ -1,0 +1,17 @@
+name:
+  SQLite
+
+repository:
+  https://github.com/sqlite/sqlite
+
+linux:
+  dependencies:
+    zlib.net: ^1
+    gnu.org/readline: ^8
+
+programs:
+  - bin/sqlite3
+
+platforms:
+  - darwin
+  - linux

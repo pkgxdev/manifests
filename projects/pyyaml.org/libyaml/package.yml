@@ -1,0 +1,9 @@
+name:
+  PyYAML
+
+repository:
+  https://github.com/yaml/libyaml
+
+platforms:
+  - darwin
+  - linux

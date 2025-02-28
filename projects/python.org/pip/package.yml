@@ -1,0 +1,12 @@
+name:
+  pip
+
+programs:
+  - bin/pip
+
+companions:
+  - python.org
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

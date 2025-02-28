@@ -1,0 +1,8 @@
+name:
+  pip
+
+programs:
+  - bin/pip
+
+companions:
+  - python.org

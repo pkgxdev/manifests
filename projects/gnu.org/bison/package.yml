@@ -1,0 +1,12 @@
+name:
+  GNU Bison
+
+homepage:
+  https://www.gnu.org/software/bison/
+
+repository:
+  https://github.com/akimd/bison
+
+programs:
+  - bin/bison
+  - bin/yacc

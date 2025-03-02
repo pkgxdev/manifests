@@ -1,0 +1,9 @@
+name:
+  GMP
+
+homepage:
+  https://gmplib.org
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - projects/**/*.ts
+      - .github/workflows/ci.yml
 
 concurrency:
   group: ci/${{ github.event.pull_request.head.ref }}
@@ -21,12 +22,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/plan
         id: compute
+        with:
+          default: zlib.net
 
   validate:
     needs: plan
     runs-on: ${{ matrix.platform.os }}
     container: ${{ matrix.platform.container }}
-    name: ${{ matrix.pkg }} ${{ matrix.platform.tinyname }}
+    name: ${{ matrix.pkg }} (${{ matrix.platform.tinyname }})
     strategy:
       fail-fast: false
       matrix:
@@ -38,5 +41,13 @@ jobs:
       - run: pkg-build ${{ matrix.pkg }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
+        if: ${{ runner.os != 'Windows'}}
+
+      - run: pkg-build ${{ matrix.pkg }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        if: ${{ runner.os == 'Windows'}}
+        shell: pwsh
 
       - run: pkg-test
+        if: ${{ runner.os != 'Windows' }}

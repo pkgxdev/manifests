@@ -105,13 +105,27 @@ EoSB
     if [ -f "$SRCROOT/projects/$PROJECT/sandbox.sb" ]; then
       cat "$SRCROOT/projects/$PROJECT/sandbox.sb" >> sandbox.sb
     fi
-    if [ -f $SRCROOT/projects/$PROJECT/sandbox.sb.in ]; then
+    if [ -f "$SRCROOT/projects/$PROJECT/sandbox.sb.in" ]; then
       sed "s|{{prefix}}|$PREFIX|g" $SRCROOT/projects/$PROJECT/sandbox.sb.in >> sandbox.sb
     fi
 
     deno_exec="sandbox-exec -f ./sandbox.sb $deno"
     jq="$(which jq)"
     export MACOSX_DEPLOYMENT_TARGET=11.0
+    ;;
+
+  MINGW64_NT*)
+    TMPDIR="$(mktemp -d)"
+    cd "$TMPDIR"
+    mkdir bin
+    cp "$(which pkgx)" bin
+    deno_exec="$deno"
+    jq="pkgx -q jq"
+    ;;
+
+  *)
+    echo "unsupported platform" &>2
+    exit 1
     ;;
   esac
 

@@ -29,6 +29,8 @@ case "$PLATFORM" in
   Darwin/x86_64) DIST_PLATFORM=darwin/x86-64;;
   Linux/arm64|Linux/aarch64) DIST_PLATFORM=linux/aarch64;;
   Darwin/arm64) DIST_PLATFORM=darwin/aarch64;;
+  Windows/x86_64) DIST_PLATFORM=windows/x86-64;;
+  *) echo "Unknown platform: $PLATFORM"; exit 1;;
 esac
 
 eval "$(pkgx mash pkgx/ensure +xz +aws)"

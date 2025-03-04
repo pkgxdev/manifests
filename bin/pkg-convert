@@ -6,13 +6,17 @@ SRCROOT := $(abspath $(MAKEFILE_DIR)/..)
 PKG_FILES := $(shell find $(SRCROOT)/projects -name package.yml)
 OUTPUTS := $(PKG_FILES:$(SRCROOT)/projects/%=$(SRCROOT)/artifacts/pantry/projects/%)
 
+ifeq ($(OS),Windows_NT)
+	DENO := deno run -RW
+endif
+
 # Default target
 all: $(OUTPUTS)
 
 # Rule to process each package.yml file
 $(SRCROOT)/artifacts/pantry/projects/%: $(SRCROOT)/projects/%
 	@mkdir -p $(dir $@)
-	$(SRCROOT)/brewkit/scripts/convert-package.yml.ts "$<" > "$@"
+	$(DENO) $(SRCROOT)/brewkit/scripts/convert-package.yml.ts "$<" > "$@"
 
 debug:
 	@echo "PKG_FILES: $(PKG_FILES)"

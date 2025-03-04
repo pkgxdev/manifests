@@ -22,7 +22,7 @@ const fs = require("fs");
 ///////////////////////////////////////////////////////////////////////
 
 async function get_config() {
-  return { platforms: ["linux/x86-64", "darwin/aarch64"] };
+  return { platforms: ["linux/x86-64", "darwin/aarch64", "windows/x86-64"] };
 }
 
 function get_matrix(platform) {
@@ -52,6 +52,12 @@ function get_matrix(platform) {
         os: ["self-hosted", "linux", "ARM64"],
         name,
         tinyname: "*nix·ARM64",
+      };
+    case "windows/x86-64":
+      return {
+        os: "windows-latest",
+        name,
+        tinyname: "win64",
       };
   }
 }

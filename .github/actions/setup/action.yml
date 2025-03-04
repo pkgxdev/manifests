@@ -1,22 +1,41 @@
 runs:
   using: composite
   steps:
-    - run: |
-        case $(cat /etc/debian_version 2>/dev/null) in
-        buster/sid|10.*)
-          # $HOME is different from the docker image and in github actions
-          ln -s /root/.pkgx $HOME
-          ln -s /root/.cache $HOME
-          ;;
-        *)
-          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
-          find brewkit -name \*.ts | xargs pkgx deno^2 cache
-          ;;
-        esac
-      shell: bash
+    - uses: denoland/setup-deno@v2
+      if: runner.os == 'Windows'
 
     - run: |
-        cd $GITHUB_ACTION_PATH/../../..
-        bin/pkg-convert
+        "$PWD\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+        git fetch origin pkgx
+        git checkout FETCH_HEAD -- pkgx.exe
+        Move-Item -Path pkgx.exe -Destination bin
+
+        Get-ChildItem -Path brewkit -Recurse -Filter *.ts | ForEach-Object { deno cache $_.FullName }
+
+        choco install make -y
+      shell: pwsh
+      if: runner.os == 'Windows'
+
+    - run: |
         echo "$PWD/bin" >> $GITHUB_PATH
+
+        case $(uname) in
+        Linux)
+          # $HOME is different in the docker image vs. github actions
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
+          ./bin/pkg-convert
+          ;;
+        Darwin)
+          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
+          find brewkit -name \*.ts | xargs pkgx deno^2 cache
+          ./bin/pkg-convert
+          ;;
+        *)
+          make -f ./bin/pkg-convert
+          ;;
+        esac
+
+
       shell: bash

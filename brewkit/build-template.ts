@@ -27,7 +27,8 @@ if (Deno.env.get("GITHUB_ACTIONS")) {
   console.log("::group::build");
 }
 
-const deps_prefixes = (Deno.env.get("PKGS") || "").split(":").compact(Path.abs);
+const SEP = Deno.build.os == "windows" ? ";" : ":";
+const deps_prefixes = (Deno.env.get("PKGS") || "").split(SEP).compact(Path.abs);
 const deps = deps_prefixes.reduce((acc, prefix) => {
   const version = new SemVer(prefix.basename());
   const project = prefix.parent().relative({ to: PKGX_DIR });

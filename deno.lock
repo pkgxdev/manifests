@@ -4,13 +4,15 @@
     "jsr:@std/assert@1": "1.0.11",
     "jsr:@std/bytes@^1.0.5": "1.0.5",
     "jsr:@std/crypto@1": "1.0.3",
+    "jsr:@std/encoding@1": "1.0.5",
     "jsr:@std/fs@1": "1.0.11",
     "jsr:@std/internal@^1.0.5": "1.0.5",
     "jsr:@std/io@0.225": "0.225.2",
     "jsr:@std/path@1": "1.0.8",
     "jsr:@std/path@^1.0.8": "1.0.8",
     "jsr:@std/yaml@1": "1.0.5",
-    "npm:@aws-sdk/client-s3@3.743.0": "3.743.0"
+    "npm:@aws-sdk/client-s3@3.743.0": "3.743.0",
+    "npm:@types/node@*": "22.5.4"
   },
   "jsr": {
     "@std/assert@1.0.11": {
@@ -24,6 +26,9 @@
     },
     "@std/crypto@1.0.3": {
       "integrity": "a2a32f51ddef632d299e3879cd027c630dcd4d1d9a5285d6e6788072f4e51e7f"
+    },
+    "@std/encoding@1.0.5": {
+      "integrity": "ecf363d4fc25bd85bd915ff6733a7e79b67e0e7806334af15f4645c569fefc04"
     },
     "@std/fs@1.0.11": {
       "integrity": "ba674672693340c5ebdd018b4fe1af46cb08741f42b4c538154e97d217b55bdd",
@@ -1003,6 +1008,12 @@
         "tslib"
       ]
     },
+    "@types/node@22.5.4": {
+      "integrity": "sha512-FDuKUJQm/ju9fT/SeX/6+gBzoPzlVCzfzmGkwKvRHQVxi4BntVbyIwf6a4Xn62mrvndLiml6z/UBXIdEVjQLXg==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "bowser@2.11.0": {
       "integrity": "sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA=="
     },
@@ -1017,6 +1028,9 @@
     },
     "tslib@2.8.1": {
       "integrity": "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="
+    },
+    "undici-types@6.19.8": {
+      "integrity": "sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw=="
     },
     "uuid@9.0.1": {
       "integrity": "sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA=="
@@ -1033,6 +1047,41 @@
     "https://deno.land/x/libpkgx@v0.20.3/src/utils/semver.ts": "da22a0e0cf74de792cc4d44c01ec5b767463816c8abb4b5fb86583ccda573298",
     "https://deno.land/x/outdent@v0.8.0/mod.ts": "72630e680dcc36d5ae556fbff6900b12706c81a6fd592345fc98bcc0878fb3ca",
     "https://deno.land/x/outdent@v0.8.0/src/index.ts": "6dc3df4108d5d6fedcdb974844d321037ca81eaaa16be6073235ff3268841a22",
-    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/semver.ts": "da22a0e0cf74de792cc4d44c01ec5b767463816c8abb4b5fb86583ccda573298"
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/mod.ts": "14a69905ffad8064444c02d146008efeb6a0ddf0fe543483839af18e01684f5a",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/deps.ts": "f725c174d63a5c613387afa229046aafaedfd9eb59b07acb7ab8f6d503db13c9",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useCache.ts": "9f3cc576fabae2caa6aedbf00ab12a59c732be1315471e5a475fef496c1e35ae",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useCellar.ts": "c1e264fcb732423734f8c113fc7cb80c97befe8f13ed9d24906328bc5526c72d",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useConfig.ts": "d5a02ee7a191fb4a2c3cd1721690ab6cf0338c9680847a9e9c4a6c9ea94df025",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useDownload.ts": "3f9133486008146809508783b977e3480d0a43238ace27f78565fb9679aa9906",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useFetch.ts": "ecf29342210b8eceed216e3bb73fcc7ea5b3ea5059686cf344ed190ca42ff682",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useInventory.ts": "f459d819ab676a7e3786522d856b7670e994e4a755b0d1609b53c8b4ebe0c959",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useMoustaches.ts": "e9166ddace759315782be0f570a4cd63c78e3b85592d59b75ddd33a0e401aa6b",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useOffLicense.ts": "1c41ef6882512b67a47fcd1d1c0ce459906d6981a59f6be86d982594a7c26058",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/usePantry.ts": "113f3ac7cb6565425eebc7f1bd1ee52217f074865b46b452db79cc72d82e4d4a",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useShellEnv.ts": "ae2388d3f15d2e03435df23a8392ace21d3d4f0c83b2575a9670ab7badc389c3",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useSync.ts": "ea605a0eaa43ab9988d36dd6150e16dd911c4be45b7b0f2add6b236636bd517c",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/hooks/useSyncCache.ts": "30891e9d923f2c2b28f1ba220923221195b8261a4aeea18ef2676d93bd5da10d",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/plumbing/hydrate.ts": "c75f151ed307532ce9c2bf62c61e6478bb1132f95a11b848e02ea2dec08c2ff3",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/plumbing/install.ts": "2a4e19fae70fef7ba0be454fd5b7efed4d7d19a5141d26d3b26124ab792007ed",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/plumbing/link.ts": "0ed6198de737ebeab1704d375c732c9264fb0cfa7f2aedddb90f51d100174a73",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/plumbing/resolve.ts": "9425e0d201ee440a8dc011940046f0bb6d94aa29cd738e1a8c39ca86e55aad41",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/plumbing/which.ts": "f918211e561e56aabf6909e06fa10fa3be06ffebd9e7cc28ce57efef4faff27d",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/porcelain/install.ts": "85caffe3842ab63bf6d59c6c5c9fb93fbc95a0d5652488d93b95d865722b67b9",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/porcelain/run.ts": "55cc9124dca732e2f5557a8c451daebecb109c86b2f4347fa1e433aedf35ab5a",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/types.ts": "dc1a4e6458d11454282f832909838c56f786a26eed54fb8ab5675d6691ebf534",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/Path.ts": "45303993a377363277e6c201160f36f1f9a5997632db03f473b618968d568e58",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/error.ts": "b0d3130f5cdfc0cc8ea10f93fea0e7e97d4473ddc9bc527156b0fcf24c7b939c",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/flock.ts": "5fd77f6b53c3a90888cf20a7726e9047aad2c766e4ec2fbf7cf2f916b98d99a4",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/host.ts": "3b9e0d4cb05f9bde0ee8bcb0f8557b0a339f6ef56dfb1f08b2cfa63b44db91ee",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/misc.ts": "a4d7944da07066e5dd2ef289af436dc7f1032aed4272811e9b19ceeed60b8491",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/pkg.ts": "e737cc9a98cd6a2797668c6ef856128692290256a521cc3906bd538410925451",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/read-lines.ts": "6d947ccd5f8e48701ed9c5402b6ac5144df3fce60d666f19b6506edbc36c8367",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/src/utils/semver.ts": "da22a0e0cf74de792cc4d44c01ec5b767463816c8abb4b5fb86583ccda573298",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/mod.ts": "7ce0a19f9cea3475cc94750ece61c20d857f1c3a279ad38cd029a3f8d9b7b03e",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/src/constants.ts": "85fd27aa6e199093f25f5f437052e16fd0e0870b96ca9b24a98e04ddc8b7d006",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/src/database.ts": "49569b0f279cfc3e42730002ae789a2694da74deb212e63a4b4e6640dc4d70ba",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/src/ffi.ts": "ddffcee178b3e72c45be385efd8b4434f7196cafe45a0046ae68df9af307c7f3",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/src/statement.ts": "2be7ffebbb72a031899dbf189972c5596aa73eabfc8a382a1bac9c5c111b0026",
+    "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/vendor/sqlite3@0.10.0/src/util.ts": "19815a492dd8f4c684587238dc20066de11782137de549cd4c9709d1b548247e"
   }
 }

@@ -1,9 +1,21 @@
-import { BuildOptions, Range, run, SemVer, unarchive } from "brewkit";
+import { env_include, BuildOptions, Range, run, SemVer, unarchive } from "brewkit";
 
 export default async function ({ prefix, version, props }: BuildOptions) {
   await unarchive(`https://www.openssl.org/source/openssl-${version}.tar.gz`);
 
-  run`patch -p1 --input ${props}/relocatable.diff`;
+  let extra = "";
+  if (Deno.build.os == 'windows') {
+    env_include('nasm.us');
+  } else {
+    // doesn’t build on windows
+    // supposedly important optimization
+    extra = "enable-ec_nistp_64_gcc_128";
+    // windows is built to be relocatable but other platforms are not
+    run`patch -p1 --input ${props}/relocatable.diff`;
+  }
+  if (Deno.build.os != 'darwin') {
+    env_include('perl');
+  }
 
   run`
     perl
@@ -11,13 +23,17 @@ export default async function ({ prefix, version, props }: BuildOptions) {
     --prefix=${prefix}
     ${target(version)}
     no-tests
-    enable-ec_nistp_64_gcc_128
+    ${extra}
     --openssldir=/etc/ssl
     `;
-  // ^^ enable-ec_nistp_64_gcc_128 = supposedly important optimization
 
-  run`make --jobs ${navigator.hardwareConcurrency}`;
-  run`make install_sw`;
+  if (Deno.build.os != 'windows') {
+    run`make --jobs ${navigator.hardwareConcurrency}`;
+    run`make install_sw`;
+  } else {
+    run`nmake`;
+    run`nmake install_sw`;
+  }
 
   // weird choices from openssl here
   prefix.join("lib64").isDirectory()?.mv({ to: prefix.lib });

@@ -7,7 +7,7 @@
 # reasons
 
 tool=$(basename "$0")
-export _PKGX_DIR="$(cd "$(dirname "$0")/../deps" && pwd)"
+export _PKGX_DIR="$(cd "$(dirname "$0")/.." && pwd)/deps"
 
 case $tool in
 cc|gcc|clang|c++|g++|clang++)

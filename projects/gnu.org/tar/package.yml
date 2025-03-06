@@ -1,0 +1,13 @@
+name:
+  GNU Tar
+
+homepage:
+  https://www.gnu.org/software/tar/
+
+programs:
+  - bin/tar
+
+# best of luck if you want this to work on windows
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

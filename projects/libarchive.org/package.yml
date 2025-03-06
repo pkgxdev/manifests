@@ -1,0 +1,16 @@
+name:
+  libarchive
+
+repository:
+  https://github.com/libarchive/libarchive
+
+programs:
+  - bin/bsdcat
+  - bin/bsdcpio
+  - bin/bsdtar
+  - bin/bsdunzip
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64

@@ -1,0 +1,23 @@
+name:
+  Node.js
+
+repository:
+  https://github.com/nodejs/node
+
+# companions:
+#   - nodejs.org/npm
+
+dependencies:
+  openssl.org: ^1.1,^3
+  zlib.net: ^1
+
+# NOTE we static link the vendored libunicode because maintaining the
+# variance and having pkgx have to vary libunicode so often is a PITA
+
+programs:
+  - bin/node
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64

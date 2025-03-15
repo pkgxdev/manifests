@@ -1,4 +1,4 @@
-import { BuildOptions, inreplace, Path, run, unarchive, undent } from "brewkit";
+import { BuildOptions, inreplace, insert, Path, run, unarchive, undent } from "brewkit";
 
 export default async function ({ prefix, tag, deps }: BuildOptions) {
   await unarchive(`https://ftp.gnu.org/gnu/autoconf/autoconf-${tag}.tar.gz`);
@@ -22,14 +22,6 @@ export default async function ({ prefix, tag, deps }: BuildOptions) {
   });
 
   inreplace(prefix.share.join("autoconf/autom4te.cfg"), prefix.string, "$PREFIX");
-}
-
-function insert({ after, line, path }: { after: string; line: string; path: Path }) {
-  let txt = path.read();
-  const parts = txt.split(after);
-  if (parts.length < 2) throw new Error("didn’t get 2 parts for insert()");
-  txt = parts[0] + after + `${line}\n` + parts.slice(1).join(after);
-  path.write(txt);
 }
 
 export async function autofoo_fixes(path: Path, prefix: Path, do_begin = true) {

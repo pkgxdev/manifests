@@ -1,4 +1,4 @@
-import { backticks, run, undent } from "brewkit";
+import { backticks, Path, run, undent } from "brewkit";
 import { assertFalse } from "jsr:@std/assert@^1/false";
 
 export default async function () {
@@ -38,4 +38,11 @@ export default async function () {
   );
   const out = await backticks`ruby --yjit ./test.rb`;
   assertFalse(out.includes("warning"));
+
+  run`gem install lolcat`;
+  run`${Path.home()}/.local/bin/lolcat --help`;
+
+  // installing hexapdf tests compilation
+  run`gem install hexapdf`;
+  run`${Path.home()}/.local/bin/hexapdf --help`;
 }

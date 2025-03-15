@@ -1,6 +1,6 @@
-import { BuildOptions, run, unarchive, undent } from "brewkit";
+import { BuildOptions, undent } from "brewkit";
 
-export default async function build({ prefix, version }: BuildOptions) {
+export default async function build({ prefix, version, props }: BuildOptions) {
   const ext = Deno.build.os === "windows" ? ".exe" : "";
   const rsp = await fetch(`https://static.rust-lang.org/rustup/archive/${version}/${Deno.build.target}/rustup-init${ext}`);
   const rustup_init = prefix.join("bin").mkdir('p').join(`rustup-init${ext}`);
@@ -9,7 +9,14 @@ export default async function build({ prefix, version }: BuildOptions) {
 
   rustup_init.chmod(0o755);
 
-  const tools = undent`
+  for (const x of tools()) {
+    const script = props.join(Deno.build.os === "windows" ? "shim.cmd" : "shim.sh");
+    script.cp({ to: prefix.bin.join(x) }).chmod(0o755);
+  }
+}
+
+function tools() {
+  return undent`
     rustc
     cargo
     cargo-clippy
@@ -24,28 +31,4 @@ export default async function build({ prefix, version }: BuildOptions) {
     rustfmt
     rustup
   `.split(/\s+/);
-
-  for (const x of tools) {
-    if (Deno.build.os != "windows") {
-      prefix.bin.join(x).write(undent`
-        #!/bin/sh
-
-        if [ ! -f "$HOME/.cargo/env" ]; then
-          # remove ourselves from PATH to prevent spurious warning from rustup-init
-          D="$(dirname "$0")"
-          SANITIZED_PATH=$(echo "$PATH" | awk -v RS=':' -v ORS=':' '$0 != "'"$D"'"' | sed 's/:$//')
-          PATH="$SANITIZED_PATH" "$D/rustup-init" -y --no-modify-path
-          if [ $? -ne 0 ]; then
-            exit $?
-          fi
-        fi
-
-        source ~/.cargo/env
-        exec $(basename "$0") "$@"
-        `).chmod(0o755);
-
-    } else {
-      throw new Error();
-    }
-  }
 }

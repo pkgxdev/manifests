@@ -9,4 +9,5 @@ export default function () {
     }`,
   );
   run`rustc test.rs -o hello --crate-name hello`;
+  run`./hello`;
 }

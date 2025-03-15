@@ -32,11 +32,11 @@ echo $PWD
 mkdir -p $PROJECT
 ditto "$PREFIX" $PROJECT/$VERSION
 
-if [[ $PLATFORM == Darwin/* ]]; then
+if [[ $PLATFORM == darwin/* ]]; then
   # pkgx cannot untar into read only directories on macOS
   # NOTE the true fix would be to make the dirs writable when
   # untarring and then make them read only again after
-  find "$PROJECT/$VERSION" -type f -print0 | xargs -0 chmod -w
+  find "$PROJECT/$VERSION" -type f -exec chmod -w {} +
 else
   chmod -R -w "$PROJECT/$VERSION"
 fi
@@ -48,7 +48,7 @@ rm $VERSION.tar.gz
 gum spin --title 'tar cJf' -- tar cJf $VERSION.tar.xz *
 aws s3 cp $VERSION.tar.xz s3://dist.tea.xyz/v2/$PROJECT/$PLATFORM/$VERSION.tar.xz
 
-"$SRCROOT/.github/scripts/generate-versions.ts" v2/$PROJECT/$PLATFORM > versions.txt
+"$SRCROOT/.github/scripts/generate-versions" v2/$PROJECT/$PLATFORM > versions.txt
 aws s3 cp versions.txt s3://dist.tea.xyz/v2/$PROJECT/$PLATFORM/versions.txt
 
 chmod -R +w .

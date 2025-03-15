@@ -170,9 +170,11 @@ export { fixup };
 export function inreplace(path: Path | string, from: string | RegExp, to: string) {
   path = path instanceof Path ? path : Path.cwd().join(path);
   console.error(`%c+`, "color:yellow", "inreplace", path);
+  const global = typeof from == 'string' || from.flags.includes('g');
+  const contents = Deno.readTextFileSync(path.string);
   Deno.writeTextFileSync(
     path.string,
-    Deno.readTextFileSync(path.string).replaceAll(from, to),
+    global ? contents.replaceAll(from, to) : contents.replace(from, to),
   );
 }
 
@@ -190,3 +192,11 @@ function set_active_pkg(pkg: Package) {
   active_pkg = pkg;
 }
 export { active_pkg, set_active_pkg };
+
+export function insert({ after, line, path }: { after: string; line: string; path: Path }) {
+  let txt = path.read();
+  const parts = txt.split(after);
+  if (parts.length < 2) throw new Error("didn’t get 2 parts for insert()");
+  txt = parts[0] + after + `${line}\n` + parts.slice(1).join(after);
+  path.write(txt);
+}

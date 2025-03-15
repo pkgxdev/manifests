@@ -81,7 +81,7 @@ jobs:
             # pkgx cannot untar into read only directories on macOS
             # NOTE the true fix would be to make the dirs writable when
             # untarring and then make them read only again after
-            find "$PREFIX" -type f | xargs chmod -w
+            find "$PREFIX" -type f -exec chmod -w {} +
           else
             # we had weird issues with python where it could not for some
             # reason make sitecustomize.py read only and would thus abort

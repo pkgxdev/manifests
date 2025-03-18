@@ -1,0 +1,5 @@
+programs:
+  - bin/awk
+  - bin/gawk
+  # - bin/gawk-{{version}}
+  - bin/gawkbug

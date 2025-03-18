@@ -1,0 +1,30 @@
+name:
+  GNU Binutils
+
+programs:
+  - bin/addr2line
+  - bin/ar
+  - bin/c++filt
+  - bin/elfedit
+  - bin/nm
+  - bin/objcopy
+  - bin/objdump
+  - bin/ranlib
+  - bin/readelf
+  - bin/size
+  - bin/strings
+  - bin/strip
+
+linux:
+  programs:
+    - bin/as
+    - bin/gp-archive
+    - bin/gp-collect-app
+    - bin/gp-display-html
+    - bin/gp-display-src
+    - bin/gp-display-text
+    - bin/gprof
+    - bin/gprofng
+    - bin/ld
+    - bin/ld.bfd
+    - bin/ld.gold

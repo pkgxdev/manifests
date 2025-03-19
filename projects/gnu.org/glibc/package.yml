@@ -1,0 +1,9 @@
+name: glibc
+
+# pretty old. makes us compatible quite far back.
+# would be nice to build everything against multiple glibc versions since this
+# can enable large speed ups. Same for Linux kernel versions frankly.
+version: 2.39
+
+platforms:
+  - linux/x86-64

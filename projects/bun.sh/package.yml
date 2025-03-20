@@ -1,0 +1,15 @@
+name:
+  bun
+
+repository:
+  https://github.com/oven-sh/bun
+
+programs:
+  - bin/bun
+
+platforms:
+  - darwin/aarch64
+  - darwin/x86-64
+  - linux/aarch64
+  - linux/x86-64
+  - windows/x86-64

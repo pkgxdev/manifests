@@ -1,0 +1,9 @@
+name:
+  GNU Libiconv
+
+programs:
+  - bin/iconv
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

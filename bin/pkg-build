@@ -225,6 +225,12 @@ async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     dstdir.parent().join(`v${version.major}`).rm().ln("s", { target: dstdir.basename() });
   }
 
+  // copy READMEs
+  tmpdir.join("src/README").isFile()?.cp({ into: dstdir.parent() });
+  for (const ext of "md markdown txt text rst".split(" ")) {
+    tmpdir.join(`src/README.${ext}`).isFile()?.cp({ into: dstdir.parent() });
+  }
+
   for await (const { path } of expandGlob("README*", {root: tmpdir.join("src").string})) {
     new Path(path).cp({ into: dstdir.parent() });
   }

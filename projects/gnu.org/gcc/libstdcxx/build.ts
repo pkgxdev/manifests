@@ -17,7 +17,10 @@ export default async function build({ prefix, version }: BuildOptions) {
         --enable-pie-tools
         --enable-host-pie
         `;
-  run`make --jobs ${navigator.hardwareConcurrency} all-target-libstdc++-v3`;// all-target-libgcc`;
+  run`make V=1
+    # --jobs ${navigator.hardwareConcurrency}
+      all-target-libstdc++-v3
+    # all-target-libgcc`;
   run`make install-strip-target-libstdc++-v3`;// install-strip-target-libgcc`;
 
   for await (const [path] of prefix.join("lib64").ls()) {

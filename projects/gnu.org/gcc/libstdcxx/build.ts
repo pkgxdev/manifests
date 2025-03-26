@@ -23,8 +23,5 @@ export default async function build({ prefix, version }: BuildOptions) {
     # all-target-libgcc`;
   run`make install-strip-target-libstdc++-v3`;// install-strip-target-libgcc`;
 
-  for await (const [path] of prefix.join("lib64").ls()) {
-    path.mv({ into: prefix.lib });
-  }
-  prefix.join("lib64").rm();
+  prefix.join("lib64").mv({ to: prefix.lib });
 }

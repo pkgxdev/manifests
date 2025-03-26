@@ -121,6 +121,7 @@ function ldd(file: Path, LDLPATH: string): string[] {
         case "libdl.so":
         case "libm.so":
         case "libc.so":
+        case "libgcc_s.so":
           continue;  // these are still mandatory pre-requisites from the user’s system
       }
     }

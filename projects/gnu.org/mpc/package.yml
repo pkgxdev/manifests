@@ -10,10 +10,6 @@ description:
 dependencies:
   gnu.org/mpfr: ^4
 
-darwin:
-  dependencies:
-    gnu.org/gmp: ^6 # on Linux we statically link due to libstdc++ sucking
-
 platforms:
   - darwin/aarch64
   - linux/x86-64

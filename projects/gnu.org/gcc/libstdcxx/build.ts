@@ -18,10 +18,12 @@ export default async function build({ prefix, version }: BuildOptions) {
         --enable-host-pie
         `;
   run`make V=1
-    # --jobs ${navigator.hardwareConcurrency}
-      all-target-libstdc++-v3
-    # all-target-libgcc`;
-  run`make install-strip-target-libstdc++-v3`;// install-strip-target-libgcc`;
+        --jobs ${navigator.hardwareConcurrency}
+        all-target-libstdc++-v3
+      # all-target-libgcc`;
+  run`make
+        install-strip-target-libstdc++-v3
+      # install-strip-target-libgcc`;
 
-  prefix.join("lib64").mv({ to: prefix.lib });
+  prefix.join("lib64").isDirectory()?.mv({ to: prefix.lib.rm() });
 }

@@ -18,8 +18,6 @@ export default async function build({ prefix, version }: BuildOptions) {
       --enable-pie-tools
       --enable-host-pie
       `;
-
-    env_include("gnu.org/gmp");
   }
 
   Path.cwd().join("build").mkdir();

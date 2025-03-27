@@ -28,11 +28,15 @@ jobs:
       - run: bin/pkg-convert
 
       - run: tar -C artifacts/pantry -czf pantry.tgz projects
-
       - run: aws s3 cp
           ./pantry.tgz
           s3://dist.tea.xyz/v2/pantry.tgz
 
+      - run: tar -C artifacts/pantry -cJf pantry.tar.xz projects
+      - run: aws s3 cp
+          ./pantry.tar.xz
+          s3://dist.tea.xyz/v2/pantry.tar.xz
+
       - run: aws cloudfront create-invalidation
           --distribution-id EWF6XUK8J11DP
-          --paths /v2/pantry.tgz
+          --paths /v2/pantry.tgz /v2/pantry.tar.xz

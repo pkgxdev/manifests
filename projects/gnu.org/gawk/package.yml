@@ -3,3 +3,7 @@ programs:
   - bin/gawk
   # - bin/gawk-{{version}}
   - bin/gawkbug
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

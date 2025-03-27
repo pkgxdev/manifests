@@ -97,6 +97,8 @@ export default class RpathFixer {
 function ldd(file: Path, LDLPATH: string): string[] {
   const libs: string[] = [];
 
+  console.error("hi", file, LDLPATH);
+
   const old_LDLPATH = Deno.env.get("LD_LIBRARY_PATH");
   Deno.env.set("LD_LIBRARY_PATH", LDLPATH);
   let output = '';

@@ -16,14 +16,9 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
   );
 
   // build what is provided by GNU “bintools”
-  let tools = "llvm-ar;llvm-as;llvm-nm;llvm-objdump;llvm-size;llvm-strings;llvm-objcopy;llvm-ranlib";
-
-  // TODO subpkg for this, and another for the compiler-rt stuff
-  tools += ";llvm-profdata";
+  let tools = "clang;lld;llvm-ar;llvm-as;llvm-nm;llvm-objdump;llvm-size;llvm-strings;llvm-objcopy;llvm-ranlib";
 
   let platform_specific_cmake_args = "";
-  let projects = "clang;lld";
-  let extra_targets = "";
 
   switch (Deno.build.os) {
     case "linux":
@@ -37,16 +32,10 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
 
       // compiler-rt specific stuff
       platform_specific_cmake_args += `
-        -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON
         -DCMAKE_C_COMPILER_TARGET=x86_64-unknown-linux-gnu
-        -DLLVM_ENABLE_RUNTIMES=compiler-rt
-        -DCOMPILER_RT_BUILD_XRAY=OFF
-        -DCOMPILER_RT_BUILD_LIBFUZZER=OFF
         -DZLIB_INCLUDE_DIR=${deps['zlib.net'].prefix}/include
         -DZLIB_LIBRARY=${deps['zlib.net'].prefix}/lib/libz.so
         `;
-
-      extra_targets = "compiler-rt";
       break;
 
     case "darwin":
@@ -89,8 +78,8 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         -DCOMPILER_RT_INCLUDE_TESTS=OFF
         -DCOMPILER_RT_USE_LIBCXX=OFF
 
-        -DLLVM_ENABLE_PROJECTS=${projects}
-        -DLLVM_DISTRIBUTION_COMPONENTS=clang;lld;${tools}
+        -DLLVM_ENABLE_PROJECTS=clang;lld
+        -DLLVM_DISTRIBUTION_COMPONENTS=${tools}
         -DLLVM_TOOLCHAIN_TOOLS=${tools}
 
         -DCLANG_ENABLE_STATIC_ANALYZER=OFF  # recommended by the LLVM build guide
@@ -100,12 +89,9 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         ${platform_specific_cmake_args}
         `;
 
-  run`ninja -C ./o distribution ${extra_targets}`;
+  run`ninja -C ./o distribution`;
   run`ninja -C ./o install-distribution-stripped`;
-  if (Deno.build.os === "linux") {
-    run`ninja -C ./o install-compiler-rt-stripped`;
-  }
-  run`ninja -C ./o install-clang-resource-headers`; // necessary header files or builds just don’t work
+  run`ninja -C ./o install-clang-resource-headers`; // FIXME necessary header files or builds just don’t work
 
   const bin = prefix.join("bin");
   kthxbai_clang_version_suffix(bin, version);

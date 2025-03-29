@@ -15,10 +15,6 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
     `https://github.com/llvm/llvm-project/releases/download/${tag}/llvm-project-${version}.src.tar.xz`,
   );
 
-  // we depend on libstdc++ for linkage but we cannot actually build against its headers
-  // WARNING THIS SEEMS SUS
-  Deno.env.delete("CPLUS_INCLUDE_PATH");
-
   // build what is provided by GNU “bintools”
   let tools = "llvm-ar;llvm-as;llvm-nm;llvm-objdump;llvm-size;llvm-strings;llvm-objcopy;llvm-ranlib";
 

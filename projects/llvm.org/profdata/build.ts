@@ -38,7 +38,7 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         -DCOMPILER_RT_INCLUDE_TESTS=OFF
         -DCOMPILER_RT_USE_LIBCXX=OFF
 
-        -DLLVM_ENABLE_PROJECTS=llvm-profdata
+        -DLLVM_ENABLE_PROJECTS=compiler-rt
         -DLLVM_DISTRIBUTION_COMPONENTS=llvm-profdata
         -DLLVM_TOOLCHAIN_TOOLS=llvm-profdata
 

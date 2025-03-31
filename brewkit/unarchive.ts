@@ -1,5 +1,5 @@
 import { fromFileUrl, basename } from "jsr:@std/path@1";
-import { active_pkg, Path } from "brewkit";
+import { active_pkg, Path, platform_partial_path } from "brewkit";
 import { crc32 } from "https://deno.land/x/crc32/mod.ts";
 
 
@@ -9,10 +9,10 @@ export default async function (
 ): Promise<void> {
   console.error("%c+", "color:yellow", "unarchiving:", url);
 
-  const root = new Path(fromFileUrl(import.meta.url)).join("../../srcs");
+  const root = new Path(fromFileUrl(import.meta.url)).join("../../artifacts/archives").mkdir('p');
   const ext = Path.root.join(basename(url)).extname();
   const checksum = crc32(url);
-  const predownloaded_file = root.join(active_pkg!.project).mkdir("p").join(`v${active_pkg!.version}_${checksum}${ext}`);
+  const predownloaded_file = root.join(`${checksum}${ext}`);
 
   const input = await (async () => {
     if (!predownloaded_file.isFile()) {
@@ -26,9 +26,9 @@ export default async function (
       return body2;
     } else {
       console.error(
-        "%cℹ︎",
+        "%ci",
         "color:blue",
-        "using pre-download:",
+        "nice. already downloaded:",
         predownloaded_file.relative({ to: root }),
       );
       const file = await Deno.open(predownloaded_file.string);
@@ -65,6 +65,11 @@ export default async function (
     if (!success) {
       throw new Error("unarchive failed");
     }
+  }
+
+  // make user accessible symlink
+  if (Deno.build.os != 'windows' && predownloaded_file.isFile()) {
+    root.parent().join(platform_partial_path(), active_pkg!.project).mkdir('p').join(`v${active_pkg!.version}+${checksum}${ext}`).rm().ln('s', {target: predownloaded_file});
   }
 }
 

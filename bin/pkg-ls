@@ -12,7 +12,10 @@ const projects = log
     .map(x => x.replace(/^projects\//, "")
     .replace(/\/package.yml$/, ""));
 
+const set = new Set();
 for (const project of projects) {
+    if (set.has(project)) continue;
+    set.add(project);
     if (builds_on_this_platform(project)) {
         if (Deno.args.includes("--print-paths")) {
             const path = fromFileUrl(new URL(`../projects/${project}/package.yml`, import.meta.url));

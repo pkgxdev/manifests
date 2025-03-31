@@ -32,8 +32,9 @@
   - everything should install to `/usr/local` and just work
 - No weird handling for calver
 - no (or much less) pre-reqs on Linux
-  - some deps are unavoidable since they are heavily customized for the system
-    eg. librt
+  - we only need glibc and libgcc
+  - strictly we don’t need the user to provide libgcc, but us building and
+    using our own is more or a pita than we can handle RN
 - variable deps
   - eg. a major version requires new deps
   - eg. heaven forbid, a minor version changes the dep constraint
@@ -50,12 +51,8 @@
   - configure things that install things to install them to
     `${INSTALL_ROOT:-$HOME/.local}` by default
 - more consistent project names
-  - no foo.github.io, just github.com etc.
+  - no foo.github.io, just github.com/foo etc.
   - no strict adherance to homepages, it's more about namespacing
-- static linking libstdc++
-  - gnu gcc libstdc++ is a an ABI bitch
-  - so for now we statically link it
-  - however we are uniquely positioned to handle this better TBH (TODO!)
 
 [pkgx.dev/pkgs]: https://pkgx.dev/pkgs
 
@@ -86,26 +83,33 @@ $ ls bin
 ### Windows
 
 - Visual Studio Community Edition with C++
-- We don’t provide a stub for `pkg` so invoke via `bin\\pkg-build foo`.
-- You will need to use a developer prompt for some things.
+- `direnv` doesn’t work on Windows (what does?!) so you need to prefix
+  everything with `bin\`
+- You will need to use a developer prompt sometimes
+  - really this is only to get `nmake` for packages that require that, for
+    everything good that uses `cmake` you can use any command line engine.
+  - we can probably work around this and find `nmake` ourselves
 
 ### Linux
 
-- libgcc and libstdc++ are still required at this time
+- glibc, libgcc and their `-dev` pkgs are still required at this time
 
 ## Wins
 
 - Python from 280MB to 78MB
 - Cleaner rpath handling across the board
+  - linux rpath fixes were actually broken with `pantry^1`
 - Less env pollution by carefully using `pkgx` during builds rather than
   importing dep-envs before builds, meaning more reliable builds with less
   unexpected deps
 - Carefuly pruning of deps and build options for all base deps
+- much tighter python venv handling
+- more XDG adherance for base packages
 
 ### Build Infra Wins
 
-- depennding on ourself now works without conflict since destination prefix
-  is not within PKGX_DIR
+- a pkg depending on itself now works without conflict since destination
+  prefix is not within PKGX_DIR
 - no more `+brewing`
 - builds only occur in temporary directories meaning whatever happens builds
   are consistent

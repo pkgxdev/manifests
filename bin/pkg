@@ -3,6 +3,7 @@
 import { Path, backticks_quiet, platform_partial_path } from "brewkit";
 import { fromFileUrl } from "jsr:@std/path@^1.0.8/from-file-url";
 import pkg_status from "./pkg-status";
+import { expandGlob, expandGlobSync } from "jsr:@std/fs@1/expand-glob";
 
 let { cmd, flags, projects } = (() => {
   const flags: string[] = [];
@@ -59,9 +60,17 @@ if (opts.has('docker')) {
 
 projects = (() => {
   if (opts.has('all')) {
-    return backticks_quiet`${subcmd("ls")}`
-      .split(/\s+/)
-      .filter(x => !srcroot.join("artifacts", platform_partial_path(), x).isDirectory());
+    const projects = backticks_quiet`${subcmd("ls")}`.split(/\s+/);
+    const rv = []
+    for (const project of projects) {
+      let add = true
+      for (const _ of expandGlobSync(`${srcroot.join("artifacts", platform_partial_path(), project)}/v*`)) {
+        add = false;
+        break;
+      }
+      if (add) rv.push(project);
+    }
+    return rv;
   } else if (projects.length == 0) {
     return [...pkg_status()[0]];
   } else {

@@ -77,7 +77,8 @@ if (Deno.build.os != "windows") {
     }
 
     // ensure we continue to use pre-downloaded deps
-    Deno.env.set("PKGX_DIR", dstdir.string);
+    //NOTE cannot do this as it may mean we are trying to use what we just built during this step
+    // Deno.env.set("PKGX_DIR", dstdir.string);
 
     deps_prefixes = deps_prefixes.map((prefix) => {
       const relpath = prefix.relative({ to: PKGX_DIR });

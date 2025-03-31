@@ -231,10 +231,6 @@ async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     tmpdir.join(`src/README.${ext}`).isFile()?.cp({ into: dstdir.parent() });
   }
 
-  for await (const { path } of expandGlob("README*", {root: tmpdir.join("src").string})) {
-    new Path(path).cp({ into: dstdir.parent() });
-  }
-
   if (Deno.env.get("GITHUB_ENV")) {
     Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `VERSION=${version}\n`, { append: true });
     Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PROJECT=${pkg.project}\n`, { append: true });

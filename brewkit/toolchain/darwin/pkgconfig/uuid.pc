@@ -1,0 +1,11 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+sharedlibdir=${libdir}
+includedir=${prefix}/include/uuid
+
+Name: uuid
+Description: Universally unique id library
+Version: 1.0
+
+Cflags: -I${includedir}

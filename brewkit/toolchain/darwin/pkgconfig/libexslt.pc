@@ -1,0 +1,10 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=${prefix}/include
+
+Name: libexslt
+Version: 0.8.20
+Description: EXSLT Extension library
+Requires: libxml-2.0, libxslt
+Libs: -lexslt

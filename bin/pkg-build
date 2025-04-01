@@ -68,6 +68,7 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
   case 'darwin':
     Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
     Deno.env.set("MACOSX_DEPLOYMENT_TARGET", "11.0");
+    Deno.env.set("PKG_CONFIG_PATH", `${bin}/pkgconfig`);
     break;
 
   case 'windows':

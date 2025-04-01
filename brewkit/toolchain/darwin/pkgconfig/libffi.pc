@@ -1,0 +1,11 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+toolexeclibdir=${libdir}
+includedir=${prefix}/include/ffi
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4-rc1
+Libs: -lffi
+Cflags: -I${includedir}

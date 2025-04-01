@@ -1,0 +1,11 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=${prefix}/include
+
+Name: libedit
+Description: command line editor library provides generic line editing, history, and tokenization functions.
+Version: 3.0
+Requires:
+Libs: -ledit
+Cflags: -I${includedir}/editline

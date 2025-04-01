@@ -1,0 +1,12 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+includedir=${prefix}/include
+modules=1
+
+Name: libXML
+Version: 2.9.13
+Description: libXML library version2.
+Requires:
+Libs: -lxml2
+Libs.private: -lz -lpthread -licucore -lm

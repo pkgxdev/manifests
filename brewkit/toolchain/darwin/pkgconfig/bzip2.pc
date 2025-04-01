@@ -1,0 +1,10 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+bindir=/usr/bin
+libdir=/usr/lib
+includedir=${prefix}/include
+
+Name: bzip2
+Description: Lossless, block-sorting data compression
+Version: 1.0.8
+Libs: -lbz2

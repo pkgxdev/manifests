@@ -8,8 +8,12 @@ repository:
 #   - nodejs.org/npm
 
 dependencies:
+  zlib.net: ^1  #TODO macOS provides this, but we need to provide a .pc file that represents it (see brew)
   openssl.org: ^1.1,^3
-  zlib.net: ^1
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14
 
 # NOTE we static link the vendored libunicode because maintaining the
 # variance and having pkgx have to vary libunicode so often is a PITA

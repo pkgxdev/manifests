@@ -153,7 +153,6 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
       (allow default)
       (deny file-write*
         (subpath "/opt/homebrew")
-        (subpath "${srcroot}")
         (subpath "/usr/local"))
         (subpath "${tmpdir}/pkgs")
       (allow file-write*

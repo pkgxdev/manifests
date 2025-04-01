@@ -1,0 +1,11 @@
+prefix=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr
+exec_prefix=/usr
+libdir=/usr/lib
+sharedlibdir=/usr/lib
+includedir=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.12
+
+Libs: -lz

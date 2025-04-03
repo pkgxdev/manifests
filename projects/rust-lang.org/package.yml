@@ -23,6 +23,7 @@ linux:
     zlib.net: ^1
   companions:
     - llvm.org
+    - git-scm.org  # cargo needs git
 
 platforms:
   - darwin/aarch64

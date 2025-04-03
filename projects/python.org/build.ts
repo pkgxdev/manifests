@@ -76,6 +76,7 @@ export default async function (
 
     // otherwise venvs don't work
     // I have no clue why the build scripts don't do any of this
+    //NOTE seems to only apply to Python 3.11
     prefix.bin.join("venvlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
     prefix.bin.join("venvwlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
   }

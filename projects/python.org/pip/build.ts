@@ -1,6 +1,6 @@
 import { BuildOptions, env_include, inreplace, Path, run, unarchive, undent } from "brewkit";
 
-export default async function ({ prefix, tag, version, deps }: BuildOptions) {
+export default async function ({ prefix, tag, version }: BuildOptions) {
   await unarchive(`https://github.com/pypa/pip/archive/refs/tags/${tag}.tar.gz`);
 
   // have pip install things so that they work via pkgx
@@ -30,18 +30,40 @@ export default async function ({ prefix, tag, version, deps }: BuildOptions) {
 
   prefix.join("pip").mv({ into: prefix.join("lib/python").mkdir("p") });
 
-  const pipfile = prefix.bin.join("pip");
-  let contents = await prefix.bin.join("pip").read();
-  contents = contents.split("\n").slice(1).join("\n");
+  if (Deno.build.os != 'windows') {
+    const pipfile = prefix.bin.join("pip");
+    let contents = await prefix.bin.join("pip").read();
+    contents = contents.split("\n").slice(1).join("\n");
 
-  pipfile.write(undent`
-    #!/bin/sh
-    """:"
-    d="$(cd "$(dirname "$0")/.." && pwd)"
-    export PIP_DISABLE_PIP_VERSION_CHECK=1
-    export PYTHONPATH="$d/lib/python\${PYTHONPATH:+:$PYTHONPATH}"
-    exec python "$0" "$@"
-    ":"""
+    pipfile.write(undent`
+      #!/bin/sh
+      """:"
+      d="$(cd "$(dirname "$0")/.." && pwd)"
+      export PIP_DISABLE_PIP_VERSION_CHECK=1
+      export PYTHONPATH="$d/lib/python\${PYTHONPATH:+:$PYTHONPATH}"
+      exec python "$0" "$@"
+      ":"""
 
-    ${contents}`);
+      ${contents}`);
+  } else {
+    prefix.bin.join("pip.cmd").write(undent`
+      @echo off
+      setlocal
+      set "d=%~dp0"
+      if "%d:~-1%"=="\\" set "d=%d:~0,-1%"
+      for %%i in ("%d%\\..") do set "d=%%~fi"
+
+      set PIP_DISABLE_PIP_VERSION_CHECK=1
+
+      if defined PYTHONPATH (
+          set "PYTHONPATH=%d%\\lib\\python;%PYTHONPATH%"
+      ) else (
+          set "PYTHONPATH=%d%\\lib\\python"
+      )
+
+      python %~dp0/pip %*
+
+      endlocal
+      `);
+  }
 }

@@ -5,7 +5,7 @@ repository:
   https://github.com/python/cpython
 
 companions:
-  - python.org/pip
+  # - python.org/pip
 
 dependencies:
   openssl.org: ^3

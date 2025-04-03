@@ -1,4 +1,4 @@
-import { PackageRequirement, utils } from "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.20.3/mod.ts";
+import { PackageRequirement, utils } from "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.21.0/mod.ts";
 import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
 import * as yaml from "jsr:@std/yaml@^1/parse";
 
@@ -16,7 +16,7 @@ export default async function resolveDependencies(pkgspec: string) {
   });
 
   const proc = new Deno.Command("pkgx", {
-    args: ["--json=v1", "--quiet", ...plus],
+    args: ["--json=v2", "--quiet", ...plus],
     stdout: "piped",
   }).spawn();
 
@@ -26,7 +26,17 @@ export default async function resolveDependencies(pkgspec: string) {
   }
 
   const stdout = new TextDecoder().decode((await proc.output()).stdout);
-  return stdout ? JSON.parse(stdout) : undefined;
+  if (!stdout) return;
+  return JSON.parse(stdout) as {
+    env: Record<string, string[]>;
+    pkgs: Record<string, {
+      runtime_env: Record<string, string>;
+      path: string;
+      project: string;
+      version: string;
+      programs: string[];
+    }>;
+  }
 }
 
 function parseAndExportEnv(json: any) {

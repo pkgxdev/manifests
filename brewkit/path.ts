@@ -1,5 +1,5 @@
 import { SEPARATOR as SEP } from "jsr:@std/path@^1";
-import { moveSync } from "jsr:@std/fs@1";
+import { moveSync, expandGlob, walk, WalkOptions } from "jsr:@std/fs@1";
 import * as sys from "jsr:@std/path@^1";
 
 // modeled after https://github.com/mxcl/Path.swift
@@ -274,6 +274,18 @@ export default class Path {
   async *ls(): AsyncIterable<[Path, Deno.DirEntry]> {
     for await (const entry of Deno.readDir(this.string)) {
       yield [this.join(entry.name), entry];
+    }
+  }
+
+  async *glob(pattern: string): AsyncIterable<Path> {
+    for await (const entry of expandGlob(pattern, { root: this.string })) {
+      yield new Path(entry.path);
+    }
+  }
+
+  async *walk(opts?: WalkOptions): AsyncIterable<Path> {
+    for await (const entry of walk(this.string, opts)) {
+      yield new Path(entry.path);
     }
   }
 

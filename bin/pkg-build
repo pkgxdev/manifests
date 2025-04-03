@@ -2,7 +2,6 @@
 
 import { walk_pkgx_dir, parse, Path, SemVer, undent, backticks_quiet, platform_partial_path, PackageRequirement } from "brewkit";
 import { find_in_PATH } from "../brewkit/env-include.ts";
-import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 import parse_deps from "../brewkit/deps-env.ts";
 import { fromFileUrl } from "jsr:@std/path@^1";
 
@@ -128,20 +127,38 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
       Deno.env.set(key, value);
     }
 
-    //FIXME for the love of god make `pkgx` expand these (needs a --json=v2 version bump)
-    for (const [_pkg, env_dict] of Object.entries(json.runtime_env)) {
-      for (let [key, value] of Object.entries(env_dict as any)) {
-        const { path, version } = json.pkgs.find(({ project }: any) => project === _pkg);
-        value = (value as string).replaceAll("{{prefix}}", path);
-        value = (value as string).replaceAll("{{version}}", version);
-        value = (value as string).replace(new RegExp(`:\\$${key}$`), ""); //FIXME subst
-        value = (value as string).replace(`\$${key}`, ""); //FIXME subst
-        Deno.env.set(key, (value as string).trim());
+    const keep = new Set();
+
+    for (const [project, pkg] of Object.entries(json.pkgs)) {
+      for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
+        Deno.env.set(key, value);
       }
+      keep.add(project);
     }
 
     const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
     Deno.env.set("PKGS", pkgs.join(SEP));
+
+    for await (const {pkg: project, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
+      if (keep.has(project)) continue;
+      for await (const foo of path.parent().glob("v*")) {
+        foo.rm('rf');
+      }
+    }
+
+    // clear empty dirs for readability
+    //TODO would be better to not copy everything up top but that requires a new query mode on pkgx
+    const dirs = [];
+    for await (const path of tmpdir.join("pkgs").walk({ includeFiles: false, includeSymlinks: false })) {
+      dirs.push(path);
+    }
+    for (const dir of dirs.reverse()) {
+      try {
+        dir.rm();
+      } catch {
+        // noop
+      }
+    }
   }
 }
 

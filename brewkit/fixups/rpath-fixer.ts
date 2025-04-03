@@ -97,8 +97,6 @@ export default class RpathFixer {
 function ldd(file: Path, LDLPATH: string): string[] {
   const libs: string[] = [];
 
-  console.error("hi", file, LDLPATH);
-
   const old_LDLPATH = Deno.env.get("LD_LIBRARY_PATH");
   Deno.env.set("LD_LIBRARY_PATH", LDLPATH);
   let output = '';
@@ -115,6 +113,11 @@ function ldd(file: Path, LDLPATH: string): string[] {
   for (const line of output.split("\n")) {
     if (!line.includes("=>")) continue;
     const [basename, fullpath] = line.trim().split(/\s+=>\s+/);
+
+    if (fullpath == "not found") {
+      console.error(`::error::could not find: ${line}`);
+      continue;
+    }
 
     if (fullpath.startsWith("/lib/")) {
       switch (basename.replace(/\.\d+$/, "")) {

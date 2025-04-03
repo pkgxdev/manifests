@@ -114,7 +114,6 @@ async function prep_script() {
     import { Path, SemVer } from 'brewkit';
     const prefix = new Path(Deno.args[0]);
     const version = new SemVer(prefix.basename());
-    Deno.chdir("${tmpdir.join("testbed").mkdir().string}");
     await test_runner({prefix, version});
   `;
   tmpdir.join("run-test.ts").write(data);
@@ -195,7 +194,7 @@ async function run() {
     version
   );
 
-  const proc = new Deno.Command(cmd, { args }).spawn();
+  const proc = new Deno.Command(cmd, { args, cwd: tmpdir.join("testbed").mkdir().string }).spawn();
   const { code, success } = await proc.status;
   if (!success) {
     Deno.exit(code);

@@ -76,8 +76,8 @@ export default async function (
 
     // otherwise venvs don't work
     // I have no clue why the build scripts don't do any of this
-    prefix.bin.join("venvlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
-    prefix.bin.join("venvwlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
+    prefix.bin.join("venvlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
+    prefix.bin.join("venvwlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
   }
 
   function sqlite() {

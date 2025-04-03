@@ -38,7 +38,7 @@ export default async function (
           --with-lto=full
           --without-ensurepip
           --disable-test-modules
-          --enable-loadable-sqlite-extensions
+          ${sqlite() ? '--enable-loadable-sqlite-extensions' : ''}
           --with-configdir=/etc/python
           CC=clang
           `;
@@ -78,5 +78,13 @@ export default async function (
     // I have no clue why the build scripts don't do any of this
     prefix.bin.join("venvlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
     prefix.bin.join("venvwlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
+  }
+
+  function sqlite() {
+    if (Deno.build.os != 'darwin') {
+      return true
+    } else {
+      return version.major >= 3 && version.minor >= 11;
+    }
   }
 }

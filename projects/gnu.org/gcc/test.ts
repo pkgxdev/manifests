@@ -16,7 +16,7 @@ export default async function ({ version }: TestOptions) {
     return;
   }
 
-  run`gcc -test.c -lgmp`;
+  run`gcc test.c -lgmp`;
   run`./a.out`;
 
   run`g++ test.cc`;

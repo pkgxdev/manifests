@@ -30,7 +30,7 @@ export default async function build({ prefix, version }: BuildOptions) {
         --with-bugurl="https://github.com/pkgxdev/manifests/issues"
       # "--with-boot-ldflags=-static-libgcc -static-libstdc++"
         --disable-nls
-        --disable-shared  # probs some users want this, but we don’t for our builds using gcc for now
+        --enable-shared
       # --with-system-zlib  #TODO
         "--with-pkgversion=pkgx GCC ${version}"
         ${extra}

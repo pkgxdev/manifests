@@ -10,9 +10,10 @@ gum spin -- sleep 5
 
 run_id=$(gh run list --json databaseId --workflow=cd.bottle.yml | jq '.[0].databaseId')
 
-gh run watch --exit-status $run_id
-foo=$?
-
-gum format -- "> gh run view --web $run_id"
-
-exit $foo
+if ! gh run watch --exit-status $run_id; then
+  foo=$?
+  gh run view --web $run_id
+  exit $foo
+else
+  gum format -- "> gh run view --web $run_id"
+fi

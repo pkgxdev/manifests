@@ -6,8 +6,8 @@ import parse_deps from "../brewkit/deps-env.ts";
 import { fromFileUrl } from "jsr:@std/path@^1";
 
 if (import.meta.main) {
-  const pkg = parse(Deno.args[0]);
   const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
+  const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
   const tmpdir = mktempd();
   const deno = find_in_PATH("deno")!.string;
 
@@ -282,5 +282,28 @@ export async function setup_deps(tmpdir: Path, srcroot: Path) {
         installation.path.cp({ to: dst });
       }
     }
+  }
+}
+
+function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement {
+  const pkg = parse(arg);
+  if (srcroot.join("projects", pkg.project).isDirectory()) {
+    return pkg;
+  } else {
+    const raw = new Deno.Command("pkgx", {
+      args: ["-qQ", pkg.project],
+      env: { PKGX_PANTRY_DIR: srcroot.join("artifacts/pantry").string },
+    }).outputSync();
+    if (!raw.success) {
+      console.error("no such pkg:", arg);
+      Deno.exit(1);
+    }
+    const out = new TextDecoder().decode(raw.stdout).trim();
+    if (out.split("\n").length > 1) {
+      console.error("multiple pkgs found:", out.split("\n").join(" "));
+      Deno.exit(1);
+    }
+    pkg.project = out
+    return pkg;
   }
 }

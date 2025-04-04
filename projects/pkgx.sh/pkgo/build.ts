@@ -6,7 +6,8 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
   inreplace('./entrypoint.ts', '0.0.0-dev', version.toString());
 
   if (Deno.build.os == 'windows') {
-    Path.cwd().join('entrypoint.ts').mv({ into: prefix.bin.mkdir('p') });
+    inreplace('./entrypoint.cmd', '%~dp0entrypoint.ts', '%~dp0..\\share\\pkgx\\pkgo.ts');
+    Path.cwd().join('entrypoint.ts').mv({ to: prefix.join("share\\pkgx").mkdir('p').join("pkgo.ts") });
     Path.cwd().join('entrypoint.cmd').mv({ to: prefix.bin.join('pkgo.cmd') });
   } else {
     Path.cwd().join('entrypoint.ts').mv({ to: prefix.bin.mkdir('p').join('pkgo') });

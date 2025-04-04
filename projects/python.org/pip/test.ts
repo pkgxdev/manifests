@@ -1,6 +1,6 @@
 import { backticks, Path, run, TestOptions } from "brewkit";
-import { assertMatch } from "jsr:@std/assert@^1/match";
 import { assertPath } from "https://jsr.io/@std/path/1.0.8/_common/assert_path.ts";
+import { assertStringIncludes } from "jsr:@std/assert@1/string-includes";
 
 export default async function ({ version, prefix }: TestOptions) {
   //TODO presumably needs encoding in the package.yml
@@ -12,6 +12,6 @@ export default async function ({ version, prefix }: TestOptions) {
 
   assertPath(Path.cwd().join("findtui/main.py").string);
 
-  assertMatch(await backticks`pip --version`, new RegExp(prefix.string));
-  assertMatch(await backticks`pip --version`, new RegExp(version.toString()));
+  assertStringIncludes(await backticks`pip --version`, prefix.string);
+  assertStringIncludes(await backticks`pip --version`, version.toString());
 }

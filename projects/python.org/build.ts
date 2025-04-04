@@ -68,7 +68,7 @@ export default async function (
     Deno.env.set("Py_OutDir", Path.cwd().string);
     run`PCBuild\\build.bat
           -p x64
-        # -E  # don’t build external deps (we do that)
+        # -E  # TODO don’t build external deps (we do that)
           `;
     Path.cwd().join("amd64").mv({ to: prefix.mkdir("p").join("bin") });
     Path.cwd().join("Include").mv({ into: prefix });

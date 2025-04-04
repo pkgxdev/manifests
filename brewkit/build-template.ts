@@ -1,4 +1,5 @@
 import { fixup, parse, Path, Prefix, SemVer, semver, set_active_pkg, walk_pkgx_dir } from "brewkit";
+import { Console } from "node:console";
 
 const pkg = parse(Deno.args[0]);
 const build_dir = new Path(Deno.args[1]);
@@ -7,6 +8,8 @@ const PKGX_DIR = new Path(Deno.args[3]);
 const dstdir = new Path(Deno.args[4]);
 
 Deno.chdir(build_dir.mkdir().string);
+
+console.error("resolving...");
 
 const got_versions: { version: SemVer }[] = await versions(pkg.constraint);
 const version: { version: SemVer } = got_versions

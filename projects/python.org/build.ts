@@ -23,6 +23,9 @@ export default async function (
     if (Deno.build.os == "linux") {
       // --enable-optimizations requires llvm-profdata
       // env_include("llvm.org/llvm-profdata");
+
+      // llvm-ar is required for --enable-lto=full
+      env_include("llvm.org");
     }
 
     //NOTE clang required for --enable-optimizations

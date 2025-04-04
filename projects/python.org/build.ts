@@ -22,7 +22,7 @@ export default async function (
 
     if (Deno.build.os == "linux") {
       // --enable-optimizations requires llvm-profdata
-      env_include("llvm.org");
+      // env_include("llvm.org/llvm-profdata");
     }
 
     //NOTE clang required for --enable-optimizations
@@ -34,7 +34,7 @@ export default async function (
           --with-system-ffi
           --with-system-libmpdec
           --enable-shared
-          --enable-optimizations
+          ${opts() ? '--enable-optimizations' : ''}
           --with-lto=full
           --without-ensurepip
           --disable-test-modules
@@ -87,5 +87,9 @@ export default async function (
     } else {
       return version.major >= 3 && version.minor >= 11;
     }
+  }
+
+  function opts() {
+    return Deno.build.os == 'darwin'
   }
 }

@@ -117,6 +117,9 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
   const json = await parse_deps(pkg.project);
 
   if (json) {
+    // console.error(json);
+    // Deno.exit(1);
+
     const SEP = Deno.build.os == "windows" ? ";" : ":";
 
     for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
@@ -139,7 +142,7 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
     Deno.env.set("PKGS", pkgs.join(SEP));
 
-    for await (const {pkg: project, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
+    for await (const {pkg: { project }, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
       if (keep.has(project)) continue;
       for await (const foo of path.parent().glob("v*")) {
         foo.rm('rf');

@@ -19,6 +19,8 @@ linux:
 windows:
   dependencies:
     curl.se: ">=5"
+  companions:
+    - curl.se/ca-certs  # possibly cURL is misconfigured on Windows
 
 # indeed macOS has no deps, notably using CommonCrypto instead of OpenSSL
 

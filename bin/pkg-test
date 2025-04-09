@@ -43,6 +43,7 @@ async function prep_toolchain() {
     ln('strings', 'llvm-strings');
 
     Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    srcroot.join("brewkit/toolchain/linux/pkg-config").cp({ into: bin });
     break;
 
   case 'darwin':

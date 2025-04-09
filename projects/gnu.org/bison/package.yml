@@ -14,6 +14,7 @@ programs:
 linux:
   dependencies:
     gnu.org/m4: ^1.4.6
+    gnu.org/gcc/libstdcxx: ^14
 
 platforms:
   - darwin/aarch64

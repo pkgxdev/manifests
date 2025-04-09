@@ -7,7 +7,7 @@ if [[ "$1" == --start=* ]]; then
   skip_until="${1#*=}"
 fi
 
-for project in $(pkg-ls)
+for project in $(pkg-ls --platforms=all)
 do
   if [ "$skip_until" ]; then
     if [ "$skip_until" = "$project" ]; then

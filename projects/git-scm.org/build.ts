@@ -33,7 +33,7 @@ export default async function ({ prefix, tag, version, props }: BuildOptions) {
       );
     }
   } else {
-    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`);
+    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`, 1);
 
     Deno.chdir("contrib\\buildsystems");
 

@@ -52,7 +52,9 @@ export default async function (
   } else if (Deno.build.os == "windows") {
     // on windows the tar is bsdtar which can extract zip files
     await input.getReader().read(); //FIXME inefficient for predownloaded case
-    const { success } = await new Deno.Command("tar", { args: ["xzf", predownloaded_file.string] }).spawn().status;
+    const args = ["xzf", predownloaded_file.string];
+    if (stripComponents) args.push(`--strip-components=${stripComponents}`);
+    const { success } = await new Deno.Command("tar", { args }).spawn().status;
     if (!success) {
       throw new Error("unarchive failed");
     }

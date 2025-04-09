@@ -6,6 +6,8 @@ export default async function () {
 
   if (Deno.build.os == 'linux') {
     env_include("gnu.org/gcc/libstdcxx");
+
+    console.error(Deno.env.toObject());
   }
 
   run`c++ test.tab.cc`;

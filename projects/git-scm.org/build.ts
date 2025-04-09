@@ -33,9 +33,9 @@ export default async function ({ prefix, tag, version, props }: BuildOptions) {
       );
     }
   } else {
-    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`, 1);
+    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`);
 
-    Deno.chdir("contrib\\buildsystems");
+    Deno.chdir(`git-${tag}\\contrib\\buildsystems`);
 
     //TODO this uses vcpkg to install zlib, etc. which we don't want
     //NOTE cannot build in a separate directory or the install fails

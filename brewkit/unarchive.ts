@@ -16,7 +16,7 @@ export default async function (
 
   const input = await (async () => {
     if (!predownloaded_file.isFile()) {
-      const rsp: Response = await fetch(url);
+      const rsp: Response = await fetch(url, { headers: {"User-Agent": "pkgx/manifests"} });
       if (!rsp.ok) {
         throw new Error("failed to connect to host");
       }

@@ -5,6 +5,8 @@ export default async function build({ prefix, version, tag }: BuildOptions) {
   await unarchive(url, { stripComponents: 1 });
 
   for await (const [path, {isDirectory}] of Path.cwd().ls()) {
+    console.error(path.string);
+
     if (isDirectory) {
       path.mv({ into: prefix.mkdir('p') });
     }

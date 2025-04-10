@@ -1,13 +1,36 @@
-import { run } from "brewkit";
+import { nonce, run } from "brewkit";
+import { assertEquals } from "jsr:@std/assert@1/equals";
 
 export default async function () {
-  // env:
-//   STRING: asdf123%!*
-// script:
-//   - test $(echo "$STRING" | zstd  | zstd -d) = "$STRING"
-//   - test $(echo "$STRING" | pzstd | zstd -d) = "$STRING"
-//   - test $(echo "$STRING" | xz    | zstd -d) = "$STRING"
-//   - test $(echo "$STRING" | lz4   | zstd -d) = "$STRING"
-//   - test $(echo "$STRING" | gzip  | zstd -d) = "$STRING"
-// 
+  await test("zstd");
+  await test("pzstd");
+  await test("xz");
+  await test("lz4");
+  await test("gzip");
+}
+
+async function test(cmd: string) {
+  console.error(`testing ${cmd}`);
+
+  const sample = nonce();
+
+  const compress = new Deno.Command(cmd, {
+    stdin: "piped",
+    stdout: "piped",
+  }).spawn();
+  const decompress = new Deno.Command("zstd", {
+    args: ["-d"],
+    stdin: "piped",
+    stdout: "piped",
+  }).spawn();
+
+  compress.stdout.pipeTo(decompress.stdin);
+
+  const writer = await compress.stdin.getWriter();
+  writer.write(new TextEncoder().encode(sample));
+  writer.close();
+
+  const output = new TextDecoder().decode((await decompress.output()).stdout);
+
+  assertEquals(output, sample);
 }

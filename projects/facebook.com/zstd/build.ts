@@ -1,6 +1,6 @@
 import { BuildOptions, unarchive, run, Path } from "brewkit";
 
-export default async function ({ prefix, version }: BuildOptions) {
+export default async function ({ prefix, version, deps }: BuildOptions) {
   await unarchive(`https://github.com/facebook/zstd/archive/v${version}.tar.gz`);
 
   Path.cwd().join("build/out").mkdir().cd();
@@ -13,8 +13,11 @@ export default async function ({ prefix, version }: BuildOptions) {
       -DZSTD_BUILD_CONTRIB=ON
       -DZSTD_LEGACY_SUPPORT=ON
       -DZSTD_ZLIB_SUPPORT=ON
-      -DZSTD_LZMA_SUPPORT=ON
       -DZSTD_LZ4_SUPPORT=ON
+    # -DLIBLZ4_INCLUDE_DIR=${deps["lz4.org"].prefix}/include
+    # -DLIBLZ4_LIBRARY=${deps["lz4.org"].prefix}/lib/liblz4.dylib
+      -DZSTD_LZMA_SUPPORT=ON  # fails on macOS with Xcode 15
+      -DCMAKE_CXX_FLAGS=-std=c++11
       `;
   run`cmake --build .`
   run`cmake --install .`

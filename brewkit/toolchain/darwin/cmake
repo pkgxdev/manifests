@@ -1,2 +1,5 @@
 #!/bin/sh
+
+export CMAKE_PREFIX_PATH="$PKGS"
+
 exec pkgx --quiet cmake "$@"

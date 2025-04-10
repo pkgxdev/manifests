@@ -3,7 +3,7 @@ repository:
 
 linux:
   dependencies:
-    zlib.net: 1
+    zlib.net: ^1
 
 programs:
   - bin/libpng-config

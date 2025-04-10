@@ -1,0 +1,15 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/tiffcp
+  - bin/tiffdump
+  - bin/tiffinfo
+  - bin/tiffset
+  - bin/tiffsplit
+
+dependencies:
+  facebook.com/zstd: ^1
+  libjpeg-turbo.org: ^2,^3
+  zlib.net: ^1

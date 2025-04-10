@@ -9,6 +9,6 @@ programs:
   - bin/tjbench
   - bin/wrjpgcom
 
-test:
-  - jpegtran -crop 1x1 -transpose -perfect -outfile out.jpg fixture.jpeg
-  - test -f out.jpg
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

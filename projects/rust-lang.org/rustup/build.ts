@@ -10,27 +10,4 @@ export default async function build({ prefix, version, props }: BuildOptions) {
   await rsp.body!.pipeTo(file.writable);
 
   rustup_init.chmod(0o755);
-
-  for (const x of tools()) {
-    const script = props.join(Deno.build.os === "windows" ? "shim.cmd" : "shim.sh");
-    script.cp({ to: prefix.bin.join(x) }).chmod(0o755);
-  }
-}
-
-function tools() {
-  return undent`
-    rustc
-    cargo
-    cargo-clippy
-    cargo-fmt
-    clippy-driver
-    rls
-    rust-analyzer
-    rust-gdb
-    rust-gdbgui
-    rust-lldb
-    rustdoc
-    rustfmt
-    rustup
-  `.split(/\s+/);
 }

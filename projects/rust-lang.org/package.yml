@@ -32,3 +32,6 @@ platforms:
   - darwin/aarch64
   - linux/x86-64
   - windows/x86-64
+
+env:
+   CARGO_INSTALL_ROOT: "{{home}}/.local/bin"

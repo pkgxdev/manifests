@@ -16,9 +16,6 @@ platforms:
   - linux/x86-64
   - windows/x86-64
 
-deprecated-names:
-  - deno.land
-
 # TODO compile deno ourselves and make this the default
 env:
   DENO_INSTALL_ROOT: "{{home}}/.local/bin"

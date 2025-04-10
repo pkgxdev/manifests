@@ -7,8 +7,8 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
     run`cmake .
           -B build
           -DCMAKE_INSTALL_PREFIX=${prefix}
-          -DZLIB_INCLUDE_DIR=${deps["zlib.net"].prefix}/include
-          -DZLIB_LIBRARY=${deps["zlib.net"].prefix}/lib/zlib.lib
+        # -DZLIB_INCLUDE_DIR=${deps["zlib.net"].prefix}/include
+        # -DZLIB_LIBRARY=${deps["zlib.net"].prefix}/lib/zlib.lib
           -DCURL_USE_LIBPSL=OFF
           -DBUILD_TESTING=OFF
           -DCURL_USE_SCHANNEL=ON

@@ -12,3 +12,7 @@ programs:
   - bin/xml2-config
   - bin/xmlcatalog
   - bin/xmllint
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

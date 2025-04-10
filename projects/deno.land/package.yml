@@ -4,8 +4,8 @@ name:
 repository:
   https://github.com/denoland/deno
 
-programs:
-  - bin/deno
+# programs:
+#   - bin/deno
 
 linux:
   companions:

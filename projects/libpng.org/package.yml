@@ -10,3 +10,7 @@ programs:
   - bin/libpng{{version.major}}{{version.minor}}-config
   - bin/png-fix-itxt
   - bin/pngfix
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

@@ -208,3 +208,13 @@ export function platform_partial_path() {
 
 import walk_pkgx_dir from "./walk-pkgx-dir.ts";
 export { walk_pkgx_dir };
+
+import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
+import { expandGlobSync } from "jsr:@std/fs@1/expand-glob";
+export function fixture(ext: string) {
+  const path = new Path(fromFileUrl(import.meta.url)).join('fixtures');
+  for (const foo of expandGlobSync(`${path}/*.${ext}`)) {
+    return foo.path;
+  }
+  throw new Error(`no fixture found for ${ext}`);
+}

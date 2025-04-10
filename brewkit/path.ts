@@ -385,6 +385,11 @@ export default class Path {
     return this;
   }
 
+  mkparent(): Path {
+    this.parent().mkdir("p");
+    return this;
+  }
+
   isEmpty(): Path | undefined {
     for (const _ of Deno.readDirSync(this.string)) {
       return;

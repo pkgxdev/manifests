@@ -5,9 +5,10 @@ import { crc32 } from "https://deno.land/x/crc32/mod.ts";
 
 export default async function (
   url: string,
-  stripComponents = url.endsWith(".zip") ? undefined : 1,
+  opts: {stripComponents?: number} = {stripComponents: url.endsWith(".zip") ? undefined : 1},
 ): Promise<void> {
   console.error("%c+", "color:yellow", "unarchiving:", url);
+  const { stripComponents } = opts;
 
   const root = new Path(fromFileUrl(import.meta.url)).join("../../artifacts/archives").mkdir('p');
   const ext = Path.root.join(basename(url)).extname();
@@ -67,6 +68,19 @@ export default async function (
     if (!success) {
       throw new Error("unarchive failed");
     }
+
+    if (stripComponents) {
+      if (stripComponents != 1) throw new Error("only supporting 1 strip component for zips! please fix!");
+      for await (const [path, {isDirectory}] of Path.cwd().ls()) {
+        if (isDirectory) {
+          for await (const [inner_path] of path.ls()) {
+            inner_path.mv({ into: Path.cwd() });
+          }
+        }
+        path.rm();
+      }
+    }
+
   }
 
   // make user accessible symlink

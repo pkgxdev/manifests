@@ -1,0 +1,9 @@
+repository:
+  https://github.com/libssh2/libssh2
+
+dependencies:
+  openssl.org: ^3
+
+linux:
+  dependencies:
+    zlib.net: ^1.2

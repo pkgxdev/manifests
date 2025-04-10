@@ -6,6 +6,7 @@ if [ ! "$1" ]; then
 fi
 
 mkdir -p projects/$1
+
 touch projects/$1/package.yml
 
 cat <<EOF > projects/$1/build.ts
@@ -24,4 +25,8 @@ export default function() {
 }
 EOF
 
-code projects/$1 projects/$1/package.yml
+if [ -f $HOME/src/pantry/projects/$1/package.yml ]; then
+  code projects/$1 projects/$1/package.yml $HOME/src/pantry/projects/$1
+else
+  code projects/$1 projects/$1/package.yml
+fi

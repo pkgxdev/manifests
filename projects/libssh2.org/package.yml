@@ -7,3 +7,7 @@ dependencies:
 linux:
   dependencies:
     zlib.net: ^1.2
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

@@ -280,6 +280,7 @@ export async function setup_deps(tmpdir: Path, srcroot: Path) {
         for await (const [path, {name}] of installation.path.ls()) {
           dst.mkdir('p').join(name).ln("s", { target: path });
         }
+        //FIXME this can end up symlinking the pkg from ~/.pkgx rather than what we just built :/
         dst.parent().join(`v${installation.pkg.version.major}`).rm().ln("s", { target: dst.basename() });
       } else {
         installation.path.cp({ to: dst });

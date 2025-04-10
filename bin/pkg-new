@@ -9,7 +9,11 @@ cd "$(dirname "$0")"/..
 
 mkdir -p projects/$1
 
-touch projects/$1/package.yml
+cat <<EOF >projects/$1/package.yml
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+EOF
 
 cat <<EOF > projects/$1/build.ts
 import { BuildOptions, unarchive, run } from "brewkit";

@@ -1,0 +1,27 @@
+#!/bin/sh
+
+if [ ! "$1" ]; then
+  echo "usage: pkg-new <package-name>"
+  exit 1
+fi
+
+mkdir -p projects/$1
+touch projects/$1/package.yml
+
+cat <<EOF > projects/$1/build.ts
+import { BuildOptions, unarchive, run } from "brewkit";
+
+export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
+  await unarchive(\`https://foo.com/${version}.tgz\`);
+  run\`make\`;
+}
+EOF
+
+cat <<EOF > projects/$1/test.ts
+import { run } from "brewkit";
+
+export default function() {
+}
+EOF
+
+code projects/$1 projects/$1/package.yml

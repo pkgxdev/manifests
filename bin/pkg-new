@@ -36,6 +36,15 @@ if (f) {
     new_yaml.programs = yaml['provides'];
   }
 
+  if (yaml['dependencies']) {
+    const deps: Record<string, string> = {};
+    for (let [project, constraint] of Object.entries(yaml['dependencies']) as [string, string | number][]) {
+     if (typeof constraint == 'number') { constraint = '^' + constraint; }
+     deps[project] = constraint;
+    }
+    new_yaml.dependencies = deps;
+  }
+
   f.write(stringify(new_yaml));
 
   const build = stringify(yaml['build'])

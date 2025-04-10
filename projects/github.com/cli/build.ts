@@ -2,7 +2,8 @@ import { unarchive, BuildOptions, Path } from "brewkit";
 
 export default async function build({ prefix, version, tag }: BuildOptions) {
   const url = `https://github.com/cli/cli/releases/download/${tag}/gh_${version}_${platform()}.zip`;
-  await unarchive(url, { stripComponents: 1 });
+  const stripComponents = Deno.build.os == 'windows' ? undefined : 1;
+  await unarchive(url, { stripComponents });
 
   for await (const [path, {isDirectory}] of Path.cwd().ls()) {
     console.error(path.string);

@@ -6,14 +6,11 @@ runs:
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
 
+    - uses: pkgxdev/setup@v4
+      if: runner.os != 'Linux'
+
     - run: |
-        Invoke-WebRequest -Uri "https://pkgx.sh/Windows/x86_64.zip" -OutFile .\\x86_64.zip
-        tar xf .\\x86_64.zip
-        mv .\\pkgx.exe .\\bin
-        rm .\\x86_64.zip
-
-        "$PWD\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
+        Join-Path $PWD "bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         Get-ChildItem -Path brewkit -Recurse -Filter *.ts | ForEach-Object { .\\bin\\pkgx deno -q cache $_.FullName }
         .\\bin\\pkgx deno -q cache .\\.github\\scripts\\generate-versions
       shell: pwsh
@@ -25,17 +22,13 @@ runs:
           # $HOME is different in the docker image vs. github actions
           ln -s /root/.pkgx $HOME
           ln -s /root/.cache $HOME
+          echo "$PWD/bin" >> $GITHUB_PATH
           ;;
         Darwin)
-          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
           find brewkit -name \*.ts | xargs pkgx deno^2 --quiet cache
           pkgx deno^2 --quiet cache .github/scripts/generate-versions
-          ;;
-        esac
-
-        case $(uname) in
-        Linux|Darwin)
           echo "$PWD/bin" >> $GITHUB_PATH
+          ;;
         esac
 
         # we have to run this inside git-bash on Windows

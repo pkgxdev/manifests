@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PKGX_DIST_URL: https://dist.tea.xyz/v2
+  PKGX_DIST_URL: https://dist.pkgx.dev/v2
 
 jobs:
   plan:

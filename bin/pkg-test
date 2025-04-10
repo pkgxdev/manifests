@@ -71,8 +71,6 @@ async function prep_deps() {
   const json = JSON.parse(data);
 
   if (json) {
-    console.error(json);
-
     const SEP = Deno.build.os == "windows" ? ";" : ":";
 
     for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {

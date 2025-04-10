@@ -73,7 +73,7 @@ def fix_install_names
     og_lib_name = lib
 
     if lib.start_with? '@rpath'
-      file = $LIBS.find{ |dep| File.basename(dep['string']) == File.basename(lib) }
+      file = $LIBS.find{ |dep| lib_basename(dep['string']) == lib_basename(lib) }
       if file
         lib = file['string']
       else
@@ -108,6 +108,11 @@ def codesign!
                                 $file.filename)
 
   raise MachO::CodeSigningError, "#{$file.filename}: signing failed!" unless status.success?
+end
+
+def lib_basename(lib)
+  lib = File.basename(lib)
+  lib = lib.sub(/(\.\d+)*\.dylib$/, '')
 end
 
 main

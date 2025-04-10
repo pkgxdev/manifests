@@ -40,6 +40,9 @@ if (f) {
     const deps: Record<string, string> = {};
     for (let [project, constraint] of Object.entries(yaml['dependencies']) as [string, string | number][]) {
      if (typeof constraint == 'number') { constraint = '^' + constraint; }
+     if (project == 'libexpat.github.io') {
+       project = 'github.com/libexpat';
+     }
      deps[project] = constraint;
     }
     new_yaml.dependencies = deps;

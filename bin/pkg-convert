@@ -11,7 +11,7 @@ all: $(OUTPUTS)
 # Rule to process each package.yml file
 $(SRCROOT)/artifacts/pantry/projects/%: $(SRCROOT)/projects/%
 	@mkdir -p $(dir $@)
-	rm -f $(SRCROOT)/artifacts/pantry/pantry*.db
+	rm -f $(SRCROOT)/artifacts/pantry/pantry.db $(SRCROOT)/artifacts/pantry/pantry.*.db
 	$(SRCROOT)/bin/pkg-convert-project "$<" > "$@"
 
 debug:

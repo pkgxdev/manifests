@@ -3,7 +3,12 @@ import { unarchive, BuildOptions, Path } from "brewkit";
 export default async function build({ prefix, version, tag }: BuildOptions) {
   const url = `https://github.com/cli/cli/releases/download/${tag}/gh_${version}_${platform()}.zip`;
   await unarchive(url, { stripComponents: 1 });
-  Path.cwd().mv({ to: prefix.mkparent() });
+
+  for await (const [path, {isDirectory}] of Path.cwd().ls()) {
+    if (isDirectory) {
+      path.mv({ into: prefix.mkdir('p') });
+    }
+  }
 }
 
 function platform() {

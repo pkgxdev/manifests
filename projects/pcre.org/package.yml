@@ -1,0 +1,21 @@
+name:
+  PCRE2
+
+repository:
+  https://github.com/PCRE2Project/pcre2
+
+homepage:
+  https://www.pcre.org
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+#TODO - bin/pcre2-config
+  - bin/pcre2grep
+  - bin/pcre2test
+
+dependencies:
+  sourceware.org/bzip2: ^1
+  zlib.net: ^1

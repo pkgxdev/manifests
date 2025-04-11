@@ -1,6 +1,7 @@
 platforms:
   - darwin/aarch64
   - linux/x86-64
+
 dependencies:
   libpng.org: ^1
   zlib.net: ^1

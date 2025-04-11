@@ -53,16 +53,16 @@ if (f) {
   const build = stringify(yaml['build'])
     .trim()
     .replaceAll(/^/mg, '// ')
-    .replaceAll('{{prefix}}', '${prefix}')
-    .replaceAll("{{hw.concurrency}}", '${navigator.hardwareConcurrency}');
+    .replaceAll(/{{\s+prefix\s+}}/g, '${prefix}')
+    .replaceAll(/{{\s+hw.concurrency\s+}}/g, '${navigator.hardwareConcurrency}');
 
   const url = yaml['distributable']?.['url']
-    ?.replaceAll("{{version}}", '${version}')
-    .replaceAll("{{tag}}", '${tag}')
-    .replaceAll("{{version.major}}", '${version.major}')
-    .replaceAll("{{version.minor}}", '${version.minor}')
-    .replaceAll("{{version.patch}}", '${version.patch}')
-    .replaceAll("{{version.marketing}}", '${version.marketing}');
+    ?.replaceAll(/{{\s+version\s+}}/g, '${version}')
+    .replaceAll(/{{\s+tag\s+}}/g, '${tag}')
+    .replaceAll(/{{\s+version.major\s+}}/g, '${version.major}')
+    .replaceAll(/{{\s+version.minor\s+}}/g, '${version.minor}')
+    .replaceAll(/{{\s+version.patch\s+}}/g, '${version.patch}')
+    .replaceAll(/{{\s+version.marketing\s+}}/g, '${version.marketing}');
 
   f.parent().join("build.ts").write(undent`
     import { BuildOptions, unarchive, run } from "brewkit";

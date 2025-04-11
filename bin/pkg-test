@@ -10,10 +10,11 @@ const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
 const tmpdir = mktempd();
 const deno = find_in_PATH("deno")!.string;
 
+await ensure_pantry();
+
 Deno.env.set("PKGX_PANTRY_DIR", srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string);
 Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
 
-await ensure_pantry();
 await prep_toolchain();
 const { prefix, version } = await prep_deps();
 await prep_script();
@@ -25,7 +26,7 @@ tmpdir.rm('rf');
 
 async function ensure_pantry() {
   if (Deno.build.os != "windows") {
-    // GNU Make fails spectacularly without bash
+    // ^^ GNU Make fails spectacularly without bash
     return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
   }
 }

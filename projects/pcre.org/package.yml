@@ -20,3 +20,8 @@ programs:
 dependencies:
   sourceware.org/bzip2: ^1
   zlib.net: ^1
+
+linux:
+  dependencies:
+    #FIXME actually only required for pcre1
+    gnu.org/gcc/libstdcxx: ^14

@@ -1,7 +1,7 @@
 programs:
   - bin/awk
   - bin/gawk
-  # - bin/gawk-{{version}}
+  - bin/gawk-{{version}}
   - bin/gawkbug
 
 platforms:

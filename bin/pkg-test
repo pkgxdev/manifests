@@ -1,7 +1,7 @@
 #!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -A
 
 import { fromFileUrl } from "jsr:@std/path@^1";
-import { backticks_quiet, parse, Path, platform_partial_path, undent } from "brewkit";
+import { backticks_quiet, parse, Path, platform_partial_path, stringify, undent } from "brewkit";
 import { find_in_PATH } from "../brewkit/env-include.ts";
 import { setup_deps } from "./pkg-build";
 
@@ -72,7 +72,7 @@ async function prep_deps() {
 
   Deno.env.set("PKGX_DIR", tmpdir.join("pkgs").string);
 
-  const data = backticks_quiet`pkgx -q +${pkg.project} --json=v1`;
+  const data = backticks_quiet`pkgx -q +${stringify(pkg)} --json=v1`;
   const json = JSON.parse(data);
 
   if (json) {

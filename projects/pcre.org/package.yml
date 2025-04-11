@@ -11,8 +11,9 @@ platforms:
   - darwin/aarch64
   - linux/x86-64
 
+# FIXME these are all versionless for <=8.45
 programs:
-#TODO - bin/pcre2-config
+  - bin/pcre2-config
   - bin/pcre2grep
   - bin/pcre2test
 

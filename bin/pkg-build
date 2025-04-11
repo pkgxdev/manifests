@@ -20,9 +20,9 @@ if (import.meta.main) {
 
   try {
     await prep_toolchain(tmpdir, srcroot);
-    await prep_deps(pkg, tmpdir, srcroot);
+    const env = await prep_deps(pkg, tmpdir, srcroot);
     await prep_script(pkg, tmpdir, srcroot);
-    await run(pkg, tmpdir, srcroot, deno);
+    await run(pkg, tmpdir, srcroot, deno, env);
     await post(pkg, tmpdir, srcroot);
 
     if (!Deno.args.includes("--keep-stage")) {
@@ -110,9 +110,11 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
   // symlink prebuilt (for dev) and predownloaded (for efficiency) pkgs into our deps dir
   await setup_deps(tmpdir, srcroot);
 
-  Deno.env.set("PKGX_PANTRY_DIR", srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string);
-  Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
-  Deno.env.set("PKGX_DIR", tmpdir.join("pkgs").string);
+  const env: Record<string, string> = {};
+
+  env["PKGX_PANTRY_DIR"] = srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string;
+  env["PKGX_DIST_URL"] = "https://dist.pkgx.dev/v2";
+  env["PKGX_DIR"] = tmpdir.join("pkgs").string;
 
   const json = await parse_deps(pkg.project);
 
@@ -120,11 +122,7 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     const SEP = Deno.build.os == "windows" ? ";" : ":";
 
     for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
-      let value = paths.join(SEP);
-      if (Deno.env.get(key)) {
-        value += `${SEP}${Deno.env.get(key)}`;
-      }
-      Deno.env.set(key, value);
+      env[key] = paths.join(SEP);
     }
 
     const keep = new Set();
@@ -137,7 +135,7 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     }
 
     const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
-    Deno.env.set("PKGS", pkgs.join(SEP));
+    env["PKGS"] = pkgs.join(SEP);
 
     for await (const {pkg: { project }, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
       if (keep.has(project)) continue;
@@ -160,9 +158,13 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
       }
     }
   }
+
+  env["PATH"] += `:${Deno.env.get("PATH")}`;
+
+  return env;
 }
 
-async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: string) {
+async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: string, env: Record<string, string>) {
   let [cmd, ...args]: string[] = (() => {
     if (Deno.build.os !== 'darwin') return [deno];
 
@@ -213,7 +215,7 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
     console.log("::endgroup::");
   }
 
-  const proc = new Deno.Command(cmd, { args }).spawn();
+  const proc = new Deno.Command(cmd, { args, env, clearEnv: true }).spawn();
   const { code, success } = await proc.status;
   if (!success) {
     Deno.exit(code);

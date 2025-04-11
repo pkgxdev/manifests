@@ -46,6 +46,7 @@ jobs:
       - run: |
           eval "$(pkgx +gnu.org/gcc/libstdcxx)"
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v4
 

@@ -61,7 +61,7 @@ COPY --from=stage1 /root/base.tgz /root/base.tgz
 
 RUN apt-get update && \
   apt-get install --yes libc6-dev linux-libc-dev libgcc-8-dev libgcc1 && \
-  echo "Yes, do as I say!" | apt-get remove libstdc++6
+  echo "Yes, do as I say!" | apt-get remove libstdc++6 libncursesw6 ncurses-base ncurses-bin
 
 # restore libgcc-8-dev
 RUN tar xzf /root/base.tgz -C / && rm /root/base.tgz

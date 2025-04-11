@@ -176,7 +176,7 @@ that (our system is pretty simple and easy, but we haven’t documented it yet).
 
 ## Tasks
 
-### docker build
+### docker-build
 
 ```sh
 docker buildx build \

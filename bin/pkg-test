@@ -24,7 +24,10 @@ tmpdir.rm('rf');
 ///////////////////////////////////////////////////////////////////////////////
 
 async function ensure_pantry() {
-  return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
+  if (Deno.build.os != "windows") {
+    // GNU Make fails spectacularly without bash
+    return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
+  }
 }
 
 async function prep_toolchain() {

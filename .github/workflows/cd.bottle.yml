@@ -44,7 +44,7 @@ jobs:
       # actions/checkout uses node which needs libstdc++ because GitHub
       # didn’t static link it even though they should have
       - run: |
-          eval "$(pkgx +gnu.org/gcc/libstdc++)"
+          eval "$(pkgx +gnu.org/gcc/libstdcxx)"
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4

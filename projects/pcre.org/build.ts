@@ -7,7 +7,7 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
   } else {
     await unarchive(`https://downloads.sourceforge.net/project/pcre/pcre/${tag}/pcre-${tag}.tar.bz2`);
     if (Deno.build.os == 'linux') {
-      env_include("gnu.org/gcc/libstcxx");
+      env_include("gnu.org/gcc/libstdcxx");
     }
   }
 

@@ -20,8 +20,8 @@ runs:
         case $(uname) in
         Linux)
           # $HOME is different in the docker image vs. github actions
-          mv /root/.pkgx/* $HOME/.pkgx
-          mv /root/.cache $HOME
+          ln -s /root/.pkgx/* $HOME/.pkgx
+          ln -s /root/.cache $HOME
           echo "$PWD/bin" >> $GITHUB_PATH
           ;;
         Darwin)

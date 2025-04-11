@@ -20,7 +20,7 @@ runs:
         case $(uname) in
         Linux)
           # $HOME is different in the docker image vs. github actions
-          rm -rf $HOME/.pkgx
+          rm -rf $HOME/.pkgx $HOME/.cache
           ln -s /root/.pkgx $HOME
           ln -s /root/.cache $HOME
           echo "$PWD/bin" >> $GITHUB_PATH

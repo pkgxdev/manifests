@@ -117,9 +117,6 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
   const json = await parse_deps(pkg.project);
 
   if (json) {
-    // console.error(json);
-    // Deno.exit(1);
-
     const SEP = Deno.build.os == "windows" ? ";" : ":";
 
     for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {

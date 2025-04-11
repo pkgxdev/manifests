@@ -41,6 +41,13 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
     steps:
+      # actions/checkout uses node which needs libstdc++ because GitHub
+      # didn’t static link it even though they should have
+      - uses: pkgxdev/setup@v4
+        with:
+          +: gnu.org/gcc/libstdcxx@14
+        if: ${{ runner.os == 'Linux' }}
+
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/setup

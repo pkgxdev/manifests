@@ -1,5 +1,10 @@
 import { fixup, parse, Path, Prefix, SemVer, semver, set_active_pkg, walk_pkgx_dir } from "brewkit";
-import { Console } from "node:console";
+
+if (Deno.env.get("GITHUB_ACTIONS")) {
+  console.log("::group::env");
+  Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(`${key}=${value}`));
+  console.log("::endgroup::");
+}
 
 const pkg = parse(Deno.args[0]);
 const build_dir = new Path(Deno.args[1]);

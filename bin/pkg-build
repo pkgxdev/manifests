@@ -209,12 +209,6 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
     tmpdir.join("dst").string,
   );
 
-  if (Deno.env.get("GITHUB_ACTIONS")) {
-    console.log("::group::env");
-    Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(`${key}=${value}`));
-    console.log("::endgroup::");
-  }
-
   const proc = new Deno.Command(cmd, { args, env, clearEnv: true }).spawn();
   const { code, success } = await proc.status;
   if (!success) {

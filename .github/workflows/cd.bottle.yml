@@ -43,10 +43,10 @@ jobs:
     steps:
       # actions/checkout uses node which needs libstdc++ because GitHub
       # didn’t static link it even though they should have
-      - uses: pkgxdev/setup@v4
-        with:
-          +: gnu.org/gcc/libstdcxx@14
-        if: ${{ runner.os == 'Linux' }}
+      - run: |
+          curl https://pkgx.dev/$(uname)/$(uname -m).tgz | tar xz -C /usr/local
+          eval "$(pkgx +gnu.org/gcc/libstdc++)"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
 

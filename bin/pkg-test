@@ -3,11 +3,11 @@
 import { fromFileUrl } from "jsr:@std/path@^1";
 import { backticks_quiet, Path, platform_partial_path, stringify, undent } from "brewkit";
 import { find_in_PATH } from "../brewkit/env-include.ts";
-import { setup_deps, parse_arg_to_pkg } from "./pkg-build";
+import { parse_arg_to_pkg, ensure_pantry } from "./pkg-build";
 
 const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
 
-await ensure_pantry();
+await ensure_pantry(srcroot);
 
 const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
 const tmpdir = mktempd();
@@ -24,13 +24,6 @@ await run();
 tmpdir.rm('rf');
 
 ///////////////////////////////////////////////////////////////////////////////
-
-async function ensure_pantry() {
-  if (Deno.build.os != "windows") {
-    // ^^ GNU Make fails spectacularly without bash
-    return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
-  }
-}
 
 async function prep_toolchain() {
   const bin = tmpdir.join("bin").mkdir();

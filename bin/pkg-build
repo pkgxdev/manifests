@@ -7,6 +7,9 @@ import { fromFileUrl } from "jsr:@std/path@^1";
 
 if (import.meta.main) {
   const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
+
+  await ensure_pantry(srcroot);
+
   const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
   const tmpdir = mktempd();
   const deno = find_in_PATH("deno")!.string;
@@ -116,69 +119,67 @@ async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path)
 }
 
 async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, env: Record<string, string>) {
-  // symlink prebuilt (for dev) and predownloaded (for efficiency) pkgs into our deps dir
-  await setup_deps(tmpdir, srcroot);
-
   env["PKGX_PANTRY_DIR"] = srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string;
   env["PKGX_DIST_URL"] = "https://dist.pkgx.dev/v2";
   env["PKGX_DIR"] = tmpdir.join("pkgs").string;
 
-  const json = await parse_deps(pkg.project, env);
+  const json = await (async () => {
 
-  if (json) {
-    const SEP = Deno.build.os == "windows" ? ";" : ":";
+    // in CI we just install straight to the sandbox for speed
+    // when working locally we want to care about the user’s sanity
 
-    for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
-      if (env[key]) {
-        env[key] = `${env[key]}${SEP}${paths.join(SEP)}`;
-      } else {
-        env[key] = paths.join(SEP);
+    if (!Deno.env.get("CI")) {
+      const json = await parse_deps(pkg.project, {
+        ...env,
+        PKGX_DIR: srcroot.join("artifacts", platform_partial_path()).string
+      });
+
+      if (!json) {
+        return env;
       }
-    }
 
-    const keep = new Set();
-
-    for (const [project, pkg] of Object.entries(json.pkgs)) {
-      for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
-        env[key] = value;
-      }
-      keep.add(project);
-    }
-
-    const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
-    env["PKGS"] = pkgs.join(SEP);
-
-    for await (const {pkg: { project }, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
-      if (keep.has(project)) {
-        if (path.isSymlink()) {
-          const resolved_path = path.realpath();
-          if (Deno.build.os == 'darwin') {
-            // on macOS APFS this is a super fast CoW operation
-            const { success } = await new Deno.Command('cp', {args: ['-cR', resolved_path.string, path.rm().string]}).spawn().status;
-            if (!success) throw new Error();
-          } else {
-            resolved_path.cp({ to: path.rm() });
-          }
+      // first copy the deps into our build sandbox
+      // we install to the pantry clone first for developer-efficiency reasons
+      for (const [,pkg] of Object.entries(json.pkgs)) {
+        const path = new Path(pkg.path);
+        const dst = tmpdir.join("pkgs", path.relative({to: srcroot.join("artifacts", platform_partial_path())}));
+        if (Deno.build.os == 'darwin') {
+          // use macOS APFS super fast CoW copy
+          const { success } = await new Deno.Command('cp', {args: ['-cR', path.string, dst.mkparent().string ]}).spawn().status;
+          if (!success) throw new Error();
+        } else {
+          // slow but what else can you do? symlinks are fragile for our needs
+          path.cp({ to: dst.mkparent() });
         }
-      } else for await (const foo of path.parent().glob("v*")) {
-        foo.rm('rf');
+        // vx symlinks or dynamic linkage rpaths break
+        dst.parent().join(`v${new SemVer(pkg.version).major}`).ln('s', { target: dst.basename() });
       }
     }
 
-    // clear empty dirs for readability
-    //TODO would be better to not copy everything up top but that requires a new query mode on pkgx
-    const dirs = [];
-    for await (const path of tmpdir.join("pkgs").walk({ includeFiles: false, includeSymlinks: false })) {
-      dirs.push(path);
-    }
-    for (const dir of dirs.reverse()) {
-      try {
-        dir.rm();
-      } catch {
-        // noop
-      }
+    // redo getting the json with the build PKGX_DIR
+    return await parse_deps(pkg.project, env)!;
+  })();
+
+  const SEP = Deno.build.os == "windows" ? ";" : ":";
+
+  for (const [key, paths] of Object.entries(json!.env) as [string, string[]][]) {
+    if (env[key]) {
+      env[key] = `${env[key]}${SEP}${paths.join(SEP)}`;
+    } else {
+      env[key] = paths.join(SEP);
     }
   }
+
+  const keep = new Set();
+
+  for (const [project, pkg] of Object.entries(json!.pkgs)) {
+    for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
+      env[key] = value;
+    }
+    keep.add(project);
+  }
+
+  env["PKGS"] = Object.values(json!.pkgs).map(({ path }: any) => path).join(SEP);
 
   return env;
 }
@@ -276,31 +277,6 @@ function mktempd() {
   return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
 }
 
-export async function setup_deps(tmpdir: Path, srcroot: Path) {
-  const deps_srcs = [srcroot.join("artifacts", platform_partial_path())];
-  if (Deno.env.get("PKGX_DIST_URL")?.endsWith('/v2')) {
-    deps_srcs.push(Path.home().join(".pkgx"));
-  }
-  for (const PKGX_DIR of deps_srcs) {
-    if (!PKGX_DIR.isDirectory()) continue;
-    for await (const installation of walk_pkgx_dir(PKGX_DIR)) {
-      const dst = tmpdir.join("pkgs", installation.path.relative({ to: PKGX_DIR }))
-      if (dst.exists()) continue;
-      if (Deno.build.os != 'windows') {
-        // we have to symlink the contents rather than the v1.2.3 directory
-        // because pkgx skips symlinks when evaluating cellar paths
-        for await (const [path, {name}] of installation.path.ls()) {
-          dst.mkdir('p').join(name).ln("s", { target: path });
-        }
-        //FIXME this can end up symlinking the pkg from ~/.pkgx rather than what we just built :/
-        dst.parent().join(`v${installation.pkg.version.major}`).rm().ln("s", { target: dst.basename() });
-      } else {
-        installation.path.cp({ to: dst });
-      }
-    }
-  }
-}
-
 export function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement {
   const pkg = parse(arg);
   if (srcroot.join("projects", pkg.project).isDirectory()) {
@@ -321,5 +297,12 @@ export function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement
     }
     pkg.project = out
     return pkg;
+  }
+}
+
+export function ensure_pantry(srcroot: Path) {
+  if (Deno.build.os != "windows") {
+    // ^^ GNU Make fails spectacularly without bash
+    return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
   }
 }

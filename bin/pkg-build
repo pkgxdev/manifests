@@ -19,8 +19,8 @@ if (import.meta.main) {
   );
 
   try {
-    await prep_toolchain(tmpdir, srcroot);
-    const env = await prep_deps(pkg, tmpdir, srcroot);
+    const env = await prep_toolchain(tmpdir, srcroot);
+    await prep_deps(pkg, tmpdir, srcroot, env);
     await prep_script(pkg, tmpdir, srcroot);
     await run(pkg, tmpdir, srcroot, deno, env);
     await post(pkg, tmpdir, srcroot);
@@ -41,6 +41,8 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
   srcroot.join("brewkit/toolchain", Deno.build.os).cp({ to: bin });
   find_in_PATH("pkgx")!.cp({ into: bin });
 
+  const env: Record<string, string> = {};
+
   switch (Deno.build.os) {
   case 'linux':
     const llvm_bin = new Path(await backticks_quiet`pkgx -q +llvm.org -- which clang`).parent();
@@ -59,22 +61,25 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
     ln('nm', 'llvm-nm');
     ln('strings', 'llvm-strings');
 
-    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
     // stops ./configure from erroring in our container
-    Deno.env.set("FORCE_UNSAFE_CONFIGURE", "1");
+    //TODO configure container to not be `root`
+    env["FORCE_UNSAFE_CONFIGURE"] = "1";
     break;
 
   case 'darwin':
-    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
-    Deno.env.set("MACOSX_DEPLOYMENT_TARGET", "11.0");
-    Deno.env.set("PKG_CONFIG_PATH", `${bin}/pkgconfig`);
+    env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
+    env["MACOSX_DEPLOYMENT_TARGET"] = "11.0";
+    env["PKG_CONFIG_PATH"] = `${bin}/pkgconfig`;
     break;
 
   case 'windows':
-    Deno.env.set("PATH", `${bin};${Deno.env.get("PATH")}`);
+    env["PATH"] = `${bin};${Deno.env.get("PATH")}`;
   }
 
-  Deno.env.set("PKGX_BIN", bin.string);
+  env["PKGX_BIN"] = bin.string;
+
+  return env;
 }
 
 async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
@@ -106,30 +111,32 @@ async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path)
   srcroot.join("deno.lock").cp({ into: tmpdir });
 }
 
-async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
+async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, env: Record<string, string>) {
   // symlink prebuilt (for dev) and predownloaded (for efficiency) pkgs into our deps dir
   await setup_deps(tmpdir, srcroot);
-
-  const env: Record<string, string> = {};
 
   env["PKGX_PANTRY_DIR"] = srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string;
   env["PKGX_DIST_URL"] = "https://dist.pkgx.dev/v2";
   env["PKGX_DIR"] = tmpdir.join("pkgs").string;
 
-  const json = await parse_deps(pkg.project);
+  const json = await parse_deps(pkg.project, env);
 
   if (json) {
     const SEP = Deno.build.os == "windows" ? ";" : ":";
 
     for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
-      env[key] = paths.join(SEP);
+      if (env[key]) {
+        env[key] = `${env[key]}${SEP}${paths.join(SEP)}`;
+      } else {
+        env[key] = paths.join(SEP);
+      }
     }
 
     const keep = new Set();
 
     for (const [project, pkg] of Object.entries(json.pkgs)) {
       for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
-        Deno.env.set(key, value);
+        env[key] = value;
       }
       keep.add(project);
     }
@@ -158,8 +165,6 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
       }
     }
   }
-
-  env["PATH"] += `:${Deno.env.get("PATH")}`;
 
   return env;
 }
@@ -282,7 +287,7 @@ export async function setup_deps(tmpdir: Path, srcroot: Path) {
   }
 }
 
-function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement {
+export function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement {
   const pkg = parse(arg);
   if (srcroot.join("projects", pkg.project).isDirectory()) {
     return pkg;

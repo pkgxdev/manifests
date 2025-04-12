@@ -2,7 +2,7 @@ import { PackageRequirement, utils } from "https://raw.githubusercontent.com/pkg
 import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
 import * as yaml from "jsr:@std/yaml@^1/parse";
 
-export default async function resolveDependencies(pkgspec: string) {
+export default async function resolveDependencies(pkgspec: string, env: Record<string, string>) {
 
   const pkg = utils.pkg.parse(pkgspec);
   const { deps } = get_data(pkg);
@@ -18,6 +18,7 @@ export default async function resolveDependencies(pkgspec: string) {
   const proc = new Deno.Command("pkgx", {
     args: ["--json=v2", "--quiet", ...plus],
     stdout: "piped",
+    env
   }).spawn();
 
   const { success } = await proc.status;

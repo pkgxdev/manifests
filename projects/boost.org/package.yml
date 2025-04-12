@@ -13,3 +13,7 @@ platforms:
 
 dependencies:
   facebook.com/zstd: ^1
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

@@ -1,16 +1,17 @@
 #!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -A
 
 import { fromFileUrl } from "jsr:@std/path@^1";
-import { backticks_quiet, parse, Path, platform_partial_path, stringify, undent } from "brewkit";
+import { backticks_quiet, Path, platform_partial_path, stringify, undent } from "brewkit";
 import { find_in_PATH } from "../brewkit/env-include.ts";
-import { setup_deps } from "./pkg-build";
+import { setup_deps, parse_arg_to_pkg } from "./pkg-build";
 
-const pkg = parse(Deno.args[0]);
 const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
-const tmpdir = mktempd();
-const deno = find_in_PATH("deno")!.string;
 
 await ensure_pantry();
+
+const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
+const tmpdir = mktempd();
+const deno = find_in_PATH("deno")!.string;
 
 Deno.env.set("PKGX_PANTRY_DIR", srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string);
 Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");

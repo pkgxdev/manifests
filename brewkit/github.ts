@@ -66,6 +66,7 @@ export async function tags(repo: string): Promise<{ name: string }[]> {
   while (url) {
     const rsp: Response = await fetch(url, { headers });
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }

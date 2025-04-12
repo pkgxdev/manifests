@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y curl
 RUN curl https://pkgx.sh/$(uname)/$(uname -m).tgz | tar xz -C /usr/local/bin
 
 ENV PKGX_DIST_URL="https://dist.pkgx.dev/v2"
-RUN pkgx +llvm.org +make +patchelf +deno^2
+RUN pkgx +llvm.org +patchelf +deno^2 +gnu.org/gcc/libstdcxx@14
 COPY ./brewkit /work/brewkit
 COPY ./.github /work/.github
 COPY ./deno.jsonc /work/deno.jsonc
@@ -11,7 +11,7 @@ COPY ./deno.lock /work/deno.lock
 RUN cd /work && find ./brewkit -name \*.ts | xargs pkgx deno cache
 RUN pkgx deno cache /work/.github/scripts/generate-versions
 
-RUN apt-get update && apt-get install libgcc-8-dev --yes
+RUN apt-get install libgcc-8-dev --yes
 
 RUN dpkg -L libgcc-8-dev | \
       while read -r file; do \

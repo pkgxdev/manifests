@@ -41,9 +41,11 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
     steps:
-      # actions/checkout uses node which needs libstdc++ because GitHub
-      # didn’t static link it even though they should have
+      # 1. actions/checkout uses node which needs libstdc++
+      # 2. $HOME is different in the docker image vs. github actions
       - run: |
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
           eval "$(pkgx +gnu.org/gcc/libstdcxx)"
           echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
         if: ${{ runner.os == 'Linux' }}
@@ -57,11 +59,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - run: pkg-test ${{env.PROJECT}}=${{env.VERSION}}
-
-      - run: |
-          eval "$(pkgx +aws +xz)"
-          echo "$PATH" >> "$GITHUB_PATH"
-        if: ${{ runner.os == 'Linux' }}
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:

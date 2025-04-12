@@ -19,10 +19,11 @@ runs:
     - run: |
         case $(uname) in
         Linux)
-          # $HOME is different in the docker image vs. github actions
-          rm -rf $HOME/.pkgx $HOME/.cache
-          ln -s /root/.pkgx $HOME
-          ln -s /root/.cache $HOME
+          # needed for bottle steps
+          echo '#!/usr/bin/env -S pkgx -q! aws' >> $PWD/bin/aws
+          echo '#!/usr/bin/env -S pkgx -q! xz' >> $PWD/bin/xz
+          chmod +x $PWD/bin/aws $PWD/bin/xz
+
           echo "$PWD/bin" >> $GITHUB_PATH
           ;;
         Darwin)

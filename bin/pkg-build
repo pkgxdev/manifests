@@ -149,8 +149,18 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, e
     env["PKGS"] = pkgs.join(SEP);
 
     for await (const {pkg: { project }, path} of walk_pkgx_dir(tmpdir.join("pkgs"))) {
-      if (keep.has(project)) continue;
-      for await (const foo of path.parent().glob("v*")) {
+      if (keep.has(project)) {
+        if (path.isSymlink()) {
+          const resolved_path = path.realpath();
+          if (Deno.build.os == 'darwin') {
+            // on macOS APFS this is a super fast CoW operation
+            const { success } = await new Deno.Command('cp', {args: ['-cR', resolved_path.string, path.rm().string]}).spawn().status;
+            if (!success) throw new Error();
+          } else {
+            resolved_path.cp({ to: path.rm() });
+          }
+        }
+      } else for await (const foo of path.parent().glob("v*")) {
         foo.rm('rf');
       }
     }

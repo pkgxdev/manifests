@@ -12,4 +12,7 @@ programs:
 dependencies:
   facebook.com/zstd: ^1
   libjpeg-turbo.org: ^2,^3
-  zlib.net: ^1
+
+linux:
+  dependencies:
+    zlib.net: ^1

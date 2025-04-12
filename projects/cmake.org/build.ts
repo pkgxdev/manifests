@@ -7,10 +7,7 @@ import { BuildOptions, ensure, run, unarchive } from "brewkit";
 export default async function ({ prefix, deps, version }: BuildOptions) {
   await unarchive(`https://github.com/Kitware/CMake/releases/download/v${version}/cmake-${version}.tar.gz`);
 
-  let cmake: any;
   try {
-    ensure("cmake");
-
     run`cmake
           -S .
           -B build

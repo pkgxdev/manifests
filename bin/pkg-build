@@ -79,6 +79,10 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
 
   env["PKGX_BIN"] = bin.string;
 
+  if (Deno.env.get("GITHUB_ACTIONS")) {
+    env["GITHUB_ACTIONS"] = Deno.env.get("GITHUB_ACTIONS")!;
+  }
+
   return env;
 }
 

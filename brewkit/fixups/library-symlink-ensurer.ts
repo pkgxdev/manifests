@@ -22,7 +22,7 @@ export default class LibrarySymlinkEnsurer {
     for (const file of this.files) {
       switch (Deno.build.os) {
         case "linux": {
-          const match = file.basename().match(/(.*\.so)((\.\d+)\.\d+)\.\d+$/);
+          const match = file.basename().match(/(.*\.so)(([\.-]\d+)\.\d+)\.\d+$/);
           if (!match) {
             console.error(`::warning file=${file}::library symlink should have version in name`);
             continue;

@@ -16,3 +16,4 @@ dependencies:
 linux:
   dependencies:
     zlib.net: ^1
+    gnu.org/gcc/libstdcxx: ^14

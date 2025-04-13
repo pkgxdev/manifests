@@ -126,8 +126,9 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
 
   const json = await (async () => {
 
-    // in CI we just install straight to the sandbox for speed
-    // when working locally we want to care about the user and “cache” them
+    // first we get/put deps in the checkout
+    // then copy them into our build sandbox
+    // this because we want a cache for local dev, but also need the built products for testing
 
     const json = await query_pkgx(pkgs, {
       ...env,

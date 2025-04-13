@@ -1,8 +1,9 @@
-import { BuildOptions, unarchive, run } from "brewkit";
+import { BuildOptions, unarchive, run, env_include } from "brewkit";
 
-export default async function ({ prefix, tag }: BuildOptions) {
+export default async function ({ prefix, tag, deps }: BuildOptions) {
   await unarchive(`https://github.com/ImageMagick/ImageMagick/archive/${tag}.tar.gz`);
 
+  Deno.env.set("LDFLAGS", `-L${deps['gnu.org/libtool'].prefix}/lib`);
 
   run`./configure
         --prefix=${prefix}

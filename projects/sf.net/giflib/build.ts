@@ -6,5 +6,5 @@ export default async function ({ prefix, version, props }: BuildOptions) {
     run`patch -p1 --input ${props}/Makefile.patch`;
   }
   run`make --jobs ${navigator.hardwareConcurrency} all`;
-  run`make install PREFIX=${prefix}`
+  run`make install-bin install-lib install-man PREFIX=${prefix}`
 }

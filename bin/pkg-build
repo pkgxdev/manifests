@@ -136,7 +136,7 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
     });
 
     if (!json) {
-      return env;
+      return;
     }
 
     // first copy the deps into our build sandbox
@@ -160,26 +160,28 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
     return await query_pkgx(pkgs, env)!;
   })();
 
-  const SEP = Deno.build.os == "windows" ? ";" : ":";
+  if (json) {
+    const SEP = Deno.build.os == "windows" ? ";" : ":";
 
-  for (const [key, paths] of Object.entries(json!.env) as [string, string[]][]) {
-    if (env[key]) {
-      env[key] = `${paths.join(SEP)}${SEP}${env[key]}`;
-    } else {
-      env[key] = paths.join(SEP);
+    for (const [key, paths] of Object.entries(json!.env) as [string, string[]][]) {
+      if (env[key]) {
+        env[key] = `${paths.join(SEP)}${SEP}${env[key]}`;
+      } else {
+        env[key] = paths.join(SEP);
+      }
     }
-  }
 
-  const keep = new Set();
+    const keep = new Set();
 
-  for (const [project, pkg] of Object.entries(json!.pkgs)) {
-    for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
-      env[key] = value as string;
+    for (const [project, pkg] of Object.entries(json!.pkgs)) {
+      for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
+        env[key] = value as string;
+      }
+      keep.add(project);
     }
-    keep.add(project);
-  }
 
-  env["PKGS"] = Object.values(json!.pkgs).map(({ path }: any) => path).join(SEP);
+    env["PKGS"] = Object.values(json!.pkgs).map(({ path }: any) => path).join(SEP);
+  }
 
   return env;
 }

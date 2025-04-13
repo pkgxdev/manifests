@@ -37,6 +37,7 @@ export async function releases(
       return [];
     }
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }
@@ -49,6 +50,7 @@ export async function releases(
   while (url) {
     const rsp: Response = await fetch(url, { headers });
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }

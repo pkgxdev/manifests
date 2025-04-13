@@ -34,11 +34,9 @@ dependencies:
   # openexr.com: '*'
   # openjpeg.org: '*'
   # google.com/webp: '*'
-  gnu.org/libtool: ^2
+  gnu.org/libtool: ^2  # depends on libltdl
   tukaani.org/xz: ^5
-  sourceware.org/bzip2: ^1
   gnome.org/libxml2: ^2
-  zlib.net: ^1
   # jpeg.org/jpegxl: '*'
   # perl.org: '*'
   # libzip.org: '*'
@@ -55,4 +53,6 @@ dependencies:
 linux:
   dependencies:
     gnu.org/gcc/libstdcxx: ^14
+    sourceware.org/bzip2: ^1
+    zlib.net: ^1
 #     x.org/x11: '*'

@@ -1,9 +1,11 @@
-import { BuildOptions, unarchive, run, SemVer } from "brewkit";
+import { BuildOptions, unarchive, run, SemVer, inreplace } from "brewkit";
 
 export default async function ({ prefix, version, props }: BuildOptions) {
   await unarchive(`https://downloads.sourceforge.net/project/giflib/giflib-${version}.tar.gz`);
   if (Deno.build.os == 'darwin' && version.lt(new SemVer("5.2.2"))) {
     run`patch -p1 --input ${props}/Makefile.patch`;
+  } else {
+    inreplace("Makefile", "$(MAKE) -C doc", "");
   }
   run`make --jobs ${navigator.hardwareConcurrency} all`;
   run`make install-bin install-lib install-man PREFIX=${prefix}`

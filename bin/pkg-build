@@ -1,6 +1,6 @@
 #!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -A
 
-import { walk_pkgx_dir, parse, Path, SemVer, undent, backticks_quiet, platform_partial_path, PackageRequirement } from "brewkit";
+import { stringify, parse, Path, SemVer, undent, backticks_quiet, platform_partial_path, PackageRequirement } from "brewkit";
 import { find_in_PATH } from "../brewkit/env-include.ts";
 import parse_deps from "../brewkit/deps-env.ts";
 import { fromFileUrl } from "jsr:@std/path@^1";
@@ -23,7 +23,8 @@ if (import.meta.main) {
 
   try {
     const env = await prep_toolchain(tmpdir, srcroot);
-    await prep_deps(pkg, tmpdir, srcroot, env);
+    const deps = await parse_deps(pkg, env);
+    await prep_deps(deps, tmpdir, srcroot, env);
     await prep_script(pkg, tmpdir, srcroot);
     await run(pkg, tmpdir, srcroot, deno, env);
     await post(pkg, tmpdir, srcroot);
@@ -118,7 +119,7 @@ async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path)
   srcroot.join("deno.lock").cp({ into: tmpdir });
 }
 
-async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, env: Record<string, string>) {
+export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroot: Path, env: Record<string, string>) {
   env["PKGX_PANTRY_DIR"] = srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string;
   env["PKGX_DIST_URL"] = "https://dist.pkgx.dev/v2";
   env["PKGX_DIR"] = tmpdir.join("pkgs").string;
@@ -126,10 +127,10 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, e
   const json = await (async () => {
 
     // in CI we just install straight to the sandbox for speed
-    // when working locally we want to care about the user’s sanity
+    // when working locally we want to care about the user and “cache” them
 
     if (!Deno.env.get("CI")) {
-      const json = await parse_deps(pkg.project, {
+      const json = await query_pkgx(pkgs, {
         ...env,
         PKGX_DIR: srcroot.join("artifacts", platform_partial_path()).string
       });
@@ -157,14 +158,14 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, e
     }
 
     // redo getting the json with the build PKGX_DIR
-    return await parse_deps(pkg.project, env)!;
+    return await query_pkgx(pkgs, env)!;
   })();
 
   const SEP = Deno.build.os == "windows" ? ";" : ":";
 
   for (const [key, paths] of Object.entries(json!.env) as [string, string[]][]) {
     if (env[key]) {
-      env[key] = `${env[key]}${SEP}${paths.join(SEP)}`;
+      env[key] = `${paths.join(SEP)}${SEP}${env[key]}`;
     } else {
       env[key] = paths.join(SEP);
     }
@@ -174,7 +175,7 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, e
 
   for (const [project, pkg] of Object.entries(json!.pkgs)) {
     for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
-      env[key] = value;
+      env[key] = value as string;
     }
     keep.add(project);
   }
@@ -182,6 +183,40 @@ async function prep_deps(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, e
   env["PKGS"] = Object.values(json!.pkgs).map(({ path }: any) => path).join(SEP);
 
   return env;
+}
+
+async function query_pkgx(deps: PackageRequirement[], env: Record<string, string>) {
+  if (deps.length === 0) return;
+
+  const plus = deps.map((dep) => {
+    let str = stringify(dep);
+    if (str.endsWith("*")) str = str.slice(0, -1); // pkgx^2 bug
+    return `+${str}`;
+  });
+
+  const proc = new Deno.Command("pkgx", {
+    args: ["--json=v2", "--quiet", ...plus],
+    stdout: "piped",
+    env
+  }).spawn();
+
+  const { success } = await proc.status;
+  if (!success) {
+    throw new Error("Fetching dependencies failed!");
+  }
+
+  const stdout = new TextDecoder().decode((await proc.output()).stdout);
+  if (!stdout) return;
+  return JSON.parse(stdout) as {
+    env: Record<string, string[]>;
+    pkgs: Record<string, {
+      runtime_env: Record<string, string>;
+      path: string;
+      project: string;
+      version: string;
+      programs: string[];
+    }>;
+  }
 }
 
 async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: string, env: Record<string, string>) {

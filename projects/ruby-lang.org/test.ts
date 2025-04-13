@@ -1,8 +1,11 @@
-import { backticks, Path, run, undent } from "brewkit";
+import { backticks_quiet, backticks, Path, run, TestOptions, undent } from "brewkit";
 import { assertFalse } from "jsr:@std/assert@^1/false";
 import { ensure } from "../../brewkit/env-include.ts";
+import { assertMatch } from "jsr:@std/assert@1/match";
 
-export default async function () {
+export default async function ({ version }: TestOptions) {
+  assertMatch(backticks_quiet`ruby --version`, new RegExp(`^ruby ${version}`));
+
   run`ruby -e 'puts "Hello World!"'`;
 
   // test bundled ruby libraries can be used

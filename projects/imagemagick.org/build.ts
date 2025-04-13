@@ -5,6 +5,9 @@ export default async function ({ prefix, tag, deps }: BuildOptions) {
 
   Deno.env.set("LDFLAGS", `-L${deps['gnu.org/libtool'].prefix}/lib`);
 
+  console.error("LDFLAGS", Deno.env.get("LDFLAGS"));
+  console.error("LDFLAGS", Deno.env.get("CPATH"));
+
   run`./configure
         --prefix=${prefix}
       # --libdir=${prefix}/lib

@@ -2,7 +2,7 @@ import { fixup, parse, Path, Prefix, SemVer, semver, set_active_pkg, walk_pkgx_d
 
 if (Deno.env.get("GITHUB_ACTIONS")) {
   console.log("::group::env");
-  console.table(Deno.env.toObject());
+  Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(`${key}=${value}`));
   console.log("::endgroup::");
 }
 

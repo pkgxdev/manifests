@@ -34,7 +34,7 @@ dependencies:
   # openexr.com: '*'
   # openjpeg.org: '*'
   # google.com/webp: '*'
-  gnu.org/libtool: ^2  # depends on libltdl
+  gnu.org/libtool: ^2  # the modules system needs libltdl
   tukaani.org/xz: ^5
   gnome.org/libxml2: ^2
   # jpeg.org/jpegxl: '*'

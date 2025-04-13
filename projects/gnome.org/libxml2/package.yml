@@ -5,8 +5,9 @@ env:
   PYTHONPATH: "{{prefix}}/lib/python3.9/site-packages:$PYTHONPATH"
   CPATH: "{{prefix}}/include/libxml2:$CPATH"
 
-dependencies:
-  zlib.net: ^1
+linux:
+  dependencies:
+    zlib.net: ^1
 
 programs:
   - bin/xml2-config

@@ -1,0 +1,58 @@
+repository:
+  https://github.com/ImageMagick/ImageMagick
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/animate
+  - bin/compare
+  - bin/composite
+  - bin/conjure
+  - bin/convert
+  - bin/display
+  - bin/identify
+  - bin/import
+  - bin/magick
+  - bin/magick-script
+  - bin/Magick++-config
+  - bin/MagickCore-config
+  - bin/MagickWand-config
+  - bin/mogrify
+  - bin/montage
+  - bin/stream
+
+dependencies:
+  libpng.org: ^1
+  # ijg.org: '*'
+  freetype.org: ^2
+  libjpeg-turbo.org: ^3
+  # liblqr.wikidot.com: '*'
+  simplesystems.org/libtiff: ^4
+  # littlecms.com: '*'
+  # openexr.com: '*'
+  # openjpeg.org: '*'
+  # google.com/webp: '*'
+  gnu.org/libtool: ^2
+  tukaani.org/xz: ^5
+  sourceware.org/bzip2: ^1
+  gnome.org/libxml2: ^2
+  zlib.net: ^1
+  # jpeg.org/jpegxl: '*'
+  # perl.org: '*'
+  # libzip.org: '*'
+
+# darwin:
+#   dependencies:
+#     openmp.llvm.org: '*'
+#     github.com/strukturag/libheif: '*'
+
+# linux/x86-64:
+#   dependencies:
+#     github.com/strukturag/libheif: '*'
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14
+#     x.org/x11: '*'

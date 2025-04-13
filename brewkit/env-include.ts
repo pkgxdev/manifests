@@ -16,14 +16,19 @@ export default function env_include(pkgspecs: string) {
     Deno.env.set(key, new_value);
   }
 
-  for (const [project, { runtime_env }] of Object.entries(json.pkgs as Record<string, { runtime_env?: Record<string, string> }>)) {
+  const rv: Record<string, string> = {};
+
+  for (const [project, { runtime_env, path }] of Object.entries(json.pkgs as Record<string, { runtime_env?: Record<string, string>, path: string }>)) {
     for (const [key, value] of Object.entries(runtime_env ?? {})) {
       const old_value = Deno.env.get(key);
       let new_value = value.replace(`$${key}`, old_value?.trim() || "");
       new_value = new_value.replace(/:$/, '');
       Deno.env.set(key, new_value);
     }
+    rv[project] = path;
   }
+
+  return rv;
 }
 
 export function ensure(program: string) {

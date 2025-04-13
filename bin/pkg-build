@@ -129,32 +129,30 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
     // in CI we just install straight to the sandbox for speed
     // when working locally we want to care about the user and “cache” them
 
-    if (!Deno.env.get("CI")) {
-      const json = await query_pkgx(pkgs, {
-        ...env,
-        PKGX_DIR: srcroot.join("artifacts", platform_partial_path()).string
-      });
+    const json = await query_pkgx(pkgs, {
+      ...env,
+      PKGX_DIR: srcroot.join("artifacts", platform_partial_path()).string
+    });
 
-      if (!json) {
-        return env;
-      }
+    if (!json) {
+      return env;
+    }
 
-      // first copy the deps into our build sandbox
-      // we install to the pantry clone first for developer-efficiency reasons
-      for (const [,pkg] of Object.entries(json.pkgs)) {
-        const path = new Path(pkg.path);
-        const dst = tmpdir.join("pkgs", path.relative({to: srcroot.join("artifacts", platform_partial_path())}));
-        if (Deno.build.os == 'darwin') {
-          // use macOS APFS super fast CoW copy
-          const { success } = await new Deno.Command('cp', {args: ['-cR', path.string, dst.mkparent().string ]}).spawn().status;
-          if (!success) throw new Error();
-        } else {
-          // slow but what else can you do? symlinks are fragile for our needs
-          path.cp({ to: dst.mkparent() });
-        }
-        // vx symlinks or dynamic linkage rpaths break
-        dst.parent().join(`v${new SemVer(pkg.version).major}`).ln('s', { target: dst.basename() });
+    // first copy the deps into our build sandbox
+    // we install to the pantry clone first for developer-efficiency reasons
+    for (const [,pkg] of Object.entries(json.pkgs)) {
+      const path = new Path(pkg.path);
+      const dst = tmpdir.join("pkgs", path.relative({to: srcroot.join("artifacts", platform_partial_path())}));
+      if (Deno.build.os == 'darwin') {
+        // use macOS APFS super fast CoW copy
+        const { success } = await new Deno.Command('cp', {args: ['-cR', path.string, dst.mkparent().string ]}).spawn().status;
+        if (!success) throw new Error();
+      } else {
+        // slow but what else can you do? symlinks are fragile for our needs
+        path.cp({ to: dst.mkparent() });
       }
+      // vx symlinks or dynamic linkage rpaths break
+      dst.parent().join(`v${new SemVer(pkg.version).major}`).ln('s', { target: dst.basename() });
     }
 
     // redo getting the json with the build PKGX_DIR

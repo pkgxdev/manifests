@@ -39,7 +39,7 @@ export default async function (
           --enable-shared
           ${opts() ? '--enable-optimizations' : ''}
           --with-lto=full
-          --without-ensurepip
+          --with-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
           --disable-test-modules
           ${sqlite() ? '--enable-loadable-sqlite-extensions' : ''}
           --with-configdir=/etc/python

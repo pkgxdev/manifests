@@ -1,0 +1,25 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/gdbus
+  - bin/gdbus-codegen
+  - bin/gio
+  - bin/gio-querymodules
+  - bin/glib-compile-resources
+  - bin/glib-compile-schemas
+  - bin/glib-genmarshal
+  - bin/glib-gettextize
+  - bin/glib-mkenums
+  - bin/gobject-query
+  - bin/gresource
+  - bin/gsettings
+  - bin/gtester
+  - bin/gtester-report
+
+dependencies:
+  gnu.org/gettext: ^0.21
+  sourceware.org/libffi: ^3
+  pcre.org: ^10
+#  python.org: ^3

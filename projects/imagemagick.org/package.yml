@@ -1,3 +1,6 @@
+name:
+  ImageMagick
+
 repository:
   https://github.com/ImageMagick/ImageMagick
 
@@ -33,12 +36,11 @@ dependencies:
   # littlecms.com: '*'
   # openexr.com: '*'
   # openjpeg.org: '*'
-  # google.com/webp: '*'
+  google.com/webp: ^1
   gnu.org/libtool: ^2  # the modules system needs libltdl
   tukaani.org/xz: ^5
   gnome.org/libxml2: ^2
   # jpeg.org/jpegxl: '*'
-  # perl.org: '*'
   # libzip.org: '*'
 
 # darwin:
@@ -56,3 +58,7 @@ linux:
     sourceware.org/bzip2: ^1
     zlib.net: ^1
 #     x.org/x11: '*'
+
+env:
+  MAGICK_HOME: '{{prefix}}'
+  CPATH: "{{prefix}}/include/Magick-{{version.major}}:$CPATH"

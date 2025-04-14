@@ -84,8 +84,8 @@ export default async function (
   }
 
   // make user accessible symlink
-  if (Deno.build.os != 'windows' && predownloaded_file.isFile()) {
-    root.parent().join(platform_partial_path(), active_pkg!.project).mkdir('p').join(`v${active_pkg!.version}+${checksum}${ext}`).rm().ln('s', {target: predownloaded_file});
+  if (Deno.build.os != 'windows' && predownloaded_file.isFile() && active_pkg) {
+    root.parent().join(platform_partial_path(), active_pkg.project).mkdir('p').join(`v${active_pkg.version}+${checksum}${ext}`).rm().ln('s', {target: predownloaded_file});
   }
 }
 

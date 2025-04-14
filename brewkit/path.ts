@@ -429,7 +429,8 @@ export default class Path {
 
   static mktemp(opts?: "d"): Path {
     if (opts == "d") {
-      return new Path(Deno.makeTempDirSync());
+      const dir = Deno.build.os == 'darwin' ? '/tmp' : undefined;
+      return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
     } else {
       return new Path(Deno.makeTempFileSync());
     }

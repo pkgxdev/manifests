@@ -11,7 +11,7 @@ if (import.meta.main) {
   await ensure_pantry(srcroot);
 
   const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
-  const tmpdir = mktempd();
+  const tmpdir = Path.mktemp("d");
   const deno = find_in_PATH("deno")!.string;
 
   console.error("%cstage:", "color: yellow", tmpdir);
@@ -99,7 +99,7 @@ async function prep_script(pkg: PackageRequirement, tmpdir: Path, srcroot: Path)
     src += `import versions from "${foo.fileURL()}";\n`;
   } else {
     src += "import { default_versions } from 'brewkit';\n";
-    src += `const versions = default_versions("${root.join("package.yml").string.replaceAll("\\", "\\\\")}");\n`;
+    src += `const versions = default_versions("${root.join("package.yml").fileURL()}");\n`;
   }
   if (foo = root.join("fixup.ts").isFile()) {
     src += `import process_fixup from "${foo.fileURL()}";\n`;
@@ -308,11 +308,6 @@ async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PREFIX=${dstdir}\n`, { append: true });
     Deno.writeTextFileSync(Deno.env.get("GITHUB_ENV")!, `PLATFORM=${platform_partial_path()}\n`, { append: true });
   }
-}
-
-function mktempd() {
-  const dir = Deno.build.os == 'darwin' ? '/tmp' : undefined;
-  return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
 }
 
 export function parse_arg_to_pkg(arg: string, srcroot: Path): PackageRequirement {

@@ -72,7 +72,7 @@ def fix_install_names
 
     og_lib_name = lib
 
-    if lib.start_with? '@rpath'
+    if lib.start_with? '@rpath' or !lib.include? '/'
       file = $LIBS.find{ |dep| lib_basename(dep['string']) == lib_basename(lib) }
       if file
         lib = file['string']

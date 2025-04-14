@@ -1,0 +1,30 @@
+name:
+  International Components for Unicode
+
+shortname:
+  ICU
+
+repository:
+  https://github.com/unicode-org/icu
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14
+
+programs:
+  - bin/derb
+  - bin/genbrk
+  - bin/gencfu
+  - bin/gencnval
+  - bin/gendict
+  - bin/genrb
+  - bin/icu-config
+  - bin/icuexportdata
+  - bin/icuinfo
+  - bin/makeconv
+  - bin/pkgdata
+  - bin/uconv

@@ -4,7 +4,14 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
   await unarchive(`https://kerberos.org/dist/krb5/${version.marketing}/${tag}.tar.gz`);
   ensure('bison');
   Path.cwd().join("src").cd();
-  run`./configure --prefix=${prefix} --disable-nls --without-system-verto --without-keyutils`;
+  run`./configure
+        --prefix=${prefix}
+        --disable-nls
+        --without-system-verto
+        --without-keyutils
+        --sysconfdir=/etc
+        --localstatedir=/var
+        `;
   run`make --jobs ${navigator.hardwareConcurrency}`;
   run`make install`;
 

@@ -1,6 +1,6 @@
-import { github, Range, semver } from "brewkit";
+import { github, semver } from "brewkit";
 
-export default async function (constraint: Range) {
+export default async function () {
   const rv = [];
   const tags = await github.tags("krb5/krb5");
   for (let { name: tag } of tags) {

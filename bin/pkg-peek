@@ -37,7 +37,7 @@ function versions() {
 }
 
 const script = dir.join("pkg-peek.ts").write(undent`
-  import { Range } from "brewkit";
+  import { Range, SemVer, semver } from "brewkit";
   ${versions()}
   import build from "${root.join("build.ts").fileURL()}";
 
@@ -51,6 +51,8 @@ const script = dir.join("pkg-peek.ts").write(undent`
     .filter(({ version }) => pkg.constraint.satisfies(version))
     .sort((a, b) => semver.compare(a.version, b.version))
     .pop()!;
+
+  version.version.marketing = \`\${version.version.major}.\${version.version.minor}\`;
 
   await build(version);
   `);

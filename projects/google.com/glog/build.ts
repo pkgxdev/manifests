@@ -11,6 +11,6 @@ export default async function ({ prefix, tag }: BuildOptions) {
         -DBUILD_SHARED_LIBS=ON
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_CXX_FLAGS=-std=c++14`;
-  run`cmake --build build --config Release`;
-  run`cmake --build build --config Release --target install`;
+  run`cmake --build bld --config Release`;
+  run`cmake --build bld --config Release --target install`;
 }

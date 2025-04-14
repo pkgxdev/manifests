@@ -44,6 +44,9 @@ if (f) {
      if (project == 'libexpat.github.io') {
        project = 'github.com/libexpat';
      }
+     if (project == 'github.com/gflags/gflags') {
+      project = 'google.com/gflags';
+     }
      deps[project] = constraint;
     }
     new_yaml.dependencies = deps;
@@ -54,7 +57,7 @@ if (f) {
   const build = stringify(yaml['build'])
     .trim()
     .replaceAll(/^/mg, '// ')
-    .replaceAll(/{{\s+prefix\s+}}/g, '${prefix}')
+    .replaceAll(/\$?{{\s+prefix\s+}}/g, '${prefix}')
     .replaceAll(/{{\s+hw.concurrency\s+}}/g, '${navigator.hardwareConcurrency}');
 
   const url = yaml['distributable']?.['url']
@@ -63,6 +66,7 @@ if (f) {
     .replaceAll(/{{\s+version.major\s+}}/g, '${version.major}')
     .replaceAll(/{{\s+version.minor\s+}}/g, '${version.minor}')
     .replaceAll(/{{\s+version.patch\s+}}/g, '${version.patch}')
+    .replaceAll(/{{\s+version.raw\s+}}/g, '${tag}')
     .replaceAll(/{{\s+version.marketing\s+}}/g, '${version.marketing}');
 
   f.parent().join("build.ts").write(undent`

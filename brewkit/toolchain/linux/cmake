@@ -3,4 +3,8 @@
 export CMAKE_PREFIX_PATH="$PKGS"
 export CMAKE_GENERATOR=Ninja
 
-exec pkgx --quiet cmake "$@"
+# we do it this way to prevent libc++ from being unintentionally
+# available to packages that we are building
+eval "$(pkgx --quiet +cmake)"
+
+exec cmake "$@"

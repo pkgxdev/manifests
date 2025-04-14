@@ -1,0 +1,9 @@
+repository:
+  https://github.com/google/glog
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+dependencies:
+  github.com/gflags: ^2

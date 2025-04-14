@@ -225,3 +225,9 @@ export function nonce(length = 32): string {
     .map((n) => base62[n % 62]) // Map random bytes to Base62 characters
     .join("");
 }
+
+import getVersions from "./gitlab.ts";
+export { getVersions as gitlab };
+
+import venvify from "./venvify.ts";
+export { venvify };

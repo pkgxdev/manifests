@@ -1,0 +1,38 @@
+repository:
+  https://github.com/krb5/krb5
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/compile_et
+  - bin/gss-client
+  - bin/k5srvutil
+  - bin/kadmin
+  - bin/kdestroy
+  - bin/kinit
+  - bin/klist
+  - bin/kpasswd
+  - bin/krb5-config
+  - bin/kswitch
+  - bin/ktutil
+  - bin/kvno
+  - bin/sclient
+  - bin/sim_client
+  - bin/uuclient
+  - sbin/gss-server
+  - sbin/kadmin.local
+  - sbin/kadmind
+  - sbin/kdb5_util
+  - sbin/kprop
+  - sbin/kpropd
+  - sbin/kproplog
+  - sbin/krb5-send-pr
+  - sbin/krb5kdc
+  - sbin/sim_server
+  - sbin/sserver
+  - sbin/uuserver
+
+dependencies:
+  openssl.org: ^3

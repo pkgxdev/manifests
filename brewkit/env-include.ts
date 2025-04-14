@@ -33,7 +33,7 @@ export default function env_include(pkgspecs: string) {
 
 export function ensure(program: string) {
   if (Deno.build.os == "darwin" && program == "python") {
-    program = "python3"; // use the provided python even though it's old
+    program = "python3"; // use the provided python even though it's old(ish)
   }
 
   program = parse(program).project;

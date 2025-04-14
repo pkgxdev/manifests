@@ -16,7 +16,7 @@ export default async function(prefix: Path, program: string) {
         fi`;
     }
 
-    run`python -m venv ${prefix}`;
+    run`python3 -m venv ${prefix}`;
     run`${prefix}/bin/pip install --no-cache-dir .`;
 
     const content = Deno.readTextFileSync(`${prefix}/bin/${program}`)

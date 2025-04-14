@@ -1,7 +1,8 @@
 #!/usr/bin/env -S pkgx deno run -A
 
-import { Path, undent } from "brewkit";
+import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
 import { parse, stringify } from "jsr:@std/yaml@1";
+import { Path, undent } from "brewkit";
 
 if (Deno.args.length < 1) {
   console.error("usage: pkg-new <package-name>");
@@ -9,7 +10,7 @@ if (Deno.args.length < 1) {
 }
 
 const project = Deno.args[0];
-const d = Path.cwd()
+const d = new Path(fromFileUrl(import.meta.url)).parent().parent();
 
 let f = Path.home().join("src/pantry/projects", project, "package.yml").isFile();
 if (f) {
@@ -91,7 +92,7 @@ if (f) {
     args: [
       "projects/"+project,
       Path.home().join("src/pantry/projects", project).string,
-      ".",
+      d.string,
       "projects/"+project+"/package.yml",
     ],
   }).spawn().status

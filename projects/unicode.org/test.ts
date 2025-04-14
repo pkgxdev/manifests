@@ -1,14 +1,10 @@
-import { run } from "brewkit";
+import { Path, run } from "brewkit";
 
 export default async function () {
-  // script: |
-//   if test -f /usr/share/dict/words; then
-//     gendict --uchars /usr/share/dict/words dict
-//   else
-//     gendict --uchars $FIXTURE dict
-//   fi
-// fixture: |
-//   hello
-//   world
-// 
+  if (new Path("/usr/share/dict/words").isFile()) {
+    run`gendict --uchars /usr/share/dict/words dict`;
+  } else {
+    Deno.writeTextFileSync("./fixture", "hello\nworld");
+    run`gendict --uchars ./fixture dict`;
+  }
 }

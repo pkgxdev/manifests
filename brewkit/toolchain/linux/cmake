@@ -5,6 +5,4 @@ export CMAKE_GENERATOR=Ninja
 
 # we do it this way to prevent libc++ from being unintentionally
 # available to packages that we are building
-eval "$(pkgx --quiet +cmake)"
-
-exec cmake "$@"
+exec "$(pkgx --quiet +cmake -- which cmake)" "$@"

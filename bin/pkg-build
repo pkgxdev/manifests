@@ -86,6 +86,9 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
   if (Deno.env.get("GITHUB_ACTIONS")) {
     env["GITHUB_ACTIONS"] = Deno.env.get("GITHUB_ACTIONS")!;
   }
+  if (Deno.env.get("GITHUB_TOKEN")) {
+    env["GITHUB_TOKEN"] = Deno.env.get("GITHUB_TOKEN")!;
+  }
 
   return env;
 }

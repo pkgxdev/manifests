@@ -1,5 +1,5 @@
 import gnu_versions from "../gnu-versions.ts";
 
 export default async function () {
-  return gnu_versions("autoconf");
+  return gnu_versions("bash");
 }

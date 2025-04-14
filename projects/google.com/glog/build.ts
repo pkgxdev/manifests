@@ -1,7 +1,10 @@
-import { BuildOptions, unarchive, run } from "brewkit";
+import { BuildOptions, unarchive, run, env_include } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://github.com/google/glog/archive/refs/tags/${tag}.tar.gz`);
+
+  env_include("github.com/gflags^2");
+
   run`cmake
         -B bld
         -DCMAKE_INSTALL_PREFIX=${prefix}

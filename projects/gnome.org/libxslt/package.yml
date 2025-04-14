@@ -1,0 +1,13 @@
+repository:
+  https://github.com/GNOME/libxslt
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/xslt-config
+  - bin/xsltproc
+
+dependencies:
+  gnome.org/libxml2: '*'

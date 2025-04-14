@@ -1,9 +1,10 @@
 import { isNumber, isString } from "https://deno.land/x/is_what@v4.1.15/src/index.ts";
+import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
 import { github, Range, SemVer } from "brewkit";
 import { parse } from "jsr:@std/yaml@^1";
 
 export default function (yamlfile: string) {
-  const data = Deno.readTextFileSync(yamlfile);
+  const data = Deno.readTextFileSync(fromFileUrl(yamlfile));
   const yaml = parse(data) as any;
   if (Array.isArray(yaml.versions)) {
     return () =>

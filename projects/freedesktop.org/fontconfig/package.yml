@@ -1,3 +1,6 @@
+name:
+  Fontconfig
+
 repository:
   https://gitlab.freedesktop.org/fontconfig/fontconfig
 

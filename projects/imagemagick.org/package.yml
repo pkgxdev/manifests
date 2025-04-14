@@ -27,7 +27,7 @@ dependencies:
   libpng.org: ^1
   # ijg.org: '*'
   freetype.org: ^2
-  libjpeg-turbo.org: ^3
+  libjpeg-turbo.org: ^2,^3
   # liblqr.wikidot.com: '*'
   simplesystems.org/libtiff: ^4
   # littlecms.com: '*'

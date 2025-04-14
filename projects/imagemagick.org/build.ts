@@ -1,12 +1,7 @@
-import { BuildOptions, unarchive, run, env_include } from "brewkit";
+import { BuildOptions, unarchive, run } from "brewkit";
 
-export default async function ({ prefix, tag, deps }: BuildOptions) {
+export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://github.com/ImageMagick/ImageMagick/archive/${tag}.tar.gz`);
-
-  Deno.env.set("LDFLAGS", `-L${deps['gnu.org/libtool'].prefix}/lib`);
-
-  console.error("LDFLAGS", Deno.env.get("LDFLAGS"));
-  console.error("LDFLAGS", Deno.env.get("CPATH"));
 
   run`./configure
         --prefix=${prefix}

@@ -73,12 +73,6 @@ def fix_install_names
     og_lib_name = lib
 
     if lib.start_with? '@rpath'
-
-      unless lib.start_with? "@rpath/#{Pathname.new($prefix).relative_path_from($PKGX_DIR)}"
-        puts "::notice file=#{$file.filename}::skipping (assuming well-formed): #{lib}"
-        next
-      end
-
       file = $LIBS.find{ |dep| lib_basename(dep['string']) == lib_basename(lib) }
       if file
         lib = file['string']

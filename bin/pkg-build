@@ -174,8 +174,10 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
     const keep = new Set();
 
     for (const [project, pkg] of Object.entries(json!.pkgs)) {
-      for (const [key, value] of Object.entries(pkg.runtime_env ?? {})) {
-        env[key] = value as string;
+      for (const [key, value] of Object.entries(pkg.runtime_env ?? {} as Record<string, string>)) {
+        let v = value.replace(`:$${key}`, `:${env[key]}`);
+        v = v.replace(/:$/, "");
+        env[key] = v;
       }
       keep.add(project);
     }

@@ -7,7 +7,10 @@ repository:
 dependencies:
   lz4.org: ^1
   tukaani.org/xz: ^5
-  zlib.net: ^1
+
+linux:
+  dependencies:
+    zlib.net: ^1
 
 platforms:
   - darwin/aarch64

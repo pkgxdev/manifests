@@ -1,7 +1,8 @@
-import { BuildOptions, unarchive, run } from "brewkit";
+import { BuildOptions, unarchive, run, Path } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://github.com/gflags/gflags/archive/refs/tags/${tag}.tar.gz`);
+
   run`cmake
         -B bld
         -DCMAKE_INSTALL_PREFIX=${prefix}
@@ -10,6 +11,10 @@ export default async function ({ prefix, tag }: BuildOptions) {
         -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         -DCMAKE_POLICY_VERSION_MINIMUM=3.5  # †
         `;
+
+  // Path.cwd().parent().join("pkgs/gnu.org/gcc/libstdcxx/v14/include").rm('rf');
+  // new Path("/root/.pkgx/gnu.org").rm('rf');
+
   run`cmake --build bld --target install --config Release`;
 }
 

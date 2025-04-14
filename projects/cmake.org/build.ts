@@ -38,4 +38,5 @@ export default async function ({ prefix, deps, version }: BuildOptions) {
 
   // we have a “docs are on the Internet” policy
   prefix.share.join(`cmake-${version.marketing}/Help`).rm("rf");
+  prefix.join("doc").rm("rf");
 }

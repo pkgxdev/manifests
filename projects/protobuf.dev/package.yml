@@ -1,0 +1,18 @@
+name: Protocol Buffers
+
+repository:
+  https://github.com/protocolbuffers/protobuf
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/protoc
+
+dependencies:
+  abseil.io: '*'  # abseil devs don’t give two shits about semver (or you)
+
+linux:
+  dependencies:
+    zlib.net: ^1

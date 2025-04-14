@@ -98,7 +98,7 @@ export default async function default_fixups(
               path.rm();
               //TODO need to update the empty dir pruner
               continue;
-            case "cmake":
+            case ".cmake":
               await fix_cmake_file(path, prefix);
               break;
           }

@@ -1,0 +1,6 @@
+repository:
+  https://github.com/abseil/abseil-cpp
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

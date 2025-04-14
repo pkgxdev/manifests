@@ -94,10 +94,10 @@ if (f) {
 
   await new Deno.Command("code", {
     args: [
-      "projects/"+project,
+      d.join("projects", project).string,
       Path.home().join("src/pantry/projects", project).string,
       d.string,
-      "projects/"+project+"/package.yml",
+      d.join("projects", project, "package.yml").string
     ],
   }).spawn().status
 

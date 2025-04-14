@@ -1,6 +1,9 @@
 repository:
   https://gitlab.freedesktop.org/fontconfig/fontconfig
 
+homepage:
+  https://www.freedesktop.org/wiki/Software/fontconfig
+
 platforms:
   - darwin/aarch64
   - linux/x86-64

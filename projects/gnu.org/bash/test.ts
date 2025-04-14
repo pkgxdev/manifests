@@ -1,6 +1,5 @@
 import { run } from "brewkit";
 
 export default async function () {
-  // bash -c "set -o pipefail"
-// 
+  run`bash -c "set -o pipefail"`;
 }

@@ -47,10 +47,8 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
       `prefix=/imagemagick.org/v${version}`,
       `prefix="$(cd "$(dirname "$0")/.." && pwd)"`);
 
-    console.error(Path.cwd().parent().join("bin/pkg-config").string);
-
     inreplace(fn,
-      Path.cwd().parent().join("bin/pkg-config").string,
+      prefix.parent().parent().parent().join("bin/pkg-config").string,
       "pkgx pkg-config");
   }
 }

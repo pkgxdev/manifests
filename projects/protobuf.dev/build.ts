@@ -1,7 +1,9 @@
 import { BuildOptions, unarchive, run } from "brewkit";
+import env_include from "../../brewkit/env-include.ts";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://github.com/protocolbuffers/protobuf/archive/refs/tags/${tag}.tar.gz`);
+  env_include("abseil.io");
   run`cmake
         -B bld
         -Dprotobuf_BUILD_LIBPROTOC=ON

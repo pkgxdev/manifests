@@ -10,9 +10,6 @@ platforms:
 programs:
   - bin/protoc
 
-dependencies:
-  abseil.io: '*'  # abseil devs don’t give two shits about semver (or you)
-
 linux:
   dependencies:
     zlib.net: ^1

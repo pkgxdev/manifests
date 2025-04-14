@@ -6,7 +6,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
   run`cmake
         -B bld
         -DCMAKE_CXX_STANDARD=17
-        -DBUILD_SHARED_LIBS=ON
+        -DBUILD_SHARED_LIBS=OFF
         -DCMAKE_INSTALL_RPATH=${prefix}/lib
         -DCMAKE_BINARY_DIR=${prefix}/bin
         -DABSL_PROPAGATE_CXX_STD=ON

@@ -11,7 +11,7 @@ if (import.meta.main) {
   await ensure_pantry(srcroot);
 
   const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
-  const tmpdir = Path.mktemp("d");
+  const tmpdir = mktemp();
   const deno = find_in_PATH("deno")!.string;
 
   console.error("%cstage:", "color: yellow", tmpdir);
@@ -340,5 +340,13 @@ export function ensure_pantry(srcroot: Path) {
   if (Deno.build.os != "windows") {
     // ^^ GNU Make fails spectacularly without bash
     return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
+  }
+}
+
+function mktemp() {
+  if (Deno.env.get("CI")) {
+    return Path.root.join("b")
+  } else {
+    return Path.mktemp("d");
   }
 }

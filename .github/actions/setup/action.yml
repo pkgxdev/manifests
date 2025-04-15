@@ -30,6 +30,7 @@ runs:
           find brewkit -name \*.ts | xargs pkgx deno^2 --quiet cache
           pkgx deno^2 --quiet cache .github/scripts/generate-versions
           echo "$PWD/bin" >> $GITHUB_PATH
+          sudo chmod ugo+rwx /opt
           ;;
         esac
 

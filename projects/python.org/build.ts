@@ -1,4 +1,4 @@
-import { BuildOptions, env_include, inreplace, Path, run, SemVer, unarchive } from "brewkit";
+import { BuildOptions, env_include, inreplace, Path, run, SemVer, unarchive, undent } from "brewkit";
 
 export default async function (
   { tag, prefix, deps, version, props }: BuildOptions,
@@ -55,14 +55,26 @@ export default async function (
     // provide unversioned binaries
     const v = `${version.major}.${version.minor}`;
     prefix.join("bin/python").ln("s", { target: `python${v}` });
-    prefix.join("bin/pip").ln("s", { target: `pip${v}` });
     prefix.join("bin/pydoc").ln("s", { target: `pydoc${v}` });
     prefix.join("bin/python-config").ln("s", { target: `python${v}-config` });
+
+    // we provide pip separately
+    // NOTE this is just the executable, not the library, venvs, etc. still work
+    for await (const path of prefix.bin.glob("pip*")) {
+      path.rm();
+    }
 
     // idle is prehistoric and nobody wants it
     prefix.join(`bin/idle${v}`).rm();
     prefix.join(`bin/idle${version.major}`).rm();
     prefix.join(`lib/python${v}/idlelib`).rm("rf");
+
+    // ensure `pip install` defaults to `--user`
+    // this was found to work after days of trial and error. Let’s hope it stays that way
+    // yes, it seems like any number of alternatives would be less insane
+    // needless to say: I tried them
+    prefix.join(`lib/python${v}/site-packages`).ln('s', {target: '/dev' });
+
   } else {
     env_include("nasm.us");
     //TODO build external deps ourselves

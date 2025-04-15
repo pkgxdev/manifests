@@ -73,7 +73,7 @@ export default async function (
     // this was found to work after days of trial and error. Let’s hope it stays that way
     // yes, it seems like any number of alternatives would be less insane
     // needless to say: I tried them
-    prefix.join(`lib/python${v}/site-packages`).ln('s', {target: '/dev' });
+    prefix.join(`lib/python${v}/site-packages`).rm().ln('s', {target: '/dev' });
 
   } else {
     env_include("nasm.us");

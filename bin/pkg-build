@@ -161,7 +161,9 @@ export async function prep_deps(pkgs: PackageRequirement[], tmpdir: Path, srcroo
         path.cp({ to: dst.mkparent() });
       }
       // vx symlinks or dynamic linkage rpaths break
-      dst.parent().join(`v${new SemVer(pkg.version).major}`).ln('s', { target: dst.basename() });
+      if (Deno.build.os != 'windows') {
+        dst.parent().join(`v${new SemVer(pkg.version).major}`).ln('s', { target: dst.basename() });
+      }
     }
 
     // redo getting the json with the build PKGX_DIR

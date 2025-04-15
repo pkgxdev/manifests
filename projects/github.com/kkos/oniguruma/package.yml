@@ -1,0 +1,12 @@
+name:
+  Oniguruma
+
+repository:
+  https://github.com/kkos/oniguruma
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/onig-config

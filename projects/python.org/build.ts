@@ -8,6 +8,7 @@ export default async function (
 
   if (Deno.build.os != "windows") {
     if (version.lt(new SemVer("3.12"))) {
+      // help python to find the build-time libs
       inreplace(
         Path.cwd().join("setup.py"),
         /system_lib_dirs = .*/g,
@@ -28,10 +29,12 @@ export default async function (
       env_include("llvm.org");
     }
 
+    Deno.env.set("DESTDIR", prefix.string);
+
     //NOTE clang required for --enable-optimizations
     //TODO  --enable-bolt reduces end filesize (requires llvm-bolt)
     run`./configure
-          --prefix=${prefix}
+          --prefix=/usr/local
           --with-openssl=${deps["openssl.org"].prefix}
           --with-system-expat
           --with-system-ffi
@@ -39,20 +42,27 @@ export default async function (
           --enable-shared
           ${opts() ? '--enable-optimizations' : ''}
           --with-lto=full
-          --with-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
+        # --with-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
           --disable-test-modules
           ${sqlite() ? '--enable-loadable-sqlite-extensions' : ''}
           --with-configdir=/etc/python
           CC=clang
           `;
+
     run`make --jobs ${navigator.hardwareConcurrency}`;
     run`make install`;
+
+    for await (const [path] of prefix.join("usr/local").ls()) {
+      path.mv({ into: prefix });
+    }
+    prefix.join("usr/local").rm().parent().rm();
 
     props.join("sitecustomize.py").cp({ into: prefix.lib.join(`python${version.marketing}`) });
 
     // provide unversioned binaries
     const v = `${version.major}.${version.minor}`;
     prefix.join("bin/python").ln("s", { target: `python${v}` });
+    prefix.join("bin/pip").ln("s", { target: `pip${v}` });
     prefix.join("bin/pydoc").ln("s", { target: `pydoc${v}` });
     prefix.join("bin/python-config").ln("s", { target: `python${v}-config` });
 

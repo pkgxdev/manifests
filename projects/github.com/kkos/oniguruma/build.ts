@@ -8,5 +8,5 @@ export default async function ({ prefix, version }: BuildOptions) {
   inreplace(
     prefix.bin.join("onig-config"),
     `prefix=${prefix}`,
-    'prefix="$(cd "$(dirname "$0")"/.." && pwd)"');
+    'prefix="$(cd "$(dirname "$0")/.." && pwd)"');
 }

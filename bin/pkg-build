@@ -11,8 +11,13 @@ if (import.meta.main) {
   await ensure_pantry(srcroot);
 
   const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
-  const tmpdir = mktemp();
+  const tmpdir = Path.mktemp("d");
+  const blddir = Deno.env.get("CI") ? Path.root.join("opt") : tmpdir.join("dst");
   const deno = find_in_PATH("deno")!.string;
+
+  if (blddir.join(pkg.project).exists()) {
+    throw new Error(`build directory already exists! ${blddir}`);
+  }
 
   console.error("%cstage:", "color: yellow", tmpdir);
   console.error(
@@ -26,8 +31,8 @@ if (import.meta.main) {
     const deps = await parse_deps(pkg, env);
     await prep_deps(deps, tmpdir, srcroot, env);
     await prep_script(pkg, tmpdir, srcroot);
-    await run(pkg, tmpdir, srcroot, deno, env);
-    await post(pkg, tmpdir, srcroot);
+    await run(pkg, tmpdir, srcroot, blddir, deno, env);
+    await post(pkg, tmpdir, srcroot, blddir);
 
     if (!Deno.args.includes("--keep-stage")) {
       tmpdir.rm('rf');
@@ -225,7 +230,7 @@ async function query_pkgx(deps: PackageRequirement[], env: Record<string, string
   }
 }
 
-async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: string, env: Record<string, string>) {
+async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, blddir: Path, deno: string, env: Record<string, string>) {
   let [cmd, ...args]: string[] = (() => {
     if (Deno.build.os !== 'darwin') return [deno];
 
@@ -236,8 +241,6 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
         (subpath "/opt/homebrew")
         (subpath "/usr/local"))
         (subpath "${tmpdir}/pkgs")
-      (allow file-write*
-        (subpath "${srcroot}/srcs"))
       (deny file-read*
         (subpath "/opt/homebrew")
         (subpath "/usr/local"))
@@ -251,7 +254,7 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
       sb += foo.read();
     }
     if (foo = srcroot.join("projects", pkg.project, "sandbox.sb.in").isFile()) {
-      sb += foo.read().replaceAll("{{prefix}}", tmpdir.join("dst", pkg.project).string);
+      sb += foo.read().replaceAll("{{prefix}}", blddir.join(pkg.project).string);
     }
 
     return ['sandbox-exec', '-f', tmpdir.join("sandbox.sb").write(sb).string, deno];
@@ -267,7 +270,7 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
     tmpdir.join("src").string,
     srcroot.join("projects", pkg.project).string,
     tmpdir.join("pkgs").string,
-    tmpdir.join("dst").string,
+    blddir.string,
   );
 
   const proc = new Deno.Command(cmd, { args, env, clearEnv: true }).spawn();
@@ -277,7 +280,7 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, deno: s
   }
 }
 
-async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
+async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, blddir: Path) {
   const receipt = tmpdir.join("build-receipt.json");
   const version = new SemVer(JSON.parse(await receipt.read()).version);
   const root = srcroot.join("artifacts", platform_partial_path(), pkg.project).mkdir("p");
@@ -288,10 +291,10 @@ async function post(pkg: PackageRequirement, tmpdir: Path, srcroot: Path) {
     || Deno.build.os == 'linux' && Path.root.join(".dockerenv").isFile();
 
   if (needs_cp) {
-    tmpdir.join("dst", pkg.project, `v${version}`).cp({ to: dstdir });
+    blddir.join(pkg.project, `v${version}`).cp({ to: dstdir });
     receipt.cp({ into: dstdir });
   } else {
-    tmpdir.join("dst", pkg.project, `v${version}`).mv({ to: dstdir.rm("rf") });
+    blddir.join(pkg.project, `v${version}`).mv({ to: dstdir.rm("rf") });
     receipt.mv({ into: dstdir });
   }
 
@@ -340,13 +343,5 @@ export function ensure_pantry(srcroot: Path) {
   if (Deno.build.os != "windows") {
     // ^^ GNU Make fails spectacularly without bash
     return new Deno.Command(srcroot.join("bin/pkg-convert").string, { args: ["--quiet"] }).spawn().status
-  }
-}
-
-function mktemp() {
-  if (Deno.env.get("CI")) {
-    return Path.root.join("b")
-  } else {
-    return Path.mktemp("d");
   }
 }

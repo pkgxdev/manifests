@@ -29,7 +29,7 @@ export default async function (
       env_include("llvm.org");
     }
 
-    Deno.env.set("DESTDIR", prefix.string);
+    // Deno.env.set("DESTDIR", prefix.string);
 
     //NOTE clang required for --enable-optimizations
     //TODO  --enable-bolt reduces end filesize (requires llvm-bolt)

@@ -29,8 +29,6 @@ export default async function (
       env_include("llvm.org");
     }
 
-    // Deno.env.set("DESTDIR", prefix.string);
-
     //NOTE clang required for --enable-optimizations
     //TODO  --enable-bolt reduces end filesize (requires llvm-bolt)
     run`./configure
@@ -51,11 +49,6 @@ export default async function (
 
     run`make --jobs ${navigator.hardwareConcurrency}`;
     run`make install`;
-
-    // for await (const [path] of prefix.join("usr/local").ls()) {
-    //   path.mv({ into: prefix });
-    // }
-    // prefix.join("usr/local").rm().parent().rm();
 
     props.join("sitecustomize.py").cp({ into: prefix.lib.join(`python${version.marketing}`) });
 

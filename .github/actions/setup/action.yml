@@ -1,7 +1,7 @@
 runs:
   using: composite
   steps:
-    - run: Get-ChildItem Env:
+    - run: 'Get-ChildItem Env:'
       if: runner.os == 'Windows'
       shell: pwsh
 
@@ -10,7 +10,7 @@ runs:
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
 
-    - run: Get-ChildItem Env:
+    - run: 'Get-ChildItem Env:'
       if: runner.os == 'Windows'
       shell: pwsh
 

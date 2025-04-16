@@ -122,6 +122,7 @@ function ldd(file: Path, LDLPATH: string): string[] {
     if (fullpath.startsWith("/lib/")) {
       switch (basename.replace(/\.\d+$/, "")) {
         case "libpthread.so":
+        case "libresolv.so":
         case "librt.so":
         case "libdl.so":
         case "libm.so":

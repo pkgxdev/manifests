@@ -54,6 +54,8 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      - run: which pkgx
+
       - run: pkg-build ${{ matrix.pkg }}
         env:
           GITHUB_TOKEN: ${{ github.token }}

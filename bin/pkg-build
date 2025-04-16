@@ -282,6 +282,11 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, blddir:
     blddir.string,
   );
 
+  if (Deno.build.os == 'windows') {
+    env["Path"] = env["PATH"];
+    delete env["PATH"];
+  }
+
   const proc = new Deno.Command(cmd, { args, env, clearEnv: true }).spawn();
   const { code, success } = await proc.status;
   if (!success) {

@@ -1,6 +1,6 @@
 #!/bin/sh
 
 export CMAKE_PREFIX_PATH="$PKGS"
-export CMAKE_GENERATOR=Ninja
+export CMAKE_GENERATOR=${CMAKE_GENERATOR:-Ninja}
 
 exec pkgx --quiet cmake "$@"

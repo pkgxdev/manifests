@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CMAKE_PREFIX_PATH="$PKGS"
-export CMAKE_GENERATOR=Ninja
+export CMAKE_GENERATOR=${CMAKE_GENERATOR:-Ninja}
 
 # we do it this way to prevent libc++ from being unintentionally
 # available to packages that we are building

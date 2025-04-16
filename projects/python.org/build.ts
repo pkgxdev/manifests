@@ -40,7 +40,7 @@ export default async function (
           --enable-shared
           ${opts() ? '--enable-optimizations' : ''}
           --with-lto=full
-          --with-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
+          --without-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
           --disable-test-modules
           ${sqlite() ? '--enable-loadable-sqlite-extensions' : ''}
           --with-configdir=/etc/python
@@ -73,7 +73,7 @@ export default async function (
     // this was found to work after days of trial and error. Let’s hope it stays that way
     // yes, it seems like any number of alternatives would be less insane
     // needless to say: I tried them
-    prefix.join(`lib/python${v}/site-packages`).rm().ln('s', {target: '/dev' });
+    prefix.join(`lib/python${v}/site-packages`).rm('rf').ln('s', {target: new Path('/dev')});
 
   } else {
     env_include("nasm.us");

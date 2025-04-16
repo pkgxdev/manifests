@@ -1,0 +1,18 @@
+repository:
+  https://github.com/westes/flex
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/flex
+  - bin/flex++
+
+linux:
+  dependencies:
+    gnu.org/gettext: ^0.24
+
+#FIXME we need a proxy pkg to use Xcode CLT if available or pkgx otherwise
+dependencies:
+  gnu.org/m4: ^1

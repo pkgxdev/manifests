@@ -2,7 +2,7 @@ runs:
   using: composite
   steps:
     - run: Get-ChildItem Env:
-      if: if: runner.os == 'Windows'
+      if: runner.os == 'Windows'
       shell: pwsh
 
     # unavoidable for some projects on windows
@@ -11,7 +11,7 @@ runs:
       if: runner.os == 'Windows'
 
     - run: Get-ChildItem Env:
-      if: if: runner.os == 'Windows'
+      if: runner.os == 'Windows'
       shell: pwsh
 
     - uses: pkgxdev/setup@v4

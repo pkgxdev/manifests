@@ -17,7 +17,8 @@ export default async function ({ prefix, tag }: BuildOptions) {
     -DCMAKE_INSTALL_LIBDIR=lib
     -DENABLE_PIC=ON
     -DCMAKE_INSTALL_PREFIX=${prefix}
-    -DCMAKE_VERBOSE_MAKEFILE=ON`;
+    -DCMAKE_VERBOSE_MAKEFILE=ON
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5`;  // avoids `Compatibility with CMake < 3.5 has been removed from CMake.`
 
   const high_bitrate_args = `
     -DHIGH_BIT_DEPTH=ON

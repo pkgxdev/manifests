@@ -23,7 +23,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
     -DHIGH_BIT_DEPTH=ON
     -DEXPORT_C_API=OFF
     -DENABLE_SHARED=OFF
-    -DENABLE_CLI=OFF;`
+    -DENABLE_CLI=OFF`;
 
   srcroot.join("10bit").mkdir().cd();
   run`cmake
@@ -32,7 +32,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
         ${args}
         ${high_bitrate_args}`;
   run`make`;
-  Path.cwd().join("libx265.a").mv({ to: srcroot.join("8bit").mkdir().join("libx265_main.a") });
+  Path.cwd().join("libx265.a").mv({ to: srcroot.join("8bit").mkdir().join("libx265_main10.a") });
 
   srcroot.join("12bit").mkdir().cd();
   run`cmake

@@ -3,3 +3,7 @@ platforms:
   - linux/x86-64
 programs:
   - bin/x265
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

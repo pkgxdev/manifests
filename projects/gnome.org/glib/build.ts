@@ -1,21 +1,19 @@
-import { BuildOptions, unarchive, run } from "brewkit";
+import { BuildOptions, unarchive, run, Path } from "brewkit";
+import env_include from "../../../brewkit/env-include.ts";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://download.gnome.org/sources/glib/${version.major}.${version.minor}/glib-${version}.tar.xz`);
-// script:
-//   - run: >
-//       python -m venv venv
-//
-//       source venv/bin/activate
-//
-//       python -m pip install packaging
-//
-//       deactivate
-//
-//       PYTHONPATH="$(pwd)/venv/lib/python{{deps.python.org.version.marketing}}/site-packages:$PYTHONPATH"
-//   - meson out $ARGS
-//   - cd out
-//   - ninja install
+
+  env_include("mesonbuild.com");
+  run`meson out
+        --prefix=${prefix}
+        --libdir=${prefix}/lib
+        --wrap-mode=nofallback
+        --buildtype=release
+        -Dtests=false
+      # -Dintrospection=enabled`;
+  Path.cwd().join("out").cd();
+  run`ninja install`;
 //   - >-
 //     GT='${prefix}/../../../gnu.org/gettext/v{{
 //     deps.gnu.org/gettext.version.major }}'

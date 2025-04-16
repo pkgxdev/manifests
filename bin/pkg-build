@@ -52,6 +52,8 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
 
   const env: Record<string, string> = {};
 
+  const set = (key: string) => { if (Deno.env.get(key)) { env[key] = Deno.env.get(key)!; } }
+
   switch (Deno.build.os) {
   case 'linux':
     const llvm_bin = new Path(await backticks_quiet`pkgx -q +llvm.org -- which clang`).parent();
@@ -84,7 +86,6 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
 
   case 'windows':
     env["PATH"] = `${bin};${Deno.env.get("PATH")}`;
-    const set = (key: string) => { if (Deno.env.get(key)) { env[key] = Deno.env.get(key)!; } }
     set("SystemRoot");
     set("WINDIR");
     set("LOCALAPPDATA");
@@ -95,12 +96,8 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
 
   env["PKGX_BIN"] = bin.string;
 
-  if (Deno.env.get("GITHUB_ACTIONS")) {
-    env["GITHUB_ACTIONS"] = Deno.env.get("GITHUB_ACTIONS")!;
-  }
-  if (Deno.env.get("GITHUB_TOKEN")) {
-    env["GITHUB_TOKEN"] = Deno.env.get("GITHUB_TOKEN")!;
-  }
+  set("GITHUB_ACTIONS");
+  set("GITHUB_TOKEN");
 
   return env;
 }

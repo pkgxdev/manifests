@@ -1,10 +1,18 @@
 runs:
   using: composite
   steps:
+    - run: Get-ChildItem Env:
+      if: if: runner.os == 'Windows'
+      shell: pwsh
+
     # unavoidable for some projects on windows
     # TODO we can probs save 20–30s and make a TS function to add this env
     - uses: ilammy/msvc-dev-cmd@v1
       if: runner.os == 'Windows'
+
+    - run: Get-ChildItem Env:
+      if: if: runner.os == 'Windows'
+      shell: pwsh
 
     - uses: pkgxdev/setup@v4
       if: runner.os != 'Linux'

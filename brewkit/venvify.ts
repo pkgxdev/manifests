@@ -8,7 +8,7 @@ export default async function(prefix: Path, program: string) {
     } else {
       // if Xcode or XCLT are installed, use that python
       symlink_python = undent`
-        xc_python="$(xcode-select -p)"
+        xc_python="$(xcode-select -p 2>/dev/null)"
         if [ "$xc_python" -a -f "$xc_python/usr/bin/python3" ]; then
           ln -sf "$xc_python/usr/bin/python3" "$d/python"
         else

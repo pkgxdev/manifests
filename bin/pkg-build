@@ -84,6 +84,13 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
 
   case 'windows':
     env["PATH"] = `${bin};${Deno.env.get("PATH")}`;
+    const set = (key: string) => { if (Deno.env.get(key)) { env[key] = Deno.env.get(key)!; } }
+    set("SystemRoot");
+    set("WINDIR");
+    set("LOCALAPPDATA");
+    set("APPDATA");
+    set("USERPROFILE");
+    set("COMSPEC");
   }
 
   env["PKGX_BIN"] = bin.string;

@@ -1,0 +1,11 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/lua
+  - bin/luac
+
+linux:
+  dependencies:
+    gnu.org/readline: ^8

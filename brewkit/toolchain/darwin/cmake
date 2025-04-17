@@ -3,4 +3,4 @@
 export CMAKE_PREFIX_PATH="$PKGS"
 export CMAKE_GENERATOR=${CMAKE_GENERATOR:-Ninja}
 
-exec pkgx --quiet cmake "$@"
+exec pkgx --quiet cmake^3 "$@"

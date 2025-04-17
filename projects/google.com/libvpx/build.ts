@@ -1,6 +1,6 @@
 import { env_include, BuildOptions, unarchive, run } from "brewkit";
 
-export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
+export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://github.com/webmproject/libvpx/archive/refs/tags/${tag}.tar.gz`);
   env_include("tortall.net/yasm");
   run`./configure

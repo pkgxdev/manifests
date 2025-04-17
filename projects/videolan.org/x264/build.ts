@@ -1,8 +1,10 @@
-import { run } from "brewkit";
+import { run, env_include } from "brewkit";
 
 export default async function (opts: any) {
   run`git clone https://code.videolan.org/videolan/x264.git .`;
   run`git reset --hard ${opts.sha}`;
+
+  env_include("nasm.us");
 
   run`./configure
         --prefix=${opts.prefix}

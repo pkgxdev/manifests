@@ -7,7 +7,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
 
   const srcroot = Path.cwd();
 
-  Deno.env.set("CMAKE_GENERATOR", "Unix Makefiles");
+  // Deno.env.set("CMAKE_GENERATOR", "Unix Makefiles");
 
   const args = `
     -Wno-dev
@@ -31,7 +31,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
         -DENABLE_HDR10_PLUS=ON
         ${args}
         ${high_bitrate_args}`;
-  run`make`;
+  run`cmake --build .`;
   Path.cwd().join("libx265.a").mv({ to: srcroot.join("8bit").mkdir().join("libx265_main10.a") });
 
   srcroot.join("12bit").mkdir().cd();
@@ -40,7 +40,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
         -DMAIN12=ON
         ${args}
         ${high_bitrate_args}`;
-  run `make`;
+  run`cmake --build .`;
   Path.cwd().join("libx265.a").mv({ to: srcroot.join("8bit/libx265_main12.a") });
 
   srcroot.join("8bit").mkdir().cd();
@@ -52,7 +52,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
         -DEXTRA_LINK_FLAGS=-L.
         -DEXTRA_LIB=x265_main10.a;x265_main12.a
         `;
-  run `make`;
+  run`cmake --build .`;
   Path.cwd().join("libx265.a").mv({ to: Path.cwd().join("libx265_main.a") });
 
   if (Deno.build.os === "darwin") {
@@ -61,5 +61,5 @@ export default async function ({ prefix, tag }: BuildOptions) {
     run`ar crs libx265.a libx265_main.a libx265_main10.a libx265_main12.a`;
   }
 
-  run`make install`;
+  run`cmake --build . --target install`;
 }

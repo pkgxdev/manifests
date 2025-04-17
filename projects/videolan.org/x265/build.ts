@@ -1,13 +1,9 @@
 import { BuildOptions, unarchive, run, Path } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`http://ftp.videolan.org/pub/videolan/x265/x265_${tag}.tar.gz`);
-  env_include("nasm.us");
 
   const srcroot = Path.cwd();
-
-  // Deno.env.set("CMAKE_GENERATOR", "Unix Makefiles");
 
   const args = `
     -Wno-dev

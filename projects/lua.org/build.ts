@@ -5,8 +5,10 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
 
   const platform = Deno.build.os === "darwin" ? "macosx" : 'linux-readline';
   const dl_extname = Deno.build.os === "darwin" ? "dylib" : "so";
+  const MYLDFLAGS = Deno.build.os === 'linux' ? 'MYLDFLAGS=-ltinfo' : "";
+  const MYCFLAGS = Deno.build.os === 'linux' ? 'MYCFLAGS=-fPIC' : "";
 
-  run`make ${platform} INSTALL_TOP=${prefix}`;
+  run`make ${platform} INSTALL_TOP=${prefix} ${MYLDFLAGS} ${MYCFLAGS}`;
   run`make install INSTALL_TOP=${prefix}`;
 
   run`cc -o ${prefix.lib.join(`liblua.${dl_extname}`)} -shared ${objs()}`;
@@ -30,7 +32,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
       .replaceAll("{{version.marketing}}", version.marketing)
       .replaceAll("{{version}}", `${version}`)
     if (Deno.build.os === "linux") {
-      txt = txt.replaceAll(/\b-lm\b/g, "-lm -ldl");
+      txt = txt.replaceAll(" -lm", " -lm -ldl");
     }
     return txt;
   }

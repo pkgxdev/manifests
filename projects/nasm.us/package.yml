@@ -1,7 +1,8 @@
 name:
   NASM
 
-unabbreviated-name: Netwide Assembler
+unabbreviated-name:
+  Netwide Assembler
 
 programs:
   - bin/nasm

@@ -71,6 +71,7 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
     ln('as', 'llvm-as');
     ln('nm', 'llvm-nm');
     ln('strings', 'llvm-strings');
+    ln('ranlib', 'llvm-ranlib');
 
     env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
     // stops ./configure from erroring in our container

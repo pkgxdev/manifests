@@ -12,5 +12,6 @@ export default async function (opts: any) {
         --enable-shared
         --enable-static
         --enable-strip`;
+
   run`make --jobs ${navigator.hardwareConcurrency} install`;
 }

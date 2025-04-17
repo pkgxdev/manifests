@@ -3,10 +3,13 @@ import { BuildOptions, unarchive, run, Path } from "brewkit";
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`http://www.lua.org/ftp/lua-${version}.tar.gz`);
 
-  run`make macosx INSTALL_TOP=${prefix}`;
+  const platform = Deno.build.os === "darwin" ? "macosx" : 'linux-readline';
+  const dl_extname = Deno.build.os === "darwin" ? "dylib" : "so";
+
+  run`make ${platform} INSTALL_TOP=${prefix}`;
   run`make install INSTALL_TOP=${prefix}`;
 
-  run`cc -o ${prefix.lib.join("liblua.dylib")} -shared ${objs()}`;
+  run`cc -o ${prefix.lib.join(`liblua.${dl_extname}`)} -shared ${objs()}`;
 
   prefix.lib.join("pkgconfig").mkdir().join("lua.pc").write(pc());
 
@@ -27,7 +30,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
       .replaceAll("{{version.marketing}}", version.marketing)
       .replaceAll("{{version}}", `${version}`)
     if (Deno.build.os === "linux") {
-      txt = txt.replaceAll("-lm", "-lm -ldl");
+      txt = txt.replaceAll(/\b-lm\b/g, "-lm -ldl");
     }
     return txt;
   }

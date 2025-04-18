@@ -1,8 +1,6 @@
 import { run } from "brewkit";
 
 export default async function () {
-  // script: |
-//   cc fixture.c -lxcb
-//   ./a.out
-// 
+  run`cc test.c -lxcb`;
+  run`./a.out`;
 }

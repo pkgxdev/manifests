@@ -27,7 +27,7 @@ dependencies:
   gnu.org/gmp: ^6
   libsodium.org: ^1
   # libzip.org: ~1.9
-  # github.com/kkos/oniguruma: ^6
+  github.com/kkos/oniguruma: ^6
   openssl.org: ^3
   pcre.org: ^10.30
   unicode.org: ^77

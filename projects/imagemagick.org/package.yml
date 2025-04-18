@@ -33,7 +33,7 @@ dependencies:
   libjpeg-turbo.org: ^2,^3
   # liblqr.wikidot.com: '*'
   simplesystems.org/libtiff: ^4
-  # littlecms.com: '*'
+  littlecms.com: ^2
   # openexr.com: '*'
   # openjpeg.org: '*'
   google.com/webp: ^1

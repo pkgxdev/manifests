@@ -10,13 +10,14 @@ if (Deno.args.length < 1) {
 }
 
 const project = Deno.args[0];
+const new_project = Deno.args[1] || project;
 const d = new Path(fromFileUrl(import.meta.url)).parent().parent();
 
 let f = Path.home().join("src/pantry/projects", project, "package.yml").isFile();
 if (f) {
   const yaml = parse(f.read()) as any;
   const old_f = f;
-  f = d.join("projects", project).mkdir('p').join("package.yml");
+  f = d.join("projects", new_project).mkdir('p').join("package.yml");
 
   const new_yaml: Record<string, any> = {}
 
@@ -94,10 +95,10 @@ if (f) {
 
   await new Deno.Command("code", {
     args: [
-      d.join("projects", project).string,
+      d.join("projects", new_project).string,
       Path.home().join("src/pantry/projects", project).string,
       d.string,
-      d.join("projects", project, "package.yml").string
+      d.join("projects", new_project, "package.yml").string
     ],
   }).spawn().status
 

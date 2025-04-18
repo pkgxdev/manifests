@@ -9,5 +9,5 @@ export default async function ({ prefix, version, props }: BuildOptions) {
     inreplace("Makefile", "$(MAKE) -C doc", "");
   }
   run`make --jobs ${navigator.hardwareConcurrency} all`;
-  run`make install-bin install-lib install-man PREFIX=${prefix}`
+  run`make install-bin install-lib install-man install-include PREFIX=${prefix}`
 }

@@ -12,6 +12,6 @@ export async function fix_pkg_config_file(path: Path, install_prefix: Path) {
   );
   if (orig !== text) {
     console.log("%c+", "color:yellow", "fixing:", path);
-    path.write(text);
+    path.chmod(0o644).write(text);
   }
 }

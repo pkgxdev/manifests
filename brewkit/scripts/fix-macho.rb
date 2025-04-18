@@ -68,7 +68,7 @@ end
 
 def fix_install_names
   $file.linked_dylibs.map do |lib|
-    next if lib.start_with? '/usr/' or lib.start_with? '/System/' or lib.start_with? '/Library/'
+    next if lib.start_with? '/usr/lib' or lib.start_with? '/System/' or lib.start_with? '/Library/'
 
     og_lib_name = lib
 
@@ -82,7 +82,14 @@ def fix_install_names
       end
     end
 
-    if lib.start_with? $prefix
+    # we sporadically use --prefix=/usr/local in conjunction with DESTDIR to work
+    # around specifying eg. /etc as the conf path which then fails builds since it cannot write there
+    if lib.start_with? $prefix or lib.start_with? "/usr/local/lib"
+
+      if lib.start_with? "/usr/local/lib"
+        lib = lib.sub(%r{^/usr/local}, $prefix)
+      end
+
       rel_path = Pathname.new(lib).relative_path_from(Pathname.new($file.filename).parent)
       if $file.filetype == :execute
         $file.change_install_name og_lib_name, "@executable_path/#{rel_path}"

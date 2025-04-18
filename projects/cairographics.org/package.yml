@@ -1,0 +1,19 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/cairo-trace
+
+dependencies:
+  freedesktop.org/fontconfig: ^2
+  freedesktop.org/pixman: ^0.44
+  sourceware.org/bzip2: ^1
+  gnome.org/glib: ^2
+  freetype.org: ^2
+  libpng.org: ^1
+  # x.org/x11: '*'
+  # x.org/xcb: '*'
+  # x.org/exts: '*'
+  # x.org/xrender: '*'
+  # oberhumer.com/lzo: '*'

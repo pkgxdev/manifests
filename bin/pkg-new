@@ -63,11 +63,11 @@ if (f) {
   const url = yaml['distributable']?.['url']
     ?.replaceAll(/{{\s+version\s+}}/g, '${version}')
     .replaceAll(/{{\s+tag\s+}}/g, '${tag}')
-    .replaceAll(/{{\s+version.major\s+}}/g, '${version.major}')
-    .replaceAll(/{{\s+version.minor\s+}}/g, '${version.minor}')
-    .replaceAll(/{{\s+version.patch\s+}}/g, '${version.patch}')
-    .replaceAll(/{{\s+version.raw\s+}}/g, '${tag}')
-    .replaceAll(/{{\s+version.marketing\s+}}/g, '${version.marketing}');
+    .replaceAll(/{{\s+version\.major\s+}}/g, '${version.major}')
+    .replaceAll(/{{\s+version\.minor\s+}}/g, '${version.minor}')
+    .replaceAll(/{{\s+version\.patch\s+}}/g, '${version.patch}')
+    .replaceAll(/{{\s+version\.raw\s+}}/g, '${tag}')
+    .replaceAll(/{{\s+version\.marketing\s+}}/g, '${version.marketing}');
 
   f.parent().join("build.ts").write(undent`
     import { BuildOptions, unarchive, run } from "brewkit";

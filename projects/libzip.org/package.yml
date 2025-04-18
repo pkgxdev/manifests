@@ -1,0 +1,18 @@
+repository:
+  https://github.com/nih-at/libzip
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/zipcmp
+  - bin/zipmerge
+  - bin/ziptool
+
+dependencies:
+  facebook.com/zstd: ^1.5
+
+linux:
+  dependencies:
+    openssl.org: ^3

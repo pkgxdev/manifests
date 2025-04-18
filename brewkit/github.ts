@@ -78,7 +78,7 @@ export async function tags(repo: string): Promise<{ name: string }[]> {
   return rv;
 }
 
-export function std_version_covert(
+export function std_version_convert(
   { tag_name, name }: { tag_name?: string; name: string },
 ) {
   const tag = tag_name || name; // depends on if we fetched /releases or /tags

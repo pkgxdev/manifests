@@ -28,9 +28,9 @@ export default function (yamlfile: string) {
 
   const slug = new URL(yaml.repository).pathname.slice(1);
   return async (constraint: Range) => {
-    const rv = (await github.releases(slug, constraint)).compact(github.std_version_covert);
+    const rv = (await github.releases(slug, constraint)).compact(github.std_version_convert);
     if (rv.length === 0) {
-      return (await github.tags(slug)).compact(github.std_version_covert);
+      return (await github.tags(slug)).compact(github.std_version_convert);
     } else {
       return rv;
     }

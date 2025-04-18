@@ -1,0 +1,8 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+programs:
+  - bin/gpg-error
+  - bin/gpg-error-config
+  - bin/gpgrt-config
+  - bin/yat2m

@@ -10,7 +10,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
 //   mesonbuild.com: ^1
 //   ninja-build.org: ^1
 
-const linux = Deno.build.os === "alinux" ? `
+const linux = Deno.build.os === "axlinux" ? `
   -Dxcb=enabled
   -Dxlib=enabled` : '';
 

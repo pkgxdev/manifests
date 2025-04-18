@@ -1,0 +1,5 @@
+platforms:
+  - linux/x86-64
+
+programs:
+  - bin/aserver

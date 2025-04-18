@@ -43,15 +43,15 @@ dependencies:
 linux:
   dependencies:
     github.com/OpenPrinting/cups: ^2
-    alsa-project.org/alsa-lib: '*'
-    freedesktop.org/fontconfig: '*'
-    freetype.org: '*'
+    alsa-project.org/alsa-lib: ^1
+    freedesktop.org/fontconfig: ^2
+    freetype.org: ^2
     x.org/x11: '*'
     x.org/exts: '*'
     x.org/xrandr: '*'
     x.org/xrender: '*'
     x.org/xt: '*'
     x.org/xtst: '*'
-    info-zip.org/zip: '*'
-    darwinsys.com/file: '*'
+    # info-zip.org/zip: '*'
+    # darwinsys.com/file: '*'
     zlib.net: ^1

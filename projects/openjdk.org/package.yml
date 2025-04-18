@@ -37,12 +37,12 @@ dependencies:
   libjpeg-turbo.org: ^3
   libpng.org: ^1
   littlecms.com: ^2
-  github.com/OpenPrinting/cups: ^2
   info-zip.org/unzip: ^6
   libzip.org: ^1
 
 linux:
   dependencies:
+    github.com/OpenPrinting/cups: ^2
     alsa-project.org/alsa-lib: '*'
     freedesktop.org/fontconfig: '*'
     freetype.org: '*'

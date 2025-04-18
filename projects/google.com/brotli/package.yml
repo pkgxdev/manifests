@@ -7,3 +7,6 @@ platforms:
 
 programs:
   - bin/brotli
+
+env:
+  JAVA_HOME: '{{prefix}}'

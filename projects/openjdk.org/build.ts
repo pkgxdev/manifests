@@ -1,8 +1,11 @@
-import { BuildOptions, unarchive, run, Path } from "brewkit";
+import { backticks_quiet, BuildOptions, unarchive, run, Path } from "brewkit";
 
-export default async function ({ version, tag, prefix }: BuildOptions) {
+export default async function ({ version, tag, prefix, deps }: BuildOptions) {
   await unarchive(`https://github.com/openjdk/jdk${version.major}u/archive/${tag}.tar.gz`);
 
+  // the boot jdk should point to the last version of the previous major version
+  // or the last previous version of the current major version
+  //TODO compute this from web data!
   const BOOT_JDK_ARCH = (() => {
     switch (process.platform) {
       case "darwin":
@@ -20,28 +23,21 @@ export default async function ({ version, tag, prefix }: BuildOptions) {
   await unarchive(`https://github.com/adoptium/temurin${BOOT_JDK_MAJOR}-binaries/releases/download/jdk-${BOOT_JDK_VERSION}/OpenJDK${BOOT_JDK_MAJOR}U-jdk_${BOOT_JDK_ARCH}_hotspot_${BOOT_JDK_VERSION.replace("+", "_")}.tar.gz`)
   Path.cwd().parent().cd();
 
-  //   - run: >
-//       ARGS+=" --disable-hotspot-gtest --with-jvm-features=shenandoahgc
-//       --with-conf-name=release"
-//
-//       MAKE_ARGS+=" CONF=release"
-//
-//
-//       # This is hacky, but it's necessary to version the LLVM dependency by
-//       openjdk version.
-//
-//       if test {{hw.platform}} = "linux"; then
-//         LLVM_VERSION_MAJOR='12'
-//         pkgx "+llvm.org^${LLVM_VERSION_MAJOR}"
-//         LLVM_BIN_PATH="$(realpath "{{deps.llvm.org.prefix}}/../v${LLVM_VERSION_MAJOR}/bin")"
-//         PATH_WITHOUT_LLVM="$(echo "${PATH}" | tr ':' '\n' | grep -v '/llvm.org/' | tr '\n' ':')"
-//         export PATH="${LLVM_BIN_PATH}:${PATH_WITHOUT_LLVM}"
-//         clang --version | grep "clang version ${LLVM_VERSION_MAJOR}"
-//         unset LLVM_VERSION_MAJOR LLVM_BIN_PATH PATH_WITHOUT_.LLVM
-//       fi
-//     if: <12
-
   const BOOT_JDK_DIR = Deno.build.os === "darwin" ? "boot-jdk/Contents/Home" : "boot-jdk";
+
+  const pkgx_version = backticks_quiet`pkgx --version`;
+
+  const extra = Deno.build.os === "darwin"
+    ? `--enable-dtrace
+       --with-sysroot=/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk
+       `
+    : `--with-x=${deps['x.org/x11'].prefix}
+       --with-cups=${deps['github.com/OpenPrinting/cups'].prefix}
+       --with-fontconfig=${deps['freedesktop.org/fontconfig'].prefix}
+       --with-freetype=system
+       --with-stdc++lib=dynamic
+       --with-toolchain-type=clang
+       CXXFILT=llvm-cxxfilt`;
 
   run`bash ./configure
       --with-boot-jdk=${BOOT_JDK_DIR}
@@ -62,17 +58,18 @@ export default async function ({ version, tag, prefix }: BuildOptions) {
       --with-libpng=system
       --with-zlib=system
       --with-version-build=${version.major}
-      --with-vendor-version-string="pkgx^2"
+      --with-vendor-version-string=${pkgx_version.replace(/\s+/, "-")}
+      ${extra}
        `;
-    run`make --jobs ${navigator.hardwareConcurrency} images`;
+    run`make JOBS=${navigator.hardwareConcurrency} images`;
 
     if (Deno.build.os === "darwin") {
       for await (const path of Path.cwd().glob(`build/*/images/jdk-bundle/jdk-${version}.jdk/Contents/Home/*`)) {
-        path.mv({ into: prefix.mkdir() });
+        path.mv({ into: prefix.mkdir('p') });
       }
     } else {
       for await (const path of Path.cwd().glob("build/*/images/jdk/*")) {
-        path.mv({ into: prefix.mkdir() });
+        path.mv({ into: prefix.mkdir('p') });
       }
     }
 

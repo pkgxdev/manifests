@@ -10,3 +10,7 @@ platforms:
 
 programs:
   - bin/gr2fonttest
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

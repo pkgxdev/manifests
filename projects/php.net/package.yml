@@ -26,7 +26,7 @@ dependencies:
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
   libsodium.org: ^1
-  # libzip.org: ~1.9
+  libzip.org: ^1.9
   github.com/kkos/oniguruma: ^6
   openssl.org: ^3
   pcre.org: ^10.30
@@ -46,6 +46,6 @@ dependencies:
 linux:
   dependencies:
     gnu.org/gcc/libstdcxx: ^14
-    sqlite.org: ^3
     sourceware.org/bzip2: ^1
+    sqlite.org: ^3
     zlib.net: ^1

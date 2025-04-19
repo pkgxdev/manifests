@@ -5,6 +5,12 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
 
   env_include("x.org/protocol x.org/util-macros x.org/xtrans gnu.org/sed");
 
+  let extra = '';
+  if (Deno.build.os === "darwin") {
+    // local transport doesn’t work on macOS, ask ChatGPT about it
+    extra = '--disable-xlocal';
+  }
+
   run`./configure
         --prefix=${prefix}
         --sysconfdir=/etc
@@ -17,6 +23,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
         --enable-loadable-i18n
         --enable-xthreads
         --enable-specs=no
+        ${extra}
       `;
   run`make --jobs ${navigator.hardwareConcurrency} install`;
 }

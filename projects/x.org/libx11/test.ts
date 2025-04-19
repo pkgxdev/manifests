@@ -1,8 +1,7 @@
-import { run } from "brewkit";
+import { env_include, run } from "brewkit";
 
 export default async function () {
-  // script: |
-//   cc fixture.c -lX11
-//   ./a.out
-// 
+  env_include("x.org/protocol");
+  run`cc test.c -lX11`;
+  run`./a.out`;
 }

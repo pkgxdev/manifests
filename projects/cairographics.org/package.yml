@@ -12,8 +12,11 @@ dependencies:
   gnome.org/glib: ^2
   freetype.org: ^2
   libpng.org: ^1
-  # x.org/x11: '*'
+  # oberhumer.com/lzo: '*'
+
+linux:
+  dependencies:
+  # x.org/libx11: ^1
   # x.org/xcb: '*'
   # x.org/exts: '*'
   # x.org/xrender: '*'
-  # oberhumer.com/lzo: '*'

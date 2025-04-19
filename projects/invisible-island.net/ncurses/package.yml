@@ -18,6 +18,7 @@ programs:
   - bin/tset
 
 env:
+  CPATH: '{{prefix}}/include/ncursesw:$CPATH'
   TERMINFO_DIRS: /usr/share/terminfo:{{prefix}}/share/terminfo:$TERMINFO_DIRS
   # ^^ we delegate to the system first since they may apply platform specific info
 

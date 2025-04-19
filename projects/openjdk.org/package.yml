@@ -37,7 +37,7 @@ dependencies:
   libjpeg-turbo.org: ^3
   libpng.org: ^1
   littlecms.com: ^2
-  info-zip.org/unzip: ^6
+  # info-zip.org/unzip: ^6
   libzip.org: ^1
 
 linux:
@@ -47,11 +47,11 @@ linux:
     freedesktop.org/fontconfig: ^2
     freetype.org: ^2
     x.org/x11: '*'
-    x.org/exts: '*'
-    x.org/xrandr: '*'
-    x.org/xrender: '*'
-    x.org/xt: '*'
-    x.org/xtst: '*'
+    # x.org/exts: '*'
+    # x.org/xrandr: '*'
+    # x.org/xrender: '*'
+    # x.org/xt: '*'
+    # x.org/xtst: '*'
     # info-zip.org/zip: '*'
     # darwinsys.com/file: '*'
     zlib.net: ^1

@@ -1,9 +1,9 @@
 import { SemVer } from "brewkit";
 
 export default async function() {
-  const rsp = await fetch('https://xorg.freedesktop.org/archive/individual/proto/');
+  const rsp = await fetch('https://www.x.org/archive/individual/lib/');
   const txt = await rsp.text();
-  const matches = txt.matchAll(/xorgproto-(\d+(\.\d+)+)\.tar\.gz/g);
+  const matches = txt.matchAll(/libX11-(\d+(\.\d+)+)\.tar\.gz/g);
   const rv = []
   for (const m of matches) {
     rv.push({

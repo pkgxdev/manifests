@@ -1,3 +1,9 @@
+name:
+  PHP
+
+unabbreviated-name: >
+  PHP: Hypertext Preprocessor
+
 repository:
   https://github.com/php/php-src
 
@@ -6,10 +12,10 @@ platforms:
   - linux/x86-64
 
 programs:
+  - bin/php
   - bin/pear
   - bin/pecl
   - bin/phar
-  - bin/php
   - bin/php-cgi
   - bin/php-config
   - bin/phpdbg

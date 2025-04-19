@@ -7,7 +7,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
 
   if (Deno.build.os === "darwin") {
     // or fails to build because of missing sys/stropts.h
-    inreplace("Xtranslcl.c", '#include <sys/stropts.h>', "#include <sys/ioctl.h>");
+    inreplace("Xtranslcl.c", /#\s*include <sys\/stropts.h>/, "#include <sys/ioctl.h>");
   }
 
   run`./configure

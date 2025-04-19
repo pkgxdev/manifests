@@ -22,17 +22,14 @@ programs:
   - bin/phpize
 
 dependencies:
-  # gnu.org/bison: ^3
   # re2c.org: ^3
   # apache.org/apr: ^1
   # apache.org/apr-util: ^1
   # bcrypt.sourceforge.net: ^1
-  # gnu.org/autoconf: ^2
-  curl.se: ^8
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
   libsodium.org: ^1
-  libzip.org: ^1.9
+  # libzip.org: ^1.9
   github.com/kkos/oniguruma: ^6
   openssl.org: ^3
   pcre.org: ^10.30
@@ -40,18 +37,18 @@ dependencies:
   gnu.org/libiconv: ^1
   kerberos.org: ^1
   gnome.org/libxml2: ^2
-  sourceware.org/libffi: ^3.4.7
   gnome.org/libxslt: ^1
   libpng.org: ^1
-  google.com/webp: ^1
-  ijg.org: ^9
-  # gnu.org/sed: ^4
+  # google.com/webp: ^1
+  # ijg.org: ^9
   # openldap.org: ^2
 
 linux:
   dependencies:
+    sourceware.org/libffi: ^3.4.7
     gnu.org/gcc/libstdcxx: ^14
     sourceware.org/bzip2: ^1
     thrysoee.dk/editline: ^3
     sqlite.org: ^3
     zlib.net: ^1
+    curl.se: ^8

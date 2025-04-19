@@ -1,12 +1,14 @@
-import { BuildOptions, unarchive, run, env_include } from "brewkit";
+import { BuildOptions, unarchive, run, env_include, inreplace } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://www.x.org/archive/individual/lib/xtrans-${tag}.tar.bz2`);
 
   env_include("x.org/util-macros x.org/protocol");
 
-  //   # otherwise X11 fails to build on all platforms we support at least lol
-  //   sed -i.bak 's|# include <sys/stropts.h>|# include <sys/ioctl.h>|g' Xtranslcl.c
+  if (Deno.build.os === "darwin") {
+    // or fails to build because of missing sys/stropts.h
+    inreplace("Xtranslcl.c", '#include <sys/stropts.h>', "#include <sys/ioctl.h>");
+  }
 
   run`./configure
         --prefix=${prefix}

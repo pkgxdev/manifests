@@ -2,12 +2,12 @@ import { fromFileUrl, basename } from "jsr:@std/path@1";
 import { active_pkg, Path, platform_partial_path } from "brewkit";
 import { crc32 } from "https://deno.land/x/crc32/mod.ts";
 
-
 export default async function (
   url: string,
-  stripComponents = url.endsWith(".zip") ? undefined : 1,
+  opts: {stripComponents?: number} = {stripComponents: url.endsWith(".zip") ? undefined : 1},
 ): Promise<void> {
   console.error("%c+", "color:yellow", "unarchiving:", url);
+  const { stripComponents } = opts;
 
   const root = new Path(fromFileUrl(import.meta.url)).join("../../artifacts/archives").mkdir('p');
   const ext = Path.root.join(basename(url)).extname();
@@ -16,7 +16,7 @@ export default async function (
 
   const input = await (async () => {
     if (!predownloaded_file.isFile()) {
-      const rsp: Response = await fetch(url);
+      const rsp: Response = await fetch(url, { headers: {"User-Agent": "pkgx/manifests"} });
       if (!rsp.ok) {
         throw new Error("failed to connect to host");
       }
@@ -38,6 +38,7 @@ export default async function (
 
   if (!url.endsWith(".zip")) {
     const [cmd, ...args] = mktar(url, stripComponents);
+
     const tar = new Deno.Command(cmd, {
       args: args,
       stdin: "piped",
@@ -52,7 +53,9 @@ export default async function (
   } else if (Deno.build.os == "windows") {
     // on windows the tar is bsdtar which can extract zip files
     await input.getReader().read(); //FIXME inefficient for predownloaded case
-    const { success } = await new Deno.Command("tar", { args: ["xzf", predownloaded_file.string] }).spawn().status;
+    const args = ["xzf", predownloaded_file.string];
+    if (stripComponents) args.push(`--strip-components=${stripComponents}`);
+    const { success } = await new Deno.Command("tar", { args }).spawn().status;
     if (!success) {
       throw new Error("unarchive failed");
     }
@@ -65,26 +68,49 @@ export default async function (
     if (!success) {
       throw new Error("unarchive failed");
     }
+
+    if (stripComponents) {
+      if (stripComponents != 1) throw new Error("only supporting 1 strip component for zips! please fix!");
+      for await (const [path, {isDirectory}] of Path.cwd().ls()) {
+        if (isDirectory) {
+          for await (const [inner_path] of path.ls()) {
+            inner_path.mv({ into: Path.cwd() });
+          }
+        }
+        path.rm();
+      }
+    }
+
   }
 
   // make user accessible symlink
-  if (Deno.build.os != 'windows' && predownloaded_file.isFile()) {
-    root.parent().join(platform_partial_path(), active_pkg!.project).mkdir('p').join(`v${active_pkg!.version}+${checksum}${ext}`).rm().ln('s', {target: predownloaded_file});
+  if (Deno.build.os != 'windows' && predownloaded_file.isFile() && active_pkg) {
+    root.parent().join(platform_partial_path(), active_pkg.project).mkdir('p').join(`v${active_pkg.version}+${checksum}${ext}`).rm().ln('s', {target: predownloaded_file});
   }
 }
 
 function mktar(url: string, stripComponents?: number) {
   const mode = url.endsWith(".bz2") ? "xjf" : url.endsWith(".xz") ? "xJf" : "xzf";
-  if (Deno.build.os != "windows") {
-    const rv = ["tar", mode, "-"];
-    if (stripComponents) rv.push(`--strip-components=${stripComponents}`);
-    return rv;
-  } else {
+  switch (Deno.build.os) {
+  case "windows":
+  case "linux": {
+    // we use the system tar for efficiency and because on Windows
+    // we couldn’t get ours to work (at least when we wrote this code)
+    // and because on windows the tar.exe is bsdtar which can extract zip files
     const rv = ["pkgx", "--quiet"];
     if (mode == "xJf") rv.push("+xz");
     if (mode == "xjf") rv.push("+bzip2");
     rv.push("--", "tar", mode, "-");
     if (stripComponents) rv.push(`--strip-components=${stripComponents}`);
     return rv;
+  }
+  case "darwin":
+    // somehow the macOS tar can extract tar.xz files without assistance
+    // even though there is no liblzma installed
+    const rv = ["tar", mode, "-"];
+    if (stripComponents) rv.push(`--strip-components=${stripComponents}`);
+    return rv;
+  default:
+    throw new Error("unsupported platform");
   }
 }

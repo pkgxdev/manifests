@@ -37,6 +37,7 @@ export async function releases(
       return [];
     }
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }
@@ -49,6 +50,7 @@ export async function releases(
   while (url) {
     const rsp: Response = await fetch(url, { headers });
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }
@@ -66,6 +68,7 @@ export async function tags(repo: string): Promise<{ name: string }[]> {
   while (url) {
     const rsp: Response = await fetch(url, { headers });
     if (!rsp.ok) {
+      console.error("%cerror:", "color: red", rsp.statusText, `(${rsp.status})`);
       console.error("%cerror:", "color: red", "you might need to set GITHUB_TOKEN");
       Deno.exit(1);
     }
@@ -75,7 +78,7 @@ export async function tags(repo: string): Promise<{ name: string }[]> {
   return rv;
 }
 
-export function std_version_covert(
+export function std_version_convert(
   { tag_name, name }: { tag_name?: string; name: string },
 ) {
   const tag = tag_name || name; // depends on if we fetched /releases or /tags

@@ -1,4 +1,4 @@
-import { BuildOptions, env_include, inreplace, Path, run, SemVer, unarchive } from "brewkit";
+import { BuildOptions, env_include, inreplace, Path, run, SemVer, unarchive, undent } from "brewkit";
 
 export default async function (
   { tag, prefix, deps, version, props }: BuildOptions,
@@ -8,6 +8,7 @@ export default async function (
 
   if (Deno.build.os != "windows") {
     if (version.lt(new SemVer("3.12"))) {
+      // help python to find the build-time libs
       inreplace(
         Path.cwd().join("setup.py"),
         /system_lib_dirs = .*/g,
@@ -22,6 +23,9 @@ export default async function (
 
     if (Deno.build.os == "linux") {
       // --enable-optimizations requires llvm-profdata
+      // env_include("llvm.org/llvm-profdata");
+
+      // llvm-ar is required for --enable-lto=full
       env_include("llvm.org");
     }
 
@@ -34,14 +38,15 @@ export default async function (
           --with-system-ffi
           --with-system-libmpdec
           --enable-shared
-          --enable-optimizations
+          ${opts() ? '--enable-optimizations' : ''}
           --with-lto=full
-          --without-ensurepip
+          --without-ensurepip  # even though we pkg pip separately, we need this or venv’s fail to form correctly
           --disable-test-modules
           ${sqlite() ? '--enable-loadable-sqlite-extensions' : ''}
           --with-configdir=/etc/python
           CC=clang
           `;
+
     run`make --jobs ${navigator.hardwareConcurrency}`;
     run`make install`;
 
@@ -53,10 +58,23 @@ export default async function (
     prefix.join("bin/pydoc").ln("s", { target: `pydoc${v}` });
     prefix.join("bin/python-config").ln("s", { target: `python${v}-config` });
 
+    // we provide pip separately
+    // NOTE this is just the executable, not the library, venvs, etc. still work
+    for await (const path of prefix.bin.glob("pip*")) {
+      path.rm();
+    }
+
     // idle is prehistoric and nobody wants it
     prefix.join(`bin/idle${v}`).rm();
     prefix.join(`bin/idle${version.major}`).rm();
     prefix.join(`lib/python${v}/idlelib`).rm("rf");
+
+    // ensure `pip install` defaults to `--user`
+    // this was found to work after days of trial and error. Let’s hope it stays that way
+    // yes, it seems like any number of alternatives would be less insane
+    // needless to say: I tried them
+    prefix.join(`lib/python${v}/site-packages`).rm('rf').ln('s', {target: new Path('/dev')});
+
   } else {
     env_include("nasm.us");
     //TODO build external deps ourselves
@@ -68,7 +86,7 @@ export default async function (
     Deno.env.set("Py_OutDir", Path.cwd().string);
     run`PCBuild\\build.bat
           -p x64
-        # -E  # don’t build external deps (we do that)
+        # -E  # TODO don’t build external deps (we do that)
           `;
     Path.cwd().join("amd64").mv({ to: prefix.mkdir("p").join("bin") });
     Path.cwd().join("Include").mv({ into: prefix });
@@ -76,8 +94,9 @@ export default async function (
 
     // otherwise venvs don't work
     // I have no clue why the build scripts don't do any of this
-    prefix.bin.join("venvlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
-    prefix.bin.join("venvwlauncher.exe").mv({ into: prefix.lib.join("venv/scripts/nt") });
+    //NOTE seems to only apply to Python 3.11
+    prefix.bin.join("venvlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
+    prefix.bin.join("venvwlauncher.exe").cp({ into: prefix.lib.join("venv/scripts/nt") });
   }
 
   function sqlite() {
@@ -86,5 +105,9 @@ export default async function (
     } else {
       return version.major >= 3 && version.minor >= 11;
     }
+  }
+
+  function opts() {
+    return Deno.build.os == 'darwin'
   }
 }

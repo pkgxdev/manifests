@@ -21,10 +21,10 @@ export default class LibrarySymlinkEnsurer {
   execute() {
     for (const file of this.files) {
       switch (Deno.build.os) {
-        case "linux":
+        case "linux": {
           const match = file.basename().match(/(.*\.so)((\.\d+)\.\d+)\.\d+$/);
           if (!match) {
-            console.error(`::warning file=${file}::library symlink should have version in name`);
+            // console.error(`::warning file=${file}::library symlink should have version in name`);
             continue;
           }
 
@@ -32,7 +32,20 @@ export default class LibrarySymlinkEnsurer {
           symlink_if_needed(file, `${base}`);
           symlink_if_needed(file, `${base}${match[2]}`);
           symlink_if_needed(file, `${base}${match[3]}`);
-          break;
+        } break;
+
+        case "darwin": {
+          const match = file.basename().match(/(.*)(([\.-]\d+)\.\d+)\.\d+.dylib$/);
+          if (!match) {
+            // console.error(`::warning file=${file}::library symlink should have version in name`);
+            continue;
+          }
+
+          const base = match[1];
+          symlink_if_needed(file, `${base}.dylib`);
+          symlink_if_needed(file, `${base}${match[2]}.dylib`);
+          symlink_if_needed(file, `${base}${match[3]}.dylib`);
+        } break;
       }
     }
   }

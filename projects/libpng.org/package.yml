@@ -1,0 +1,16 @@
+repository:
+  https://github.com/glennrp/libpng
+
+linux:
+  dependencies:
+    zlib.net: ^1
+
+programs:
+  - bin/libpng-config
+  - bin/libpng{{version.major}}{{version.minor}}-config
+  - bin/png-fix-itxt
+  - bin/pngfix
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

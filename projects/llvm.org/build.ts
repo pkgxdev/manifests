@@ -33,8 +33,6 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
       // compiler-rt specific stuff
       platform_specific_cmake_args += `
         -DCMAKE_C_COMPILER_TARGET=x86_64-unknown-linux-gnu
-        -DZLIB_INCLUDE_DIR=${deps['zlib.net'].prefix}/include
-        -DZLIB_LIBRARY=${deps['zlib.net'].prefix}/lib/libz.so
         `;
       break;
 
@@ -51,7 +49,6 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         -G Ninja
 
         -DCMAKE_INSTALL_PREFIX=${prefix}
-        -DCMAKE_BUILD_TYPE=Release
 
         -DCLANG_VENDOR=pkgx
         -DBUG_REPORT_URL=https://github.com/pkgxdev/pantry/issues/new

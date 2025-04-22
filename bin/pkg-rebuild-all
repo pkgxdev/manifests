@@ -1,0 +1,26 @@
+#!/usr/bin/env -S pkgx +gum +gh /bin/bash -eo pipefail
+
+PATH="$(cd "$(dirname "$0")" && pwd)":$PATH
+
+if [[ "$1" == --start=* ]]; then
+  # Extract the argument after the '='
+  skip_until="${1#*=}"
+fi
+
+for project in $(pkg-ls --platforms=all)
+do
+  if [ "$skip_until" ]; then
+    if [ "$skip_until" = "$project" ]; then
+      unset skip_until
+    else
+      continue
+    fi
+  fi
+
+  gh workflow run cd.bottle.yml -f pkgs="$project"
+  gum spin -- sleep 5
+
+  run_id=$(gh run list --json databaseId --workflow=cd.bottle.yml | jq '.[0].databaseId')
+
+  gh run watch --exit-status $run_id
+done

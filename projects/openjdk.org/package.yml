@@ -1,0 +1,57 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/jar
+  - bin/jarsigner
+  - bin/java
+  - bin/javac
+  - bin/javadoc
+  - bin/javap
+  - bin/jcmd
+  - bin/jconsole
+  - bin/jdb
+  - bin/jdeprscan
+  - bin/jdeps
+  - bin/jfr
+  - bin/jhsdb
+  - bin/jimage
+  - bin/jinfo
+  - bin/jlink
+  - bin/jmap
+  - bin/jmod
+  - bin/jps
+  - bin/jrunscript
+  - bin/jshell
+  - bin/jstack
+  - bin/jstat
+  - bin/jstatd
+  - bin/keytool
+  - bin/rmiregistry
+  - bin/serialver
+
+dependencies:
+  sf.net/giflib: ^5
+  harfbuzz.org: ^11
+  libjpeg-turbo.org: ^3
+  libpng.org: ^1
+  littlecms.com: ^2
+  # info-zip.org/unzip: ^6
+  libzip.org: ^1
+
+linux:
+  dependencies:
+    github.com/OpenPrinting/cups: ^2
+    alsa-project.org/alsa-lib: ^1
+    freedesktop.org/fontconfig: ^2
+    freetype.org: ^2
+    x.org/libX11: ^1.8
+    x.org/libXext: ^1.4
+    # x.org/xrandr: '*'
+    # x.org/xrender: '*'
+    # x.org/xt: '*'
+    # x.org/xtst: '*'
+    # info-zip.org/zip: '*'
+    # darwinsys.com/file: '*'
+    zlib.net: ^1

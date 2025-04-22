@@ -25,6 +25,10 @@ export default class Path {
     return new Path(Deno.cwd());
   }
 
+  static parent(): Path {
+    return Path.cwd().parent();
+  }
+
   static home(): Path {
     return new Path(
       (() => {
@@ -385,6 +389,11 @@ export default class Path {
     return this;
   }
 
+  mkparent(): Path {
+    this.parent().mkdir("p");
+    return this;
+  }
+
   isEmpty(): Path | undefined {
     for (const _ of Deno.readDirSync(this.string)) {
       return;
@@ -424,7 +433,8 @@ export default class Path {
 
   static mktemp(opts?: "d"): Path {
     if (opts == "d") {
-      return new Path(Deno.makeTempDirSync());
+      const dir = Deno.build.os == 'darwin' ? '/tmp' : undefined;
+      return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
     } else {
       return new Path(Deno.makeTempFileSync());
     }

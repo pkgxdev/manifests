@@ -1,0 +1,13 @@
+repository:
+  https://github.com/westes/flex
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/flex
+  - bin/flex++
+
+companions:
+  - gnu.org/m4

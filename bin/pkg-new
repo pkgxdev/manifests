@@ -1,0 +1,107 @@
+#!/usr/bin/env -S pkgx deno run -A
+
+import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
+import { parse, stringify } from "jsr:@std/yaml@1";
+import { Path, undent } from "brewkit";
+
+if (Deno.args.length < 1) {
+  console.error("usage: pkg-new <package-name>");
+  Deno.exit(1);
+}
+
+const project = Deno.args[0];
+const new_project = Deno.args[1] || project;
+const d = new Path(fromFileUrl(import.meta.url)).parent().parent();
+
+let f = Path.home().join("src/pantry/projects", project, "package.yml").isFile();
+if (f) {
+  const yaml = parse(f.read()) as any;
+  const old_f = f;
+  f = d.join("projects", new_project).mkdir('p').join("package.yml");
+
+  const new_yaml: Record<string, any> = {}
+
+  if (yaml['display-name']) {
+    new_yaml['name'] = yaml['display-name'];
+  }
+
+  let repository = yaml['distributable']?.['url']
+  if (repository?.startsWith('https://github.com')) {
+    const url = new URL(repository);
+    repository = `https://github.com/${url.pathname.split('/').slice(1, 3).join('/')}`;
+    new_yaml.repository = repository;
+  }
+
+  new_yaml.platforms = yaml['platforms'] || ['darwin/aarch64', 'linux/x86-64'];
+
+  if (yaml.provides) {
+    new_yaml.programs = yaml['provides'];
+  }
+
+  if (yaml['dependencies']) {
+    const deps: Record<string, string> = {};
+    for (let [project, constraint] of Object.entries(yaml['dependencies']) as [string, string | number][]) {
+     if (typeof constraint == 'number') { constraint = '^' + constraint; }
+     if (project == 'libexpat.github.io') {
+       project = 'github.com/libexpat';
+     }
+     if (project == 'github.com/gflags/gflags') {
+      project = 'google.com/gflags';
+     }
+     deps[project] = constraint;
+    }
+    new_yaml.dependencies = deps;
+  }
+
+  f.write(stringify(new_yaml));
+
+  const build = stringify(yaml['build'])
+    .trim()
+    .replaceAll(/^/mg, '// ')
+    .replaceAll(/\$?{{\s*prefix\s*}}/g, '${prefix}')
+    .replaceAll(/{{\s*hw.concurrency\s*}}/g, '${navigator.hardwareConcurrency}');
+
+  const url = yaml['distributable']?.['url']
+    ?.replaceAll(/{{\s*version\s*}}/g, '${version}')
+    .replaceAll(/{{\s*tag\s*}}/g, '${tag}')
+    .replaceAll(/{{\s*version\.major\s*}}/g, '${version.major}')
+    .replaceAll(/{{\s*version\.minor\s*}}/g, '${version.minor}')
+    .replaceAll(/{{\s*version\.patch\s*}}/g, '${version.patch}')
+    .replaceAll(/{{\s*version\.raw\s*}}/g, '${tag}')
+    .replaceAll(/{{\s*version\.marketing\s*}}/g, '${version.marketing}');
+
+  f.parent().join("build.ts").write(undent`
+    import { BuildOptions, unarchive, run } from "brewkit";
+
+    export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
+      await unarchive(\`${url}\`);
+      ${build}
+    }`);
+
+  const test = stringify(yaml['test']).replaceAll(/^/mg, '// ');
+
+  f.parent().join("test.ts").write(undent`
+    import { run } from "brewkit";
+
+    export default async function () {
+      ${test}
+    }`);
+
+  for await (const [path, { name, isFile }] of old_f.parent().ls()) {
+    if (name == 'package.yml') continue;
+    if (!isFile) continue;
+    path.cp({ into: f.parent() });
+  }
+
+  await new Deno.Command("code", {
+    args: [
+      d.join("projects", new_project).string,
+      Path.home().join("src/pantry/projects", project).string,
+      d.string,
+      d.join("projects", new_project, "package.yml").string
+    ],
+  }).spawn().status
+
+} else {
+  throw new Error();
+}

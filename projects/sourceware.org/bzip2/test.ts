@@ -1,12 +1,5 @@
 import { assertEquals } from "jsr:@std/assert@^1";
-import { Path, run } from "brewkit";
-
-function nonce(length = 32): string {
-  const base62 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-    .map((n) => base62[n % 62]) // Map random bytes to Base62 characters
-    .join("");
-}
+import { Path, run, nonce } from "brewkit";
 
 export default async function () {
   const sample = nonce();

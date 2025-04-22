@@ -8,7 +8,7 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
     run`make --jobs ${navigator.hardwareConcurrency} install`;
   } else {
     // per usual, cmake support is still experimental, but recommended for Windows
-    run`cmake -B build -S . -DCMAKE_INSTALL_PREFIX=${prefix} -DCMAKE_BUILD_TYPE=Release`;
-    run`cmake --build build --config Release --parallel --target install`;
+    run`cmake -B bld -DCMAKE_INSTALL_PREFIX=${prefix}`;
+    run`cmake --build bld --target install`;
   }
 }

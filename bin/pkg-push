@@ -12,6 +12,11 @@ PLATFORM="$(echo "$PREFIX" | sed "s|^$SRCROOT/artifacts/||" | cut -d'/' -f1-2)"
 PROJECT="$(echo "$PREFIX" | sed "s|^$SRCROOT/artifacts/||" | cut -d'/' -f3-)"
 VERSION="$(basename "$PREFIX")"
 
+if [[ "$VERSION" != v* ]]; then
+  gum format '# error' "Version must start with v"
+  exit 1
+fi
+
 PROJECT="$(dirname "$PROJECT")"
 
 export AWS_REGION=us-east-1

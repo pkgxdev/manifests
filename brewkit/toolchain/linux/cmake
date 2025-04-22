@@ -1,1 +1,9 @@
-#!/usr/bin/env -S pkgx -q! cmake
+#!/bin/sh
+
+export CMAKE_PREFIX_PATH="$PKGS:${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+export CMAKE_GENERATOR=${CMAKE_GENERATOR:-Ninja}
+export CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
+
+# we do it this way to prevent libc++ from being unintentionally
+# available to packages that we are building
+exec "$(pkgx --quiet +cmake^3 -- which cmake)" "$@"

@@ -33,18 +33,17 @@ export default async function ({ prefix, tag, version, props }: BuildOptions) {
       );
     }
   } else {
-    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`);
+    await unarchive(`https://github.com/git-for-windows/git/archive/refs/tags/${tag}.zip`, 1);
 
-    Deno.chdir("contrib\\buildsystems");
+    Deno.chdir(`contrib\\buildsystems`);
 
     //TODO this uses vcpkg to install zlib, etc. which we don't want
     //NOTE cannot build in a separate directory or the install fails
     run`cmake
           -B ..\\..\\
-          -S .
           -DCMAKE_INSTALL_PREFIX=${prefix}
-          -DCMAKE_BUILD_TYPE=Release`;
+          `;
 
-    run`cmake --build ..\\..\\ --config Release --target install --parallel`;
+    run`cmake --build ..\\..\\ --target install`;
   }
 }

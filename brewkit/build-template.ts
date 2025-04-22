@@ -1,5 +1,11 @@
 import { fixup, parse, Path, Prefix, SemVer, semver, set_active_pkg, walk_pkgx_dir } from "brewkit";
 
+if (Deno.env.get("GITHUB_ACTIONS")) {
+  console.log("::group::env");
+  Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(`${key}=${value}`));
+  console.log("::endgroup::");
+}
+
 const pkg = parse(Deno.args[0]);
 const build_dir = new Path(Deno.args[1]);
 const props = new Path(Deno.args[2]);
@@ -7,6 +13,8 @@ const PKGX_DIR = new Path(Deno.args[3]);
 const dstdir = new Path(Deno.args[4]);
 
 Deno.chdir(build_dir.mkdir().string);
+
+console.error("resolving...");
 
 const got_versions: { version: SemVer }[] = await versions(pkg.constraint);
 const version: { version: SemVer } = got_versions

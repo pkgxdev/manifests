@@ -13,7 +13,7 @@ export default async function (constraint: Range) {
         // ignore tags for other products eg. gitgui
         return;
       }
-      return github.std_version_covert(x);
+      return github.std_version_convert(x);
     } catch (err) {
       if (!/^v[01]/.test(x.name)) {
         // ^^ ignore weird old tags

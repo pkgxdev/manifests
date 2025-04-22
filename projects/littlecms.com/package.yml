@@ -1,0 +1,20 @@
+name:
+  Little CMS
+
+repository:
+  https://github.com/mm2/Little-CMS
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/jpgicc
+  - bin/linkicc
+  - bin/psicc
+  - bin/tificc
+  - bin/transicc
+
+dependencies:
+  simplesystems.org/libtiff: ^4
+  libjpeg-turbo.org: ^2,^3

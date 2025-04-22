@@ -1,2 +1,7 @@
 #!/bin/sh
-exec pkgx --quiet cmake "$@"
+
+export CMAKE_PREFIX_PATH="$PKGS:${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+export CMAKE_GENERATOR=${CMAKE_GENERATOR:-Ninja}
+export CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release}
+
+exec pkgx --quiet cmake^3 "$@"

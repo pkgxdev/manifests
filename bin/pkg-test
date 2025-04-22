@@ -1,30 +1,46 @@
 #!/usr/bin/env -S pkgx -q deno^2 run --ext=ts -A
 
-import { fromFileUrl } from "jsr:@std/path@^1";
-import { backticks_quiet, parse, Path, platform_partial_path, undent } from "brewkit";
+import { Installation } from "https://raw.githubusercontent.com/pkgxdev/libpkgx/refs/tags/v0.21.0/mod.ts";
+import { backticks_quiet, Path, platform_partial_path, undent, walk_pkgx_dir } from "brewkit";
+import { parse_arg_to_pkg, prep_deps, windows_default_PATH, windows_system_keys, windows_vsvars_keys } from "./pkg-build";
 import { find_in_PATH } from "../brewkit/env-include.ts";
-import { setup_deps } from "./pkg-build";
+import { fromFileUrl } from "jsr:@std/path@^1";
+import ensure_pantry from "./pkg-convert";
 
-const pkg = parse(Deno.args[0]);
-const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
-const tmpdir = mktempd();
-const deno = find_in_PATH("deno")!.string;
+if (import.meta.main) {
+  const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
 
-Deno.env.set("PKGX_PANTRY_DIR", srcroot.join("artifacts/pantry/projects").cp({ into: tmpdir.join("pantry").mkdir() }).parent().string);
-Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
+  await ensure_pantry();
 
-await prep_toolchain();
-const { prefix, version } = await prep_deps();
-await prep_script();
-await run();
+  const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
+  const tmpdir = mktempd();
+  const deno = find_in_PATH("deno")!.string;
 
-tmpdir.rm('rf');
+  const env = await prep_toolchain(srcroot, tmpdir);
+  await prep_deps([pkg], tmpdir, srcroot, env);
+
+  const installation: Installation = await (async () => {
+    for await (const { pkg: dep, path } of walk_pkgx_dir(tmpdir.join("pkgs"))) {
+      if (dep.project == pkg.project) return { path, pkg: dep };
+    }
+    throw new Error();
+  })() as any;
+
+  await prep_script(srcroot, installation, tmpdir);
+  await run(deno, srcroot, installation, tmpdir, env);
+
+  tmpdir.rm('rf');
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-async function prep_toolchain() {
+async function prep_toolchain(srcroot: Path, tmpdir: Path) {
   const bin = tmpdir.join("bin").mkdir();
   find_in_PATH("pkgx")!.cp({ into: bin });
+
+  const env: Record<string, string> = {}
+
+  const set = (key: string) => { if (Deno.env.get(key)) { env[key] = Deno.env.get(key)!; } }
 
   switch (Deno.build.os) {
   case 'linux':
@@ -42,7 +58,8 @@ async function prep_toolchain() {
     ln('nm', 'llvm-nm');
     ln('strings', 'llvm-strings');
 
-    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
+    srcroot.join("brewkit/toolchain/linux/pkg-config").cp({ into: bin });
     break;
 
   case 'darwin':
@@ -51,69 +68,33 @@ async function prep_toolchain() {
     srcroot.join("brewkit/toolchain/darwin/ld").cp({ into: bin });
     srcroot.join("brewkit/toolchain/darwin/pkg-config").cp({ into: bin });
 
-    Deno.env.set("PATH", `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`);
+    env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
     break;
 
   case 'windows':
-    Deno.env.set("PATH", `${bin};${Deno.env.get("PATH")}`);
+    env["PATH"] = [bin.string, ...windows_default_PATH()].join(";");
+    windows_system_keys().forEach(set);
+    windows_vsvars_keys().forEach(set);
   }
 
-  Deno.env.set("PKGX_BIN", bin.string);
+  env["PKGX_BIN"] = bin.string;
+
+  return env;
 }
 
-async function prep_deps() {
-  await setup_deps(tmpdir, srcroot)
-
-  Deno.env.set("PKGX_DIR", tmpdir.join("pkgs").string);
-
-  const data = backticks_quiet`pkgx -q +${pkg.project} --json=v1`;
-  const json = JSON.parse(data);
-
-  if (json) {
-    const SEP = Deno.build.os == "windows" ? ";" : ":";
-
-    for (const [key, paths] of Object.entries(json.env) as [string, string[]][]) {
-      let value = paths.join(SEP);
-      if (Deno.env.get(key)) {
-        value += `${SEP}${Deno.env.get(key)}`;
-      }
-      Deno.env.set(key, value);
-    }
-
-    for (const [_pkg, env_dict] of Object.entries(json.runtime_env)) {
-      for (let [key, value] of Object.entries(env_dict as any)) {
-        const { path } = json.pkgs.find(({ project }: any) => project === _pkg);
-        value = (value as string).replace("{{prefix}}", path);
-        Deno.env.set(key, value as string);
-      }
-    }
-
-    for (const [project, env_keys] of Object.entries(json.runtime_env as any)) {
-      for (let [key, value] of Object.entries(env_keys as any)) {
-        const { path, version } = json.pkgs.find(({ project: _project }: any) => project === _project);
-        //TODO pkgx should obv replace these, which presumably means going to v2 :/
-        value = (value as string).replaceAll("{{prefix}}", path);
-        value = (value as string).replaceAll("{{version}}", version);
-        Deno.env.set(key, value as string);
-      }
-    }
-
-    const pkgs = Object.values(json.pkgs).map(({ path }: any) => path);
-    Deno.env.set("PKGS", pkgs.join(SEP));
-
-    const { path: prefix, version }= json.pkgs.find(({ project }: any) => project === pkg.project);
-    return { prefix, version } as { prefix: string, version: string };
-  } else {
-    console.error("no such pkg or some such");
-    Deno.exit(1);
-  }}
-
-async function prep_script() {
+async function prep_script(srcroot: Path, { pkg }: Installation, tmpdir: Path) {
   const data = undent`
     import test_runner from '${srcroot.join("projects", pkg.project, "test.ts").fileURL()}';
     import { Path, SemVer } from 'brewkit';
     const prefix = new Path(Deno.args[0]);
     const version = new SemVer(prefix.basename());
+
+    if (Deno.env.get("GITHUB_ACTIONS")) {
+      console.log("::group::env");
+      Object.entries(Deno.env.toObject()).forEach(([key, value]) => console.log(\`\${key}=\${value}\`));
+      console.log("::endgroup::");
+    }
+
     await test_runner({prefix, version});
   `;
   tmpdir.join("run-test.ts").write(data);
@@ -140,7 +121,7 @@ async function prep_script() {
   }
 }
 
-async function run() {
+async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installation, tmpdir: Path, env: Record<string, string>) {
   let [cmd, ...args]: string[] = (() => {
     if (Deno.build.os !== 'darwin') return [deno];
 
@@ -168,7 +149,7 @@ async function run() {
       // we have to resolve the symlink as macOS sandboxes resolve symlinks before denying shit
       //NOTE we symlink all pkgs because copying them all can take ~30s depending on dep quantity
       //FIXME maybe we should cp the target package, if so update the sandbox above to prevent writes there
-      const rel_path = new Path(prefix).relative({to: tmpdir.join("pkgs") });
+      const rel_path = prefix.relative({to: tmpdir.join("pkgs") });
       const path = srcroot.join("artifacts", platform_partial_path(), rel_path);
       sb += foo.read().replaceAll("{{prefix}}", path.string);
     }
@@ -177,9 +158,7 @@ async function run() {
   })();
 
   if (Deno.env.get("GITHUB_ACTIONS")) {
-    console.log("::group::env");
-    console.log(Deno.env.toObject());
-    console.log("::endgroup::");
+    env["GITHUB_ACTIONS"] = Deno.env.get("GITHUB_ACTIONS")!;
   }
 
   //NOTE --allow-all is required for Windows, dunno why but whatever
@@ -190,11 +169,12 @@ async function run() {
     "--allow-net",
     "--allow-run",
     tmpdir.join("run-test.ts").string,
-    prefix,
-    version
+    prefix.string,
+    pkg.version.toString(),
   );
 
-  const proc = new Deno.Command(cmd, { args, cwd: tmpdir.join("testbed").mkdir().string }).spawn();
+  const cwd = tmpdir.join("testbed").mkdir().string;
+  const proc = new Deno.Command(cmd, { args, env, cwd, clearEnv: true }).spawn();
   const { code, success } = await proc.status;
   if (!success) {
     Deno.exit(code);
@@ -204,8 +184,4 @@ async function run() {
 function mktempd() {
   const dir = Deno.build.os == 'darwin' ? '/tmp' : undefined;
   return new Path(Deno.makeTempDirSync({ prefix: "pkgx.", dir }));
-}
-
-function platform_pair() {
-  return [Deno.build.os, Deno.build.arch == 'x86_64' ? 'x86-64' : Deno.build.arch];
 }

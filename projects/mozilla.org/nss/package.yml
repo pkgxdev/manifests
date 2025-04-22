@@ -1,0 +1,75 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/addbuiltin
+  - bin/certutil
+  - bin/crmftest
+  - bin/ecperf
+  - bin/listsuites
+  - bin/multinit
+  - bin/ocspresp
+  - bin/p7verify
+  - bin/pk12util
+  - bin/remtest
+  - bin/secmodtest
+  - bin/ssltap
+  - bin/vfychain
+  - bin/atob
+  - bin/chktest
+  - bin/dbtest
+  - bin/encodeinttest
+  - bin/nonspr10
+  - bin/oidcalc
+  - bin/pk11ectest
+  - bin/pk1sign
+  - bin/rsaperf
+  - bin/selfserv
+  - bin/strsclnt
+  - bin/vfyserv
+  - bin/baddbdir
+  - bin/cmsutil
+  - bin/derdump
+  - bin/fbectest
+  - bin/makepqg
+  - bin/nss-config
+  - bin/p7content
+  - bin/pk11gcmtest
+  - bin/pkix-errcodes
+  - bin/rsapoptst
+  - bin/shlibsign
+  - bin/symkeyutil
+  - bin/bltest
+  - bin/conflict
+  - bin/dertimetest
+  - bin/fipstest
+  - bin/mangle
+  - bin/nss-policy-check
+  - bin/p7env
+  - bin/pk11importtest
+  - bin/pp
+  - bin/sdbthreadtst
+  - bin/signtool
+  - bin/tstclnt
+  - bin/btoa
+  - bin/crlutil
+  - bin/digest
+  - bin/httpserv
+  - bin/modutil
+  - bin/ocspclnt
+  - bin/p7sign
+  - bin/pk11mode
+  - bin/pwdecrypt
+  - bin/sdrtest
+  - bin/signver
+  - bin/validation
+
+dependencies:
+  mozilla.org/nspr: ^4
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14
+    sqlite.org: ^3
+    zlib.net: ^1

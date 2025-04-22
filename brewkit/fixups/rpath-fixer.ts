@@ -27,7 +27,7 @@ export default class RpathFixer {
     switch (Deno.build.os) {
       case "linux":
         for (const file of this.files) {
-          console.error('%c+', 'color:pink', 'fixing rpaths:', file);
+          console.error('%c+', 'color:pink', 'fixing rpaths:', file.relative({ to: this.prefix}));
           await this.execute_linux(file);
         }
         break;
@@ -40,9 +40,14 @@ export default class RpathFixer {
         Deno.env.set("GEM_HOME", "/tmp/gem");
 
         for (const file of this.files) {
-          console.error('%c+', 'color:yellow', 'fixing rpaths:', file);
+          console.error('%c+', 'color:pink', 'fixing rpaths:', file.relative({ to: this.prefix}));
           Deno.env.set("LIBS", JSON.stringify(this.files));
-          run`${script} ${file} ${this.prefix} ${this.PKGX_DIR}`;
+          const { code, success } = await new Deno.Command(script.string, {
+            args: [file.string, this.prefix.string, this.PKGX_DIR.string]
+          }).spawn().status
+          if (!success) {
+            Deno.exit(code);
+          }
         }
       }
     }
@@ -97,8 +102,6 @@ export default class RpathFixer {
 function ldd(file: Path, LDLPATH: string): string[] {
   const libs: string[] = [];
 
-  console.error("hi", file, LDLPATH);
-
   const old_LDLPATH = Deno.env.get("LD_LIBRARY_PATH");
   Deno.env.set("LD_LIBRARY_PATH", LDLPATH);
   let output = '';
@@ -116,9 +119,15 @@ function ldd(file: Path, LDLPATH: string): string[] {
     if (!line.includes("=>")) continue;
     const [basename, fullpath] = line.trim().split(/\s+=>\s+/);
 
+    if (fullpath == "not found") {
+      console.error(`::error::could not find: ${line}`);
+      continue;
+    }
+
     if (fullpath.startsWith("/lib/")) {
       switch (basename.replace(/\.\d+$/, "")) {
         case "libpthread.so":
+        case "libresolv.so":
         case "librt.so":
         case "libdl.so":
         case "libm.so":

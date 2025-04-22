@@ -7,24 +7,17 @@ import { BuildOptions, ensure, run, unarchive } from "brewkit";
 export default async function ({ prefix, deps, version }: BuildOptions) {
   await unarchive(`https://github.com/Kitware/CMake/releases/download/v${version}/cmake-${version}.tar.gz`);
 
-  let cmake: any;
   try {
-    ensure("cmake");
-
     run`cmake
-          -S .
-          -B build
+          -B bld
           -DCMake_BUILD_LTO=ON
           -DCMAKE_INSTALL_PREFIX=${prefix}
-          -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_USE_OPENSSL=OFF   # FIXME vendor static libs or something
           `;
 
     run`cmake
-          --build build
-          --config Release
-          --target install
-          --parallel`;
+          --build bld
+          --target install`;
   } catch {
     run`./bootstrap
         --prefix=${prefix}
@@ -41,4 +34,5 @@ export default async function ({ prefix, deps, version }: BuildOptions) {
 
   // we have a “docs are on the Internet” policy
   prefix.share.join(`cmake-${version.marketing}/Help`).rm("rf");
+  prefix.join("doc").rm("rf");
 }

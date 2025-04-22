@@ -5,7 +5,7 @@ export default async function ({ prefix, version }: BuildOptions) {
 
   if (Deno.build.os == "windows") {
     Deno.chdir("win32");
-    run`nmake /M INST_TOP=${prefix} CCTYPE=MSVC143 install`;
+    run`nmake INST_TOP=${prefix} CCTYPE=MSVC143 install`;
     prefix.join("html").rm("rf");
   } else {
     const extra = Deno.build.os == "linux" ? "-Accflags=-fPIC" : "";

@@ -7,6 +7,7 @@ on:
     paths:
       - projects/**/*
       - .github/workflows/cd.pantry.tgz.yml
+  workflow_dispatch:
 
 concurrency:
   group: cd.pantry.tgz
@@ -23,7 +24,7 @@ jobs:
           aws-region: us-east-1
 
       - uses: actions/checkout@v4
-      - uses: pkgxdev/setup@v3
+      - uses: pkgxdev/setup@v4
 
       - run: bin/pkg-convert
 

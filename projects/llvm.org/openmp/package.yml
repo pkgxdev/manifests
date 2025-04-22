@@ -1,0 +1,17 @@
+name:
+  OpenMP
+
+names:
+  - OpenMP
+  - libomp
+
+repository:
+  https://github.com/llvm/llvm-project
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

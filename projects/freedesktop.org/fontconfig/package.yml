@@ -1,0 +1,33 @@
+name:
+  Fontconfig
+
+repository:
+  https://gitlab.freedesktop.org/fontconfig/fontconfig
+
+homepage:
+  https://www.freedesktop.org/wiki/Software/fontconfig
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/fc-cache
+  - bin/fc-cat
+  - bin/fc-conflist
+  - bin/fc-list
+  - bin/fc-match
+  - bin/fc-pattern
+  - bin/fc-query
+  - bin/fc-scan
+  - bin/fc-validate
+
+dependencies:
+  freetype.org: ^2
+  gnome.org/libxml2: ^2
+  github.com/libexpat: ^2
+
+linux:
+  dependencies:
+    sourceware.org/bzip2: ^1
+    zlib.net: ^1

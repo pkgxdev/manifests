@@ -1,43 +1,42 @@
 runs:
   using: composite
   steps:
-    # unavoidable for some projects on windows
-    # TODO we can probs save 20s and make a TS function to add this env
-    - uses: ilammy/msvc-dev-cmd@v1
-      if: runner.os == 'Windows'
+    - uses: pkgxdev/setup@v4
+      if: runner.os != 'Linux'
 
-    - run: |
-        Invoke-WebRequest -Uri "https://pkgx.sh/Windows/x86_64.zip" -OutFile .\\x86_64.zip
-        tar xf .\\x86_64.zip
-        mv .\\pkgx.exe .\\bin
-        rm .\\x86_64.zip
-
-        "$PWD\\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
-        Get-ChildItem -Path brewkit -Recurse -Filter *.ts | ForEach-Object { .\\bin\\pkgx deno -q cache $_.FullName }
-        .\\bin\\pkgx deno -q cache .\\.github\\scripts\\generate-versions
+    - name: Windows Prep
+      run: |
+        Join-Path $PWD "bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        pkgx -q deno^2 run -A .\\bin\\pkg-convert
+        Get-ChildItem -Path brewkit -Recurse -Filter *.ts | ForEach-Object { pkgx deno^2 -q cache $_.FullName }
+        pkgx deno^2 -q cache .\\.github\\scripts\\generate-versions
       shell: pwsh
       if: runner.os == 'Windows'
 
-    - run: |
-        case $(uname) in
-        Linux)
-          # $HOME is different in the docker image vs. github actions
-          ln -s /root/.pkgx $HOME
-          ln -s /root/.cache $HOME
-          ;;
-        Darwin)
-          curl https://pkgx.sh/$(uname)/$(uname -m).tgz | sudo tar xz -C /usr/local/bin
-          find brewkit -name \*.ts | xargs pkgx deno^2 --quiet cache
-          pkgx deno^2 --quiet cache .github/scripts/generate-versions
-          ;;
-        esac
-
-        case $(uname) in
-        Linux|Darwin)
-          echo "$PWD/bin" >> $GITHUB_PATH
-        esac
-
-        # we have to run this inside git-bash on Windows
-        ./bin/pkg-convert
+    - name: macOS Prep
+      if: runner.os == 'macOS'
+      run: |
+        find brewkit -name \*.ts | xargs pkgx deno^2 --quiet cache
+        pkgx deno^2 --quiet cache .github/scripts/generate-versions
+        echo "$PWD/bin" >> $GITHUB_PATH
+        sudo chmod ugo+rwx /opt
       shell: bash
+
+    - name: Linux Prep
+      run: |
+        echo '#!/usr/bin/env -S pkgx -q! aws' >> $PWD/bin/aws
+        echo '#!/usr/bin/env -S pkgx -q! xz' >> $PWD/bin/xz
+        chmod +x $PWD/bin/aws $PWD/bin/xz
+        echo "$PWD/bin" >> $GITHUB_PATH
+      if: runner.os == 'Linux'
+      shell: bash
+
+    - name: Convert Pantry
+      run: ./bin/pkg-convert
+      shell: bash
+      if: runner.os != 'Windows'
+
+    # unavoidable for some projects on windows
+    # TODO we can probs save 20–30s and make a TS function to add this env
+    - uses: ilammy/msvc-dev-cmd@v1
+      if: runner.os == 'Windows'

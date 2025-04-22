@@ -1,0 +1,19 @@
+name:
+  Boost
+
+homepage:
+  https://boost.org
+
+repository:
+  https://github.com/boostorg/boost
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+dependencies:
+  facebook.com/zstd: ^1
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

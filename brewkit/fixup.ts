@@ -57,7 +57,7 @@ export default async function default_fixups(
     if (isSymlink) {
       // fix absolute path symlinks
       const target = await Deno.readLink(path.string);
-      if (target.startsWith("/")) {
+      if (target.startsWith(PKGX_DIR.string)) {
         const relative = new Path(target).relative({ to: path.parent() });
         path.rm();
         Deno.symlink(relative, path.string, { type: isFile ? "file" : "dir" });
@@ -98,7 +98,7 @@ export default async function default_fixups(
               path.rm();
               //TODO need to update the empty dir pruner
               continue;
-            case "cmake":
+            case ".cmake":
               await fix_cmake_file(path, prefix);
               break;
           }

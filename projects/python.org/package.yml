@@ -5,7 +5,7 @@ repository:
   https://github.com/python/cpython
 
 companions:
-  # - python.org/pip
+  - python.org/pip
 
 dependencies:
   openssl.org: ^3
@@ -20,7 +20,6 @@ linux:
     gnu.org/readline: ^7,^8
     invisible-island.net/ncurses: ^6
     zlib.net: ^1
-    tukaani.org/xz: ^5
     sqlite.org: ^3
     sourceware.org/libffi: ^3
   # TODO

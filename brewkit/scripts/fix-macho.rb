@@ -68,36 +68,49 @@ end
 
 def fix_install_names
   $file.linked_dylibs.map do |lib|
-    next if lib.start_with? '/usr/' or lib.start_with? '/System/' or lib.start_with? '/Library/'
+    next if lib.start_with? '/usr/lib' or lib.start_with? '/System/' or lib.start_with? '/Library/'
 
     og_lib_name = lib
+    file = $LIBS.find{ |dep| lib_basename(dep['string']) == lib_basename(lib) }
 
-    if lib.start_with? '@rpath'
-      file = $LIBS.find{ |dep| File.basename(dep['string']) == File.basename(lib) }
-      if file
-        lib = file['string']
-      else
-        puts "::warning file=#{$file.filename}::missing dependency: #{lib}"
-        next
-      end
-    end
+    if file
+      lib = file['string']
+      # we sporadically use --prefix=/usr/local in conjunction with DESTDIR to work
+      # around specifying eg. /etc as the conf path which then fails builds since it cannot write there
+      if lib.start_with? $prefix or lib.start_with? "/usr/local/lib"
 
-    if lib.start_with? $prefix
-      rel_path = Pathname.new(lib).relative_path_from(Pathname.new($file.filename).parent)
-      if $file.filetype == :execute
-        $file.change_install_name og_lib_name, "@executable_path/#{rel_path}"
+        if lib.start_with? "/usr/local/lib"
+          lib = lib.sub(%r{^/usr/local}, $prefix)
+        end
+
+        rel_path = Pathname.new(lib).relative_path_from(Pathname.new($file.filename).parent)
+        if $file.filetype == :execute
+          change_install_name og_lib_name, "@executable_path/#{rel_path}"
+        else
+          change_install_name og_lib_name, "@loader_path/#{rel_path}"
+        end
       else
-        $file.change_install_name og_lib_name, "@loader_path/#{rel_path}"
+        rel_path = Pathname.new(file['string']).relative_path_from($PKGX_DIR)
+        rel_path = rel_path.sub(%r{/v(\d+)\.(\d+\.)+\d+[a-z]?/}, '/v\1/')  # use the pkgx `v` prefixed symlink
+        rel_path = rel_path.sub(%r{\.(\d+)\.(\d+\.)+\d+\.dylib$}, '.\1.dylib')  # use the dylib symlink
+        change_install_name og_lib_name, "@rpath/#{rel_path}"
       end
-    elsif !lib.start_with? '$PKGX_DIR'
-      puts "::error file=#{$file.filename}::unexpected install_name path: #{lib}"
-    else
-      rel_path = Pathname.new(file['string']).relative_path_from($PKGX_DIR)
-      rel_path = rel_path.sub(%r{/v(\d+)\.(\d+\.)+\d+[a-z]?/}, '/v\1/')  # use the pkgx `v` prefixed symlink
-      rel_path = rel_path.sub(%r{\.(\d+)\.(\d+\.)+\d+\.dylib$}, '.\1.dylib')  # use the dylib symlink
-      $file.change_install_name og_lib_name, "@rpath/#{rel_path}"
+    elsif lib.start_with? '@rpath/'
+      foo = lib.sub(%r{^@rpath/}, '')
+      foo = foo.sub(%r{/v.*$}, '')
+      pkgs = ENV['PKGS'].split(":").map{ |pkg| pkg.sub(%r{/v.*$}, '').sub(%r{^.*/pkgs/}, '') }
+      if not pkgs.include? foo
+        puts "::error file=#{$file.filename}::no fix available for: #{lib}"
+      end
     end
   end
+end
+
+def change_install_name(og_lib_name, new_name)
+  puts "  changing install name"
+  puts "    old: #{og_lib_name}"
+  puts "    new: #{new_name}"
+  $file.change_install_name og_lib_name, new_name
 end
 
 def codesign!
@@ -108,6 +121,11 @@ def codesign!
                                 $file.filename)
 
   raise MachO::CodeSigningError, "#{$file.filename}: signing failed!" unless status.success?
+end
+
+def lib_basename(lib)
+  lib = File.basename(lib)
+  lib = lib.sub(/(\.\d+)*\.dylib$/, '')
 end
 
 main

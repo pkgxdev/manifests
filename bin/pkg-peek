@@ -1,0 +1,70 @@
+#!/usr/bin/env -S pkgx deno^2 run -A
+
+import { fromFileUrl } from "jsr:@std/path@^1.0.8/from-file-url";
+import { parse_arg_to_pkg } from "./pkg-build";
+import { inreplace, Path, undent } from "brewkit";
+
+const srcroot = new Path(fromFileUrl(import.meta.url)).parent().parent();
+const pkg = parse_arg_to_pkg(Deno.args[0], srcroot);
+const dir = Path.mktemp("d").cd();
+
+srcroot.join("brewkit").cp({ into: dir });
+inreplace(
+  dir.join("brewkit/mod.ts"),
+  "export { unarchive };",
+  undent`
+    async function _unarchive(url: string, opts: any) {
+      await unarchive(url, opts ?? { stripComponents: 0 });
+      const { code } = await new Deno.Command(Deno.env.get("SHELL") || "bash", {args: ["-i"], cwd: "${dir}/testbed" }).spawn().status;
+      Deno.exit(code);
+    }
+    export { _unarchive as unarchive };
+    `);
+
+srcroot.join("deno.jsonc").cp({ into: dir });
+
+const root = srcroot.join("projects", pkg.project);
+
+function versions() {
+  if (root.join("versions.ts").isFile()) {
+    return `import versions from "${root.join("versions.ts").fileURL()}";`;
+  } else {
+    return undent`
+      import { default_versions } from 'brewkit';
+      const versions = default_versions("${root.join("package.yml").fileURL()}");
+      `;
+  }
+}
+
+const script = dir.join("pkg-peek.ts").write(undent`
+  import { Range, SemVer, semver } from "brewkit";
+  ${versions()}
+  import build from "${root.join("build.ts").fileURL()}";
+
+  const pkg = {
+    project: "${pkg.project}",
+    constraint: new Range("${pkg.constraint}")
+  };
+
+  const got_versions: { version: SemVer }[] = await versions(pkg.constraint);
+  const version: { version: SemVer } = got_versions
+    .filter(({ version }) => pkg.constraint.satisfies(version))
+    .sort((a, b) => semver.compare(a.version, b.version))
+    .pop()!;
+
+  version.version.marketing = \`\${version.version.major}.\${version.version.minor}\`;
+
+  console.error("NOTE, we --strip-components=0 so this will appear differently from during the build which defaults to 1");
+
+  await build(version);
+  `);
+
+const testbed = dir.join("testbed").mkdir();
+
+const { code } = await new Deno.Command("deno", {
+  args: ["run", "-A", script.string],
+  cwd: testbed.string,
+}).spawn().status;
+
+dir.rm("rf");
+Deno.exit(code);

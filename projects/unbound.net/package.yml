@@ -1,0 +1,18 @@
+repository:
+  https://github.com/NLnetLabs/unbound
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/unbound
+  - bin/unbound-anchor
+  - bin/unbound-checkconf
+  - bin/unbound-control
+  - bin/unbound-control-setup
+  - bin/unbound-host
+
+dependencies:
+  openssl.org: ^3
+  github.com/libexpat: ^2  # didn’t find the one provided by macOS

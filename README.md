@@ -173,3 +173,17 @@ commit order (use `pkg ls` to get the build order).
 You’ll be able to build everything on the same machine, but as soon as you
 want to use CI/CD you will need to upload bottles. Talk to us about how to do
 that (our system is pretty simple and easy, but we haven’t documented it yet).
+
+## Tasks
+
+### docker-build
+
+```sh
+docker buildx build \
+  --load \
+  --tag ghcr.io/pkgxdev/bldbot:latest \
+  --platform linux/amd64 \
+  --progress=plain \
+  --file .github/Dockerfile \
+  .
+```

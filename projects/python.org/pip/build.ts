@@ -61,7 +61,7 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
           set "PYTHONPATH=%d%\\lib\\python"
       )
 
-      python %~dp0/pip %*
+      python %d%\\lib\\python\\pip\\__main__.py %*
 
       endlocal
       `);

@@ -16,7 +16,7 @@ const set = new Set();
 for (const project of projects) {
     if (set.has(project)) continue;
     set.add(project);
-    if (builds_on_this_platform(project)) {
+    if (Deno.args.includes("--platforms=all") || builds_on_this_platform(project)) {
         if (Deno.args.includes("--print-paths")) {
             const path = fromFileUrl(new URL(`../projects/${project}/package.yml`, import.meta.url));
             console.log(path);

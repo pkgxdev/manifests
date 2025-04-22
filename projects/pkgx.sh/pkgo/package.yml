@@ -1,0 +1,13 @@
+name:
+  pkgo
+
+repository:
+  https://github.com/pkgxdev/pkgo
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+  - windows/x86-64
+
+programs:
+  - bin/pkgo

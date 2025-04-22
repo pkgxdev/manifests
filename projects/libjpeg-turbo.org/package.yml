@@ -1,0 +1,14 @@
+repository:
+  https://github.com/libjpeg-turbo/libjpeg-turbo
+
+programs:
+  - bin/cjpeg
+  - bin/djpeg
+  - bin/jpegtran
+  - bin/rdjpgcom
+  - bin/tjbench
+  - bin/wrjpgcom
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

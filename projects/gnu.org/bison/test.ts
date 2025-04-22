@@ -1,12 +1,18 @@
 import { assertEquals } from "jsr:@std/assert@1/equals";
-import { run } from "brewkit";
+import { env_include, run } from "brewkit";
 
 export default async function () {
-  run`bison test.y`;
+  run`bison test.yy`;
+
+  if (Deno.build.os == 'linux') {
+    env_include("gnu.org/gcc/libstdcxx");
+
+    console.error(Deno.env.toObject());
+  }
+
+  run`c++ test.tab.cc`;
 
   {
-    run`c++ test.tab.c`;
-
     const proc = new Deno.Command("./a.out", { stdin: "piped", stdout: "piped" }).spawn();
     const stdin = proc.stdin?.getWriter()
     await stdin.write(new TextEncoder().encode("((()(())))()\n"));

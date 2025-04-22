@@ -49,10 +49,16 @@ export default async function (path: Path, provided_programs: string[]) {
         return `#!/bin/${basename}`;
     }
 
+    if (basename == "python" || basename == "python3") {
+      // python is tricky so we have just standardized on python3.9
+      return '#!/usr/bin/env -S pkgx python~3.9'
+    }
+
     const match = basename.match(/python(\d(\.\d+)?)/);
     if (match?.[1]) {
       return `#!/usr/bin/env -S pkgx python~${match[1]}`;
     }
+
 
     if (Deno.build.os == "darwin") {
       switch (basename) {

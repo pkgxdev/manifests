@@ -23,9 +23,15 @@ linux:
     zlib.net: ^1
   companions:
     - llvm.org
-    - git-scm.org  # cargo needs git
+    - git-scm.org
+
+windows:
+  - git-scm.org
 
 platforms:
   - darwin/aarch64
   - linux/x86-64
   - windows/x86-64
+
+env:
+   CARGO_INSTALL_ROOT: "{{home}}/.local/bin"

@@ -1,0 +1,6 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+env:
+  PYTHONPATH: '{{prefix}}/lib/python3.9/site-packages:$PYTHONPATH'

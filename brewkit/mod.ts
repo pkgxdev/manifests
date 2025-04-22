@@ -1,8 +1,8 @@
 import Path from "./path.ts";
 export { Path };
 
-import { parse } from "https://deno.land/x/libpkgx@v0.20.3/src/utils/pkg.ts";
-export { parse };
+import { parse, str as stringify } from "https://deno.land/x/libpkgx@v0.21.0/src/utils/pkg.ts";
+export { parse, stringify };
 
 import * as github from "./github.ts";
 export { github };
@@ -13,7 +13,7 @@ export { backticks, backticks_quiet, run };
 import unarchive from "./unarchive.ts";
 export { unarchive };
 
-import { Package, PackageRequirement } from "https://deno.land/x/libpkgx@v0.20.3/src/types.ts";
+import { Package, PackageRequirement } from "https://deno.land/x/libpkgx@v0.21.0/src/types.ts";
 export type { PackageRequirement };
 
 import * as test_utils from "./test-utils.ts";
@@ -24,7 +24,7 @@ import SemVer, {
   intersect,
   parse as semver_parse,
   Range,
-} from "https://deno.land/x/libpkgx@v0.20.3/src/utils/semver.ts";
+} from "https://deno.land/x/libpkgx@v0.21.0/src/utils/semver.ts";
 
 function intersects(a: Range, b: Range) {
   try {
@@ -208,3 +208,26 @@ export function platform_partial_path() {
 
 import walk_pkgx_dir from "./walk-pkgx-dir.ts";
 export { walk_pkgx_dir };
+
+import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
+import { expandGlobSync } from "jsr:@std/fs@1/expand-glob";
+export function fixture(ext: string) {
+  const path = new Path(fromFileUrl(import.meta.url)).join('../../fixtures');
+  for (const foo of expandGlobSync(`*.${ext}`, { root: path.string })) {
+    return new Path(foo.path).cp({ into: Path.cwd() });
+  }
+  throw new Error(`no fixture found for ${ext}`);
+}
+
+export function nonce(length = 32): string {
+  const base62 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  return Array.from(crypto.getRandomValues(new Uint8Array(length)))
+    .map((n) => base62[n % 62]) // Map random bytes to Base62 characters
+    .join("");
+}
+
+import getVersions from "./gitlab.ts";
+export { getVersions as gitlab };
+
+import venvify from "./venvify.ts";
+export { venvify };

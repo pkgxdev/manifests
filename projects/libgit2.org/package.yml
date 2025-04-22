@@ -1,0 +1,12 @@
+repository:
+  https://github.com/libgit2/libgit2
+
+dependencies:
+  libssh2.org: ^1
+
+programs:
+  - bin/git2
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

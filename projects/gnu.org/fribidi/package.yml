@@ -1,0 +1,12 @@
+name:
+  FriBidi
+
+repository:
+  https://github.com/fribidi/fribidi
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/fribidi

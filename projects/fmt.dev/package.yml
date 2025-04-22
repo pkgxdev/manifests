@@ -1,0 +1,10 @@
+repository:
+  https://github.com/fmtlib/fmt
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

@@ -1,0 +1,15 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/gpgme-config
+  - bin/gpgme-json
+  - bin/gpgme-tool
+
+dependencies:
+   gnupg.org/libassuan: ^2
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

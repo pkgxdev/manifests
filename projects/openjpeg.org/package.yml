@@ -1,0 +1,18 @@
+repository:
+  https://github.com/uclouvain/openjpeg
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/opj_compress
+  - bin/opj_decompress
+  - bin/opj_dump
+
+dependencies:
+  libpng.org: ^1
+  simplesystems.org/libtiff: ^4
+
+env:
+  CPATH: '{{prefix}}/include/openjpeg-{{version.marketing}}:$CPATH'

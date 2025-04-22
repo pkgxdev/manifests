@@ -2,13 +2,15 @@
 
 import { parse, stringify } from "jsr:@std/yaml@^1";
 
-const yaml = convert(Deno.args[0]);
-if (yaml) {
-  const data = stringify(yaml);
-  console.log(data.trim());
+if (import.meta.main) {
+  const yaml = convert(Deno.args[0]);
+  if (yaml) {
+    const data = stringify(yaml);
+    console.log(data.trim());
+  }
 }
 
-function convert(path: string) {
+export function convert(path: string) {
   const data = Deno.readTextFileSync(path);
   const yaml = parse(data) as any;
   const rv: Record<string, any> = {};

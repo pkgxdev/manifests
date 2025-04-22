@@ -1,1 +1,5 @@
-#!/usr/bin/env -S pkgx -q! ninja
+#!/bin/sh
+
+# we do it this way to prevent libc++ from being unintentionally
+# available to packages that we are building
+exec "$(pkgx --quiet +ninja -- which ninja)" "$@"

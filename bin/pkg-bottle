@@ -1,0 +1,23 @@
+#!/usr/bin/env -S pkgx +gh +gum +jq /bin/sh
+
+d=$(cd "$(dirname "$0")" && pwd)
+
+project="${1:-"$("$d"/pkg-status)"}"
+
+if [ "$2" ]; then
+  platforms="-f platforms=""$2"
+fi
+
+gh workflow run cd.bottle.yml -f pkgs="$project" $platforms
+
+gum spin -- sleep 5
+
+run_id=$(gh run list --json databaseId --workflow=cd.bottle.yml | jq '.[0].databaseId')
+
+if ! gh run watch --exit-status $run_id; then
+  foo=$?
+  gh run view --web $run_id
+  exit $foo
+else
+  gum format -- "> gh run view --web $run_id"
+fi

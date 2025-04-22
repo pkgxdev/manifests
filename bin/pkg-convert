@@ -1,20 +1,77 @@
-#!/usr/bin/env -S pkgx -q make -f
+#!/usr/bin/env -S pkgx -q deno^2 run --allow-read --allow-write --allow-env --allow-run
 
-.PHONY: all debug
-MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-SRCROOT := $(abspath $(MAKEFILE_DIR)/..)
-PKG_FILES := $(shell find $(SRCROOT)/projects -name package.yml)
-OUTPUTS := $(PKG_FILES:$(SRCROOT)/projects/%=$(SRCROOT)/artifacts/pantry/projects/%)
+import { join, dirname, relative } from "jsr:@std/path@1";
+import { convert } from "./pkg-convert-project";
+import { stringify } from "jsr:@std/yaml@^1";
 
-all: $(OUTPUTS)
+if (import.meta.main) {
+  await main();
+}
 
-# Rule to process each package.yml file
-$(SRCROOT)/artifacts/pantry/projects/%: $(SRCROOT)/projects/%
-	@mkdir -p $(dir $@)
-	rm -f $(SRCROOT)/artifacts/pantry/pantry*.db
-	$(SRCROOT)/bin/pkg-convert-project "$<" > "$@"
+// Recursively walk a directory
+async function* walkDir(path: string): AsyncGenerator<Deno.DirEntry & { path: string }> {
+  for await (const entry of Deno.readDir(path)) {
+    const fullPath = join(path, entry.name);
+    if (entry.isDirectory) {
+      yield* walkDir(fullPath);
+    } else {
+      yield { ...entry, path: fullPath };
+    }
+  }
+}
 
-debug:
-	@echo "PKG_FILES: $(PKG_FILES)"
-	@echo "OUTPUTS: $(OUTPUTS)"
-	@echo "SRCROOT: $(SRCROOT)"
+// Timestamp-based rebuild logic
+function needsRebuild(input: string, output: string): boolean {
+  try {
+    const inputStat = Deno.statSync(input);
+    const outputStat = Deno.statSync(output);
+    return inputStat.mtime! > (outputStat.mtime ?? 0);
+  } catch {
+    return true; // if output doesn't exist or error reading stats
+  }
+}
+
+// Converts input package.yml to output path in artifacts/
+function convertProject(input: string, output: string) {
+  console.log('%c+', 'color: yellow', 'converting', input, '→', output);
+
+  const rv = convert(input);
+  const txt = stringify(rv);
+  Deno.mkdirSync(dirname(output), { recursive: true });
+  Deno.writeTextFileSync(output, txt);
+}
+
+// main
+export default async function main() {
+  const SRCROOT = join(import.meta.dirname!, "..");
+  const PROJECTS_DIR = join(SRCROOT, "projects");
+  const OUTPUT_DIR = join(SRCROOT, "artifacts/pantry/projects");
+
+  const artifactDir = join(SRCROOT, "artifacts/pantry");
+
+  const pkgFiles: string[] = [];
+
+  // Find all package.yml files recursively
+  for await (const entry of walkDir(PROJECTS_DIR)) {
+    if (entry.name === "package.yml") {
+      pkgFiles.push(entry.path);
+    }
+  }
+
+  for (const input of pkgFiles) {
+    const rel = relative(PROJECTS_DIR, input);
+    const output = join(OUTPUT_DIR, rel);
+    if (needsRebuild(input, output)) {
+      convertProject(input, output);
+    }
+  }
+
+  if (pkgFiles.length > 0) {
+    // Remove pantry.db files
+    for (const entry of Deno.readDirSync(artifactDir)) {
+      if (entry.name.startsWith("pantry.db") || /^pantry\..*\.db$/.test(entry.name)) {
+        Deno.removeSync(join(artifactDir, entry.name));
+      }
+    }
+  }
+}

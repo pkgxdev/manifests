@@ -1,0 +1,12 @@
+homepage:
+  https://pixman.org
+
+repository:
+  https://github.com/freedesktop/pixman
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+env:
+  CPATH: '{{prefix}}/include/pixman-1:$CPATH'

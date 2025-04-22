@@ -41,7 +41,6 @@ linux:
     zlib.net: ^1
     gnu.org/gcc/libstdcxx: ^14
 
-# works on all platforms but is very slow to build
-# and we only *need* it on Linux
 platforms:
+  - darwin/aarch64
   - linux/x86-64

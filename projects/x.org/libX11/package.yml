@@ -1,0 +1,12 @@
+name:
+  Xlib
+
+homepage:
+  https://www.x.org/releases/current/doc/libX11/libX11/libX11.html
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+dependencies:
+  x.org/xcb: ^1

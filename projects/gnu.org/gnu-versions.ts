@@ -1,9 +1,9 @@
 import { SemVer } from "brewkit";
 
-export default async function (project: string) {
+export default async function (project: string, basename = project) {
   const rsp = await fetch(`https://ftp.gnu.org/gnu/${project}/`);
   const txt = await rsp.text();
-  const matches = txt.matchAll(new RegExp(`${project}-(\\d+(\\.\\d+)+)\\.tar\\.gz`, "mg"));
+  const matches = txt.matchAll(new RegExp(`${basename}-(\\d+(\\.\\d+)+)\\.tar\\.gz`, "mg"));
   const rv = [];
   for (const match of matches) {
     const tag = match[1];

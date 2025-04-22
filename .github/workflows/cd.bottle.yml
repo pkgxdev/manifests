@@ -16,7 +16,7 @@ on:
         required: false
 
 env:
-  PKGX_DIST_URL: https://dist.tea.xyz/v2
+  PKGX_DIST_URL: https://dist.pkgx.dev/v2
 
 jobs:
   ingest:
@@ -41,6 +41,16 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.ingest.outputs.matrix) }}
     steps:
+      # 1. actions/checkout uses node which needs libstdc++
+      # 2. $HOME is different in the docker image vs. github actions
+      - name: Linux Container Prep
+        run: |
+          ln -s /root/.pkgx $HOME
+          ln -s /root/.cache $HOME
+          eval "$(pkgx +gnu.org/gcc/libstdcxx)"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+        if: ${{ runner.os == 'Linux' }}
+
       - uses: actions/checkout@v4
 
       - uses: ./.github/actions/setup
@@ -50,11 +60,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - run: pkg-test ${{env.PROJECT}}=${{env.VERSION}}
-
-      - run: |
-          eval "$(pkgx +aws +xz)"
-          echo "$PATH" >> "$GITHUB_PATH"
-        if: ${{ runner.os == 'Linux' }}
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:

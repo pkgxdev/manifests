@@ -9,8 +9,8 @@ linux:
   dependencies:
     x.org/libX11: ^1.8
     x.org/xcursor: ^1.2
-    # x.org/xi: '*'
-    # x.org/xrandr: '*''
+    x.org/xi: ^1.8
+    x.org/xrandr: ^1.5
     x.org/xscrnsaver: ^1.2
     x.org/libXext: ^1.3
 

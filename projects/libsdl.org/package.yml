@@ -11,7 +11,7 @@ linux:
     x.org/xcursor: ^1.2
     # x.org/xi: '*'
     # x.org/xrandr: '*''
-    # x.org/xscrnsaver: '*'
+    x.org/xscrnsaver: ^1.2
     x.org/libXext: ^1.3
 
 env:

@@ -3,5 +3,5 @@ platforms:
   - linux/x86-64
 
 dependencies:
-  x.org/libx11: ^1
+  x.org/libX11: ^1
 

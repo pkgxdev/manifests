@@ -13,6 +13,7 @@ dependencies:
   github.com/libexpat: ^2
   # ^^ strictly not required on mac, but performance guided build fails
   # ^^ without it
+  bytereef.org/mpdecimal: ^4
 
 linux:
   dependencies:
@@ -22,17 +23,11 @@ linux:
     zlib.net: ^1
     sqlite.org: ^3
     sourceware.org/libffi: ^3
-  # TODO
-  # bytereef.org/mpdecimal: 2
-  # tcl-lang.org: 8
 
 programs:
   - bin/python
   - bin/python-config
   - bin/pydoc
-  #TODO
- #- bin/python{{ version.major }}
- #- bin/python{{ version.marketing }}
 
 windows:
   programs:

@@ -1,0 +1,27 @@
+repository:
+  https://github.com/gnutls/gnutls
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/certtool
+  - bin/danetool
+  - bin/gnutls-cli
+  - bin/gnutls-cli-debug
+  - bin/gnutls-serv
+  - bin/ocsptool
+  - bin/p11tool
+  - bin/psktool
+
+dependencies:
+  # freedesktop.org/p11-kit: '*'
+  gnu.org/libidn2: ^2
+  gnu.org/libunistring: ^1
+  gnu.org/libtasn1: ^4
+  gnu.org/nettle: ^3
+  # gnu.org/gettext: ^0.24
+  gnu.org/gmp: ^6
+  unbound.net: ^1
+  # curl.se/ca-certs: '*'

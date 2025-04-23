@@ -1,8 +1,6 @@
 import { run } from "brewkit";
 
 export default async function () {
-  // script: |
-//   c++ test.cpp -lass -o test
-//   ./test
-// 
+  run`c++ test.cpp -lass`;
+  run`./a.out`;
 }

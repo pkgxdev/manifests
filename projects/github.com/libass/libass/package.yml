@@ -8,8 +8,8 @@ platforms:
 dependencies:
   freetype.org: ^2
   gnu.org/fribidi: ^1
-  harfbuzz.org: ^8
-  github.com/adah1972/libunibreak: '*'
+  harfbuzz.org: ^11
+  github.com/adah1972/libunibreak: ^6
 
 linux:
   dependencies:

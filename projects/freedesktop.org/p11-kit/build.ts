@@ -1,4 +1,4 @@
-import { env_include, BuildOptions, unarchive, run, inreplace } from "brewkit";
+import { BuildOptions, unarchive, run, inreplace } from "brewkit";
 
 export default async function ({ prefix, version, deps }: BuildOptions) {
   await unarchive(`https://github.com/p11-glue/p11-kit/releases/download/${version}/p11-kit-${version}.tar.xz`);

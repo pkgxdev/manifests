@@ -26,9 +26,9 @@ dependencies:
   gnu.org/gmp: ^6
   unbound.net: ^1
 
-linux:
-  dependencies:
-    gnu.org/gcc/libstdcxx: ^14
+# linux:
+#   dependencies:
+#     gnu.org/gcc/libstdcxx: ^14
 
 env:
   GNUTLS_CERTIFICATE_FILE: '{{deps.curl.se/ca-certs.prefix}}/share/ca-certs.pem'

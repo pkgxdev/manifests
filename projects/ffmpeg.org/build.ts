@@ -2,7 +2,7 @@ import { BuildOptions, unarchive, run } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(`https://ffmpeg.org/releases/ffmpeg-${tag}.tar.gz`);
-  // Deno.env.set("CFLAGS", "-Wno-incompatible-function-pointer-types");
+
   run`./configure
         --prefix=${prefix}
         --enable-shared

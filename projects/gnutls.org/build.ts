@@ -8,6 +8,7 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
         --disable-debug
         --disable-silent-rules
         --disable-dependency-tracking
+        --disable-cxx
         `;
   run`make --jobs ${navigator.hardwareConcurrency} install`;
 }

@@ -10,8 +10,7 @@ companions:
 dependencies:
   openssl.org: ^3
   tukaani.org/xz: ^5
-  github.com/libexpat: ^2
-  # ^^ not strictly required on mac, but performance guided build fails without it
+  github.com/libexpat: ^2  # macOS provides this—but the performance-guided-build fails without it
   bytereef.org/mpdecimal: ^4
 
 linux:

@@ -14,6 +14,11 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
     path.rm('rf');
   }
 
+  if (Deno.build.os == "linux") {
+    // ld.lld: error: undefined reference: __extendhfsf2
+    Deno.env.set("LDFLAGS", "-lgcc");
+  }
+
   run`cmake
         -B bld
         -DCMAKE_BUILD_TYPE=Release

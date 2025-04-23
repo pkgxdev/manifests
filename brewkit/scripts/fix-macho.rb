@@ -98,7 +98,7 @@ def fix_install_names
     elsif lib.start_with? '@rpath/'
       foo = lib.sub(%r{^@rpath/}, '')
       foo = foo.sub(%r{/v.*$}, '')
-      pkgs = ENV['PKGS'].split(":").map{ |pkg| pkg.sub(%r{/v.*$}, '').sub(%r{^.*/pkgs/}, '') }
+      pkgs = ENV['PKGS'] ? ENV['PKGS'].split(":").map{ |pkg| pkg.sub(%r{/v.*$}, '').sub(%r{^.*/pkgs/}, '') } : []
       if not pkgs.include? foo
         puts "::error file=#{$file.filename}::no fix available for: #{lib}"
       end

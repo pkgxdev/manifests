@@ -1,0 +1,15 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/gdk-pixbuf-csource
+  - bin/gdk-pixbuf-pixdata
+  - bin/gdk-pixbuf-query-loaders
+  - bin/gdk-pixbuf-thumbnailer
+
+dependencies:
+  ijg.org: ^9.6
+  gnome.org/glib: ^2
+  libpng.org: ^1
+  # freedesktop.org/shared-mime-info: ^2

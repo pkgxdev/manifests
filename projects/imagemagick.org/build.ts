@@ -9,7 +9,6 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
 
   run`./configure
         --prefix=/usr/local
-        --disable-debug
         --sysconfdir=/etc
         --enable-osx-universal-binary=no
         --enable-zero-configuration  # portability: embeds config files in the binary

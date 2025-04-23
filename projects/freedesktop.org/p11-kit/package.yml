@@ -12,8 +12,6 @@ programs:
 dependencies:
   gnu.org/libtasn1: ^4
   # gnu.org/gettext: ^0.24
-  curl.se/ca-certs: '*'
-  # ^^ we symlink to this in the pkg since this pkg is not relocatable
 
 linux:
   dependencies:

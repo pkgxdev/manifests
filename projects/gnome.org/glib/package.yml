@@ -20,8 +20,11 @@ programs:
 
 dependencies:
   gnu.org/gettext: ^0.24
-  sourceware.org/libffi: ^3
   pcre.org: ^10
+
+linux:
+  dependencies:
+    sourceware.org/libffi: ^3
 
 env:
   CPATH: '{{prefix}}/include/glib-2.0:{{prefix}}/lib/glib-2.0/include:$CPATH'

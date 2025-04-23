@@ -11,8 +11,7 @@ dependencies:
   openssl.org: ^3
   tukaani.org/xz: ^5
   github.com/libexpat: ^2
-  # ^^ strictly not required on mac, but performance guided build fails
-  # ^^ without it
+  # ^^ not strictly required on mac, but performance guided build fails without it
   bytereef.org/mpdecimal: ^4
 
 linux:

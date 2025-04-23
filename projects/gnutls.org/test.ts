@@ -1,8 +1,10 @@
-import { run } from "brewkit";
-
 export default async function () {
-  // >-
-//   gnutls-cli --x509cafile={{deps.curl.se/ca-certs.prefix}}/ssl/cert.pem tea.xyz
-//   <<< "GET /"
-// 
+  const proc = new Deno.Command("gnutls-cli", {args: ["pkgx.dev"], stdin: "piped" }).spawn();
+  const stdin = proc.stdin.getWriter();
+  await stdin.write(new TextEncoder().encode("GET /\n"));
+  stdin.close();
+  const { success } = await proc.status;
+  if (!success) {
+    throw new Error("gnutls-cli failed");
+  }
 }

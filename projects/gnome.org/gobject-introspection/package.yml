@@ -11,6 +11,7 @@ programs:
 
 dependencies:
   gnome.org/glib: ^2
-  sourceware.org/libffi: ^3
-  # gnu.org/bison: ^3
-  # github.com/westes/flex: ^2
+
+linux:
+  dependencies:
+    sourceware.org/libffi: ^3

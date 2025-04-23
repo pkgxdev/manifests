@@ -16,12 +16,15 @@ programs:
   - bin/psktool
 
 dependencies:
-  # freedesktop.org/p11-kit: '*'
-  gnu.org/libidn2: ^2
+  freedesktop.org/p11-kit: ^0.25
   gnu.org/libunistring: ^1
+  curl.se/ca-certs: '*'
   gnu.org/libtasn1: ^4
+  gnu.org/libidn2: ^2
   gnu.org/nettle: ^3
   # gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
   unbound.net: ^1
-  # curl.se/ca-certs: '*'
+
+env:
+  GNUTLS_CERTIFICATE_FILE: '{{deps.curl.se/ca-certs.prefix}}/share/ca-certs.pem'

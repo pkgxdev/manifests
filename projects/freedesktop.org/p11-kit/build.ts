@@ -8,13 +8,14 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
 
   run`./configure
         --prefix=/usr/local
-        --with-trust-paths=${deps['curl.se/ca-certs'].prefix}/share/ca-certs.pem
+        --disable-trust-module  # not relocatable, and not generally needed
         --disable-debug
         --sysconfdir=/etc
         --localstatedir=/var
         --disable-doc
         `;
-  run`make -j ${navigator.hardwareConcurrency} install`;
+  run`make`;
+  run`make install`;
 
   for await (const [path] of prefix.join("usr/local").ls()) {
     path.mv({ into: prefix });
@@ -23,6 +24,7 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
 
   prefix.share.join("gtk-doc").rm('rf');
 
+  // we disable the trust module, but all the same let’s fix this
   inreplace(
     prefix.lib.join("pkgconfig/p11-kit-1.pc"),
     /p11_trust_paths=.*/,

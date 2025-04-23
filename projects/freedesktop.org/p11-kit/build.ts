@@ -6,23 +6,20 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
   // because otherwise it tries to install to /etc/p11-kit
   Deno.env.set("DESTDIR", prefix.string);
 
-  run`./configure
-        --prefix=/usr/local
-        --disable-trust-module  # not relocatable, and not generally needed
-        --disable-debug
-        --sysconfdir=/etc
-        --localstatedir=/var
-        --disable-doc
-        `;
-  run`make`;
-  run`make install`;
+  run`meson setup bld
+      --prefix=/usr/local
+      --buildtype=release
+      -Dtrust_module=disabled
+      -Dsysconfdir=/etc
+      -Dgtk_doc=false
+      `;
+  run`ninja -C bld`
+  run`ninja -C bld install`;
 
   for await (const [path] of prefix.join("usr/local").ls()) {
     path.mv({ into: prefix });
   }
   prefix.join("usr/local").rm().parent().rm();
-
-  prefix.share.join("gtk-doc").rm('rf');
 
   // we disable the trust module, but all the same let’s fix this
   inreplace(

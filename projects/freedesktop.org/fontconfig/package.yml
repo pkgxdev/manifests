@@ -24,10 +24,9 @@ programs:
 
 dependencies:
   freetype.org: ^2
-  gnome.org/libxml2: ^2
-  github.com/libexpat: ^2
 
 linux:
   dependencies:
+    gnome.org/libxml2: ^2
     sourceware.org/bzip2: ^1
     zlib.net: ^1

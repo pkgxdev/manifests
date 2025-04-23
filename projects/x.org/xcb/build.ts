@@ -1,5 +1,4 @@
-import { BuildOptions, unarchive, run, SemVer } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, unarchive, run, SemVer } from "brewkit";
 
 export default async function ({ prefix, version, tag, props }: BuildOptions) {
   await unarchive(`https://xcb.freedesktop.org/dist/libxcb-${tag}.tar.gz`);

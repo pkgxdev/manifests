@@ -1,5 +1,4 @@
-import { BuildOptions, inreplace, run, unarchive } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, inreplace, run, unarchive } from "brewkit";
 
 export default async function({ prefix, version}: BuildOptions) {
   await unarchive(`https://download.gnome.org/sources/libxml2/${version.marketing}/libxml2-${version}.tar.xz`);

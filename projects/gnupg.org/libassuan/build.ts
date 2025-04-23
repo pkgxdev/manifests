@@ -1,5 +1,4 @@
-import { BuildOptions, unarchive, run } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, unarchive, run } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://gnupg.org/ftp/gcrypt/libassuan/libassuan-${version}.tar.bz2`);

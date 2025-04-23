@@ -1,5 +1,4 @@
 import { BuildOptions, unarchive, run, inreplace } from "brewkit";
-import env_include from "../../brewkit/env-include.ts";
 
 export default async function ({ prefix, tag, version }: BuildOptions) {
   await unarchive(`https://github.com/ImageMagick/ImageMagick/archive/${tag}.tar.gz`);
@@ -37,8 +36,7 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
         --without-perl
         --without-x
         --enable-openmp
-        --with-zip=yes
-        ${extra}`;
+        --with-zip=yes`;
 
   run`make --jobs ${navigator.hardwareConcurrency} install`;
 

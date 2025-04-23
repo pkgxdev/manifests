@@ -13,7 +13,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
         --enable-gpl
         --enable-libx265
         --enable-libvpx
-      # --enable-libopus
+        --enable-libopus
         --enable-libwebp
   `;
   run`make --jobs ${navigator.hardwareConcurrency}`;

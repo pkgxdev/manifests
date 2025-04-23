@@ -1,5 +1,4 @@
-import { run } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, run } from "brewkit";
 
 export default async function () {
   env_include("x.org/protocol");

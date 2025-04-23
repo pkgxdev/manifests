@@ -1,5 +1,4 @@
-import { BuildOptions, unarchive, run, Path } from "brewkit";
-import { stub } from "../../../brewkit/env-include.ts";
+import { stub, BuildOptions, unarchive, run, Path } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   const url = `https://ftp.mozilla.org/pub/security/nss/releases/${tag}/src/nss-${version.marketing}.tar.gz`;

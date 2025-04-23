@@ -1,7 +1,5 @@
-import { backticks_quiet, backticks, Path, run, TestOptions, undent } from "brewkit";
-import { assertFalse } from "jsr:@std/assert@^1/false";
-import { ensure } from "../../brewkit/env-include.ts";
-import { assertMatch } from "jsr:@std/assert@1/match";
+import { ensure, backticks_quiet, backticks, Path, run, TestOptions, undent } from "brewkit";
+import { assertFalse, assertMatch } from "jsr:@std/assert@^1";
 
 export default async function ({ version }: TestOptions) {
   assertMatch(backticks_quiet`ruby --version`, new RegExp(`^ruby ${version}`));

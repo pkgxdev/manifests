@@ -30,7 +30,6 @@ dependencies:
   libpng.org: ^1
   ijg.org: ^9
   freetype.org: ^2
-  libjpeg-turbo.org: ^3
   github.com/carlobaldassi/liblqr: ^0.4.3
   simplesystems.org/libtiff: ^4
   littlecms.com: ^2
@@ -39,7 +38,6 @@ dependencies:
   google.com/webp: ^1
   gnu.org/libtool: ^2  # the modules system needs libltdl
   tukaani.org/xz: ^5
-  gnome.org/libxml2: ^2
   jpeg.org/jpegxl: ^0.11
   github.com/strukturag/libheif: ^1
   libzip.org: ^1.11
@@ -50,6 +48,7 @@ linux:
     sourceware.org/bzip2: ^1
     zlib.net: ^1
     x.org/libX11: ^1
+    gnome.org/libxml2: ^2
     llvm.org/openmp: ^20
     # ^^ TODO we want this on darwin too but we need to make our own llvm work
     # because the Apple provided one does not support `-fopenmp`

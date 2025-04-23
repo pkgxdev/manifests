@@ -8,7 +8,6 @@ programs:
 dependencies:
   freedesktop.org/fontconfig: ^2
   freedesktop.org/pixman: ^0.44
-  sourceware.org/bzip2: ^1
   gnome.org/glib: ^2
   freetype.org: ^2
   libpng.org: ^1
@@ -16,7 +15,8 @@ dependencies:
 
 linux:
   dependencies:
-  x.org/libX11: ^1.8
-  # x.org/xcb: '*'
-  x.org/libXext: ^1.3
-  # x.org/xrender: '*'
+    sourceware.org/bzip2: ^1
+    x.org/libX11: ^1.8
+    x.org/xcb: ^1
+    x.org/libXext: ^1.3
+    x.org/xrender: ^0.9

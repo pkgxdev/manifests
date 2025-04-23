@@ -1,5 +1,4 @@
-import { BuildOptions, Path, run, unarchive } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, Path, run, unarchive } from "brewkit";
 import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 
 export default async function build({ prefix, version }: BuildOptions) {

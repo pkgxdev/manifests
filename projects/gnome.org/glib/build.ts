@@ -1,5 +1,4 @@
-import { BuildOptions, unarchive, run, Path, inreplace } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, unarchive, run, Path, inreplace } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://download.gnome.org/sources/glib/${version.major}.${version.minor}/glib-${version}.tar.xz`);

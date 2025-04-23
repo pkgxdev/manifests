@@ -9,5 +9,7 @@ programs:
   - bin/xslt-config
   - bin/xsltproc
 
+
 dependencies:
-  gnome.org/libxml2: '*'
+  gnome.org/libxml2: ^2
+  # ^^ requires a newer version than macOS provides

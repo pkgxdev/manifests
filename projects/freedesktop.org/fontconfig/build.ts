@@ -1,5 +1,4 @@
-import { BuildOptions, unarchive, run } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, BuildOptions, unarchive, run } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://www.freedesktop.org/software/fontconfig/release/fontconfig-${version}.tar.xz`);
@@ -15,6 +14,7 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
         --disable-debug
         --localstatedir=/var
         --sysconfdir=/etc
+        --enable-libxml2
         `;
   run`make --jobs ${navigator.hardwareConcurrency} install RUN_FC_CACHE_TEST=false`;
 
@@ -24,8 +24,4 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
   prefix.join("usr/local").rm().parent().rm();
 
   prefix.join("share/doc").rm('rf');
-
-//      sed -i 's|<cachedir>{{prefix}}/var/cache/fontconfig</cachedir>|<cachedir
-//     prefix="relative">../../var/cache/fontconfig</cachedir>|'
-//     {{prefix}}/etc/fonts/fonts.conf
 }

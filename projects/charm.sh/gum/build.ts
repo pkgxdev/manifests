@@ -1,5 +1,4 @@
-import { BuildOptions } from "brewkit";
-import unarchive from "../../../brewkit/unarchive.ts";
+import { BuildOptions, unarchive } from "brewkit";
 
 export default async function({ prefix, version }: BuildOptions) {
 

@@ -1,5 +1,4 @@
-import { Path, run } from "brewkit";
-import env_include from "../../../brewkit/env-include.ts";
+import { env_include, Path, run } from "brewkit";
 import { assert } from "jsr:@std/assert@1/assert";
 
 export default async function () {

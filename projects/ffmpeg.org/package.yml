@@ -14,6 +14,6 @@ dependencies:
   videolan.org/x264: ^0.165
   videolan.org/x265: ^4
   google.com/libvpx: ^1
-  xiph.org/opus: ^1
   google.com/webp: ^1
+  xiph.org/opus: ^1
   gnu.org/fribidi: ^1

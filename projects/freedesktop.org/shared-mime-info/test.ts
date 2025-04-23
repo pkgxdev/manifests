@@ -1,7 +1,7 @@
-import { run } from "brewkit";
+import { run, TestOptions } from "brewkit";
+import { assert } from "jsr:@std/assert@1/assert";
 
-export default async function () {
-  run`update-mime-database`;
-//   test -f "{{prefix}}"/share/mime/packages/freedesktop.org.xml
-//
+export default async function ({ prefix }: TestOptions) {
+  run`update-mime-database -h`;
+  assert(prefix.join("/share/mime/packages/freedesktop.org.xml"));
 }

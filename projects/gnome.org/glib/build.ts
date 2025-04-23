@@ -3,11 +3,11 @@ import { env_include, BuildOptions, unarchive, run, Path, inreplace } from "brew
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
   await unarchive(`https://download.gnome.org/sources/glib/${version.major}.${version.minor}/glib-${version}.tar.xz`);
 
-  // try {
-  //   env_include("gnome.org/gobject-introspection");
-  // } catch {
-  //   console.error("::warning::rebuild this after building gobject-introspection!");
-  // }
+  try {
+    env_include("gnome.org/gobject-introspection");
+  } catch {
+    console.error("::warning::rebuild this after building gobject-introspection!");
+  }
 
   run`meson out
         --prefix=${prefix}

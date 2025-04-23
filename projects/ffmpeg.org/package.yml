@@ -17,3 +17,4 @@ dependencies:
   google.com/webp: ^1
   xiph.org/opus: ^1
   gnu.org/fribidi: ^1
+  github.com/libass/libass: ^0.17

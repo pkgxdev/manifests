@@ -16,7 +16,7 @@ export default async function ({ prefix, tag }: BuildOptions) {
         --enable-libvpx
         --enable-libopus
         --enable-libwebp
-      # --enable-libass
+        --enable-libass
   `;
   run`make --jobs ${navigator.hardwareConcurrency}`;
   run`make install`;

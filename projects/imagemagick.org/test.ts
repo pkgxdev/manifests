@@ -37,11 +37,6 @@ export default async function ({ version }: TestOptions) {
 
   run`convert -delay 20 -loop 0 ${fixture('png')} ${fixture('png')} anim.gif`;
 
-  switch (version.major) {
-  case 6:
-    run`pkgx +ruby@3 gem install rmagick -v "~> 4.2"`;
-    break;
-  case 7:
-    run`pkgx +ruby@3 gem install rmagick -v "~> 5"`;
-  }
+  // the gem builds a native extension and it should *just work*
+  run`pkgx +ruby@3 gem install rmagick`;
 }

@@ -14,6 +14,7 @@ export default async function default_fixups(
   prefix: Path,
   dep_prefixes: Path[],
   PKGX_DIR: Path,
+  original_PKGX_DIR: Path,
   process: (path: Path) => boolean = () => true,
 ) {
   // fix pkgs putting man at the root rather than in `share`
@@ -88,7 +89,7 @@ export default async function default_fixups(
           switch (path.extname()) {
             case ".pc":
               {
-                await fix_pkg_config_file(path, prefix);
+                await fix_pkg_config_file(path, prefix, PKGX_DIR, original_PKGX_DIR);
               }
               break;
             case ".pyc":

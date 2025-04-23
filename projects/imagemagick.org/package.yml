@@ -55,4 +55,4 @@ linux:
 
 env:
   MAGICK_HOME: '{{prefix}}'
-  CPATH: "{{prefix}}/include/Magick-{{version.major}}:$CPATH"
+  CPATH: "{{prefix}}/include/ImageMagick-{{version.major}}:$CPATH"

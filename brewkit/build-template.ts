@@ -98,6 +98,7 @@ if (Deno.build.os != "windows") {
     prefix,
     deps_prefixes,
     dstdir,
+    PKGX_DIR,
     process_fixup,
   );
 }

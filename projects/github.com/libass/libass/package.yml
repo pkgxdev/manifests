@@ -1,0 +1,16 @@
+repository:
+  https://github.com/libass/libass
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+dependencies:
+  freetype.org: ^2
+  gnu.org/fribidi: ^1
+  harfbuzz.org: ^8
+  github.com/adah1972/libunibreak: '*'
+
+linux:
+  dependencies:
+    freedesktop.org/fontconfig: 2

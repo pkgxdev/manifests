@@ -1,0 +1,6 @@
+repository:
+  https://github.com/adah1972/libunibreak
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

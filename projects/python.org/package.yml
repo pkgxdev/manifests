@@ -12,7 +12,7 @@ dependencies:
   tukaani.org/xz: ^5
   github.com/libexpat: ^2
   # ^^ not strictly required on mac, but performance guided build fails without it
-  bytereef.org/mpdecimal: ^4
+  # bytereef.org/mpdecimal: ^4
 
 linux:
   dependencies:

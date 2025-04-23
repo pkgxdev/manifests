@@ -13,4 +13,4 @@ dependencies:
 
 linux:
   dependencies:
-    freedesktop.org/fontconfig: 2
+    freedesktop.org/fontconfig: ^2

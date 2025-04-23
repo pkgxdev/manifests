@@ -3,10 +3,11 @@ import { BuildOptions, unarchive, run, Path } from "brewkit";
 export default async function ({ prefix, version, tag }: BuildOptions) {
   await unarchive(`https://github.com/libjxl/libjxl/archive/refs/tags/${tag}.tar.gz`);
 
-  // the `SJPEG` library is obscure and we have not yet pkg’d it.
-  // the rest we have and provide as deps.
+  // the `SJPEG` library is unversioned so we have not yet pkg’d it
   run`./deps.sh`;
 
+  // we provide everything else, so delete them so it doesn’t build against them
+  //FIXME is wasteful to download them, but hacking the script is fragile
   for await ( const [path, {name}] of Path.cwd().join("third_party").ls()) {
     if (name.startsWith("sjpeg")) continue;
     if (name == "CMakeLists.txt") continue;
@@ -16,7 +17,7 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
 
   if (Deno.build.os == "linux") {
     // ld.lld: error: undefined reference: __extendhfsf2
-    Deno.env.set("LDFLAGS", "-lgcc");
+    Deno.env.set("LDFLAGS", "-Wl,--allow-shlib-undefined");
   }
 
   run`cmake

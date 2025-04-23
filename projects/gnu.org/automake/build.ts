@@ -2,7 +2,7 @@ import { BuildOptions, inreplace, run, unarchive } from "brewkit";
 import { autofoo_fixes } from "../autoconf/build.ts";
 
 export default async function ({ prefix, tag, version }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/automake/automake-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/automake/automake-${tag}.tar.gz`);
   run`./configure
     --prefix=${prefix}
     --disable-debug`;

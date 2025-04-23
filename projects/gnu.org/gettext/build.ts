@@ -1,7 +1,7 @@
 import { BuildOptions, env_include, inreplace, run, unarchive } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/gettext/gettext-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/gettext/gettext-${tag}.tar.gz`);
 
   run`./configure
         --prefix=${prefix}

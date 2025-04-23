@@ -2,7 +2,7 @@ import { env_include, BuildOptions, Path, run, unarchive } from "brewkit";
 import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 
 export default async function build({ prefix, version }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
 
   let extra = "";
 

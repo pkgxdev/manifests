@@ -1,7 +1,7 @@
 import { BuildOptions, unarchive, run } from "brewkit";
 
 export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/libidn/libidn2-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/libidn/libidn2-${tag}.tar.gz`);
   // dependencies:
 //   gnu.org/texinfo: '*'
 

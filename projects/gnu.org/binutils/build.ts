@@ -2,9 +2,9 @@ import { BuildOptions, env_include, run, SemVer, unarchive } from "brewkit";
 
 export default async function ({ prefix, tag, version }: BuildOptions) {
   if (version.gte(new SemVer("2.44"))) {
-    await unarchive(`https://ftp.gnu.org/gnu/binutils/binutils-with-gold-${tag}.tar.gz`);
+    await unarchive(`https://ftpmirror.gnu.org/gnu/binutils/binutils-with-gold-${tag}.tar.gz`);
   } else {
-    await unarchive(`https://ftp.gnu.org/gnu/binutils/binutils-${tag}.tar.gz`);
+    await unarchive(`https://ftpmirror.gnu.org/gnu/binutils/binutils-${tag}.tar.gz`);
   }
 
   if (Deno.build.os == "linux") {

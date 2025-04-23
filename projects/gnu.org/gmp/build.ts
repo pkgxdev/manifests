@@ -1,7 +1,7 @@
 import { env_include, BuildOptions, ensure, run, unarchive } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/gmp/gmp-${tag}.tar.bz2`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/gmp/gmp-${tag}.tar.bz2`);
 
   ensure("m4");
 

@@ -1,7 +1,7 @@
 import { BuildOptions, inreplace, insert, Path, run, unarchive, undent } from "brewkit";
 
 export default async function ({ prefix, tag, deps }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/autoconf/autoconf-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/autoconf/autoconf-${tag}.tar.gz`);
   run`./configure
     --prefix=${prefix}
     --disable-debug`;

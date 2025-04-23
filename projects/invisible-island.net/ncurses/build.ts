@@ -3,7 +3,7 @@ import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 
 export default async function ({ prefix, tag }: BuildOptions) {
   await unarchive(
-    `https://ftp.gnu.org/gnu/ncurses/ncurses-${tag.replace(/^v/, "")}.tar.gz`,
+    `https://ftpmirror.gnu.org/gnu/ncurses/ncurses-${tag.replace(/^v/, "")}.tar.gz`,
   );
 
 

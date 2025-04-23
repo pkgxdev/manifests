@@ -1,7 +1,7 @@
 import { BuildOptions, Path, run, unarchive } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/make/make-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/make/make-${tag}.tar.gz`);
 
   if (Deno.build.os != "windows") {
     run`./configure --prefix=${prefix}`;

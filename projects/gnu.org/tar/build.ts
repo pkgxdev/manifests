@@ -1,7 +1,7 @@
 import { BuildOptions, env_include, run, SemVer, unarchive } from "brewkit";
 
 export default async function ({ version, prefix, tag, props }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/tar/tar-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/tar/tar-${tag}.tar.gz`);
 
   massage({ version, props });
 

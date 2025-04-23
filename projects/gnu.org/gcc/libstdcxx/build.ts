@@ -1,7 +1,7 @@
 import { env_include, BuildOptions, Path, run, unarchive } from "brewkit";
 
 export default async function build({ prefix, version }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
 
   env_include("gnu.org/gcc");
 

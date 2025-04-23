@@ -1,7 +1,7 @@
 import { BuildOptions, env_include, run, unarchive } from "brewkit";
 
 export default async function ({ prefix, tag }: BuildOptions) {
-  await unarchive(`https://ftp.gnu.org/gnu/libiconv/libiconv-${tag}.tar.gz`);
+  await unarchive(`https://ftpmirror.gnu.org/gnu/libiconv/libiconv-${tag}.tar.gz`);
 
   if (Deno.build.os == 'linux') {
     env_include("gnu.org/gcc");

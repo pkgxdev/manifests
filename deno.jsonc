@@ -4,7 +4,8 @@
   },
   "pkgx": "deno~2.1",
   "imports": {
-    "brewkit": "./brewkit/mod.ts"
+    "brewkit": "./brewkit/mod.ts",
+    "brewkit/test": "./brewkit/test-utils.ts"
   },
   "fmt": {
     "exclude": [

@@ -53,7 +53,6 @@ linux:
     # ^^ TODO we want this on darwin too but we need to make our own llvm work
     # because the Apple provided one does not support `-fopenmp`
 
-
 env:
   MAGICK_HOME: '{{prefix}}'
   CPATH: "{{prefix}}/include/Magick-{{version.major}}:$CPATH"

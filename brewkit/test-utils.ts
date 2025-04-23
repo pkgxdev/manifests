@@ -1,5 +1,5 @@
-import { assert } from "jsr:@std/assert@^1";
-import { Path } from "brewkit";
+import { assert, assertEquals, assertMatch, assertStringIncludes } from "jsr:@std/assert@^1";
+import { backticks, Path } from "brewkit";
 
 export async function getstderr(cmdln: string) {
   const [cmd, ...args] = cmdln.split(/\s+/);
@@ -35,5 +35,27 @@ export async function tmp<T>(fn: (d: Path) => Promise<T>): Promise<T> {
   } finally {
     Deno.chdir(tmp.parent().string);
     tmp.rm("rf");
+  }
+}
+
+export async function assertOutputEquals(
+  expected: string,
+  strings: TemplateStringsArray,
+  ...values: any[]
+) {
+  const output = await backticks(strings, ...values)
+  assertEquals(output.trim(), expected, `Expected output:\n${expected}\n\nActual output:\n${output}`)
+}
+
+export async function assertOutputMatches(
+  expected: string | RegExp,
+  strings: TemplateStringsArray,
+  ...values: any[]
+) {
+  const output = await backticks(strings, ...values)
+  if (typeof expected === 'string') {
+    assertStringIncludes(output, expected, `Expected output:\n${expected}\n\nActual output:\n${output}`)
+  } else {
+    assertMatch(output.trim(), expected, `Expected output:\n${expected}\n\nActual output:\n${output}`)
   }
 }

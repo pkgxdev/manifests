@@ -132,13 +132,13 @@ async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installat
         (subpath "/opt/homebrew")
         (subpath "${srcroot}")
         (subpath "/usr/local"))
+        (subpath "${Path.home()}")
       (deny file-read*
         (subpath "/opt/homebrew")
         (subpath "/usr/local"))
       (deny process-exec*
         (subpath "/opt/homebrew")
         (subpath "/usr/local"))
-
       `;
 
     let foo: Path | undefined;
@@ -160,6 +160,8 @@ async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installat
   if (Deno.env.get("GITHUB_ACTIONS")) {
     env["GITHUB_ACTIONS"] = Deno.env.get("GITHUB_ACTIONS")!;
   }
+
+  env["HOME"] = tmpdir.join("home").mkdir().string;
 
   //NOTE --allow-all is required for Windows, dunno why but whatever
   args.push(

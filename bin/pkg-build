@@ -247,6 +247,7 @@ async function run(pkg: PackageRequirement, tmpdir: Path, srcroot: Path, blddir:
         (subpath "/opt/homebrew")
         (subpath "/usr/local"))
         (subpath "${tmpdir}/pkgs")
+        (subpath "${Path.home()}")
       (allow file-write*
         (subpath "${tmpdir}/pkgs/mesonbuild.com/v*/bin/python"))
       (deny file-read*

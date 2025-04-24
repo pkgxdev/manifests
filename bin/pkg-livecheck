@@ -39,8 +39,13 @@ async function get_released_versions(project: string): Promise<{ version: SemVer
 }
 
 async function get_existing_versions(project: string) {
-  //FIXME shouldn't be platform specific
-  const rsp = await fetch(`https://dist.pkgx.dev/v2/${project}/darwin/aarch64/versions.txt`);
-  const txt = await rsp.text();
-  return txt.split("\n").filter(x => x).map(line => new SemVer(line));
+  try {
+    //FIXME shouldn't be platform specific
+    const rsp = await fetch(`https://dist.pkgx.dev/v2/${project}/darwin/aarch64/versions.txt`);
+    const txt = await rsp.text();
+    return txt.split("\n").filter(x => x).map(line => new SemVer(line));
+  } catch (e) {
+    console.error(`failed to fetch existing versions for ${project}`);
+    throw e;
+  }
 }

@@ -26,6 +26,7 @@ export default function *ls() {
 
     const set = new Set();
     for (const project of projects) {
+        if (project == "deno.com") continue;
         if (set.has(project)) continue;
         set.add(project);
         if (Deno.args.includes("--platforms=all") || builds_on_this_platform(project)) {

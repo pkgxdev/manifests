@@ -1,8 +1,8 @@
-#!/usr/bin/env -S pkgx deno^2 run -A
+#!/usr/bin/env -S pkgx --quiet deno^2 run -A
 
 import default_versions from "../brewkit/default-versions.ts";
 import { Path, Range, SemVer } from "brewkit";
-import ls from "./pkg-ls";
+import pkg_ls from "./pkg-ls";
 
 const srcroot = new Path(import.meta.dirname!).parent();
 
@@ -31,6 +31,8 @@ for await (const project of ls()) {
   }
 }
 
+console.error("nothing new");
+
 async function get_released_versions(project: string): Promise<{ version: SemVer }[]> {
   const yaml = srcroot.join("projects", project, "package.yml");
   const f = srcroot.join("projects", project, "versions.ts").isFile();
@@ -46,7 +48,7 @@ async function get_existing_versions(project: string) {
   //FIXME shouldn't be platform specific
   for (const platform of ["darwin/aarch64", "linux/x86-64", "windows/x86-64"]) {
     try {
-      const rsp = await fetch(`https://dist.pkgx.dev/v2/${project}/darwin/aarch64/versions.txt`);
+      const rsp = await fetch(`https://dist.pkgx.dev/v2/${project}/${platform}/versions.txt`);
       const txt = await rsp.text();
       return txt.split("\n").filter(x => x).map(line => new SemVer(line));
     } catch {
@@ -55,4 +57,14 @@ async function get_existing_versions(project: string) {
   }
   console.error(`failed to fetch any existing versions for ${project}`);
   return [];
+}
+
+async function *ls() {
+  if (Deno.args.length) {
+    for (const arg of Deno.args) {
+      yield arg;
+    }
+  } else for await (const project of pkg_ls()) {
+      yield project;
+  }
 }

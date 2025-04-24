@@ -1,0 +1,6 @@
+repository:
+  https://github.com/apache/apr
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64

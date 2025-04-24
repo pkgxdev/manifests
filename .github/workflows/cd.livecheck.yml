@@ -4,6 +4,7 @@ run-name: cd·livecheck
 on:
   schedule:
     - cron: '*/5 * * * *'  # every 5 minutes
+  workflow_dispatch:
 
 concurrency:
   group: livecheck

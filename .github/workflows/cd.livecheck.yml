@@ -6,12 +6,8 @@ on:
     - cron: '*/5 * * * *'  # every 5 minutes
   workflow_dispatch:
 
-concurrency:
-  group: livecheck
-  cancel-in-progress: false
-
 jobs:
-  check:
+  livecheck:
     runs-on:
       ubuntu-latest
     outputs:
@@ -31,13 +27,13 @@ jobs:
 
   bottle:
     concurrency:
-      group: ${{ needs.check.outputs.pkgspec }}
-      cancel-in-progress: true
+      group: ${{ needs.livecheck.outputs.pkgspec }}
+      cancel-in-progress: false
     needs:
-      check
+      livecheck
     uses:
       ./.github/workflows/cd.bottle.yml
     with:
-      pkgs: ${{ needs.check.outputs.pkgspec }}
+      pkgs: ${{ needs.livecheck.outputs.pkgspec }}
     secrets:
       inherit

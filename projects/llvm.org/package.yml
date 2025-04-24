@@ -42,5 +42,5 @@ linux:
     gnu.org/gcc/libstdcxx: ^14
 
 platforms:
-  - darwin/aarch64
+  # - darwin/aarch64
   - linux/x86-64

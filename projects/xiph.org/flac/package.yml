@@ -10,3 +10,7 @@ programs:
 
 dependencies:
   xiph.org/ogg: ^1.3.5
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

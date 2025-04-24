@@ -24,9 +24,8 @@ for await (const project of ls()) {
     const out = `${project}=${greatest_released_version}`;
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `pkgspec=${out}`, { append: true });
-    } else {
-      console.log(out);
     }
+    console.log(out);
     Deno.exit(0);
   }
 }

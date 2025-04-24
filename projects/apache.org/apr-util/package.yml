@@ -14,5 +14,5 @@ dependencies:
 
 linux:
   dependencies:
-    libexpat.github.io: ^2
+    github.com/libexpat: ^2
     sqlite.org: ^3

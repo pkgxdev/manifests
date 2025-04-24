@@ -1,0 +1,45 @@
+#!/usr/bin/env -S pkgx deno^2 run -A
+
+import default_versions from "../brewkit/default-versions.ts";
+import { Path, Range, SemVer } from "brewkit";
+import ls from "./pkg-ls";
+
+const srcroot = new Path(import.meta.dirname!).parent();
+
+for await (const project of ls()) {
+  const [released_versions, existing_versions] = await Promise.all([
+    get_released_versions(project),
+    get_existing_versions(project)
+  ]);
+
+  const newer = released_versions.find(({ version: released }) =>
+    existing_versions.some(existing => released.gt(existing))
+  );
+
+  if (newer) {
+    const out = `${project}=${newer.version}`;
+    if (Deno.env.get("GITHUB_OUTPUT")) {
+      Deno.writeTextFileSync(`pkgspec=${out}`, Deno.env.get("GITHUB_OUTPUT")!);
+    } else {
+      console.log();
+    }
+    Deno.exit(0);
+  }
+}
+
+async function get_released_versions(project: string): Promise<{ version: SemVer }[]> {
+  const yaml = srcroot.join("projects", project, "package.yml");
+  const f = srcroot.join("projects", project, "versions.ts").isFile();
+  if (f) {
+    const { default: versions } = await import(f.string);
+    return versions(new Range("*"));
+  } else {
+    return default_versions(yaml.fileURL().toString())(new Range("*"));
+  }
+}
+
+async function get_existing_versions(project: string) {
+  const rsp = await fetch(`https://dist.pkgx.dev/v2/${project}/darwin/aarch64/versions.txt`);
+  const txt = await rsp.text();
+  return txt.split("\n").filter(x => x).map(line => new SemVer(line));
+}

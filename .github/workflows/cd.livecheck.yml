@@ -1,0 +1,25 @@
+on:
+  schedule:
+    - cron: '* * * * *'  # every minute
+
+jobs:
+  check:
+    runs-on:
+      ubuntu-latest
+    outputs:
+      pkgs: ${{ steps.livecheck.outputs.pkgs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+      - run: deno run -A ./bin/pkg-livecheck
+        id: livecheck
+
+  bottle:
+    needs:
+      check
+    uses:
+      ./.github/workflows/cd.bottle.yml
+    with:
+      pkgs: ${{ needs.check.outputs.pkgs }}
+    secrets:
+      inherit

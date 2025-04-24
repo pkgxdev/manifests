@@ -14,7 +14,11 @@ on:
         required: true
       platforms:
         required: false
-
+  workflow_call:
+    inputs:
+      pkgs:
+        required: true
+        type: string
 env:
   PKGX_DIST_URL: https://dist.pkgx.dev/v2
 

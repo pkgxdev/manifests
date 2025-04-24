@@ -31,6 +31,7 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
         --with-gettext=${deps['gnu.org/gettext'].prefix}
         --with-gmp=${deps['gnu.org/gmp'].prefix}
         --with-iconv=${deps['gnu.org/libiconv'].prefix}
+        --with-ldap=${deps['openldap.org'].prefix}
         --with-kerberos
         --with-layout=GNU
         --with-libxml
@@ -38,9 +39,12 @@ export default async function ({ prefix, version, deps }: BuildOptions) {
         --with-openssl
         --with-pdo-sqlite
         --with-pic
+        --with-jpeg
         --with-sodium
         --with-sqlite3
         --with-xsl
+        --with-webp
+        --with-zip
         --with-zlib
         --disable-dtrace
         --without-ldap-sasl

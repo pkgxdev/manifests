@@ -7,3 +7,7 @@ platforms:
 
 programs:
   - bin/re2c
+
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14

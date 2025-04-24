@@ -22,9 +22,7 @@ programs:
   - bin/phpize
 
 dependencies:
-  # re2c.org: ^3
-  apache.org/apr: ^1
-  apache.org/apr-util: ^1
+  re2c.org: ^4
   sf.net/bcrypt: ^1
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
@@ -35,7 +33,6 @@ dependencies:
   pcre.org: ^10.30
   unicode.org: ^77
   gnu.org/libiconv: ^1
-  kerberos.org: ^1
   gnome.org/libxslt: ^1
   libpng.org: ^1
   google.com/webp: ^1

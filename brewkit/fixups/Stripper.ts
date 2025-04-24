@@ -16,6 +16,7 @@ export default class Stripper {
 
   execute() {
     // on linux we don’t want to accidentally use eg. the just built llvm’s strip
+    //FIXME like, we can remove this once the build env isn't used during fixups
     const strip = Deno.build.os == "linux" ? `${Deno.env.get("PKGX_BIN")}/strip` : "strip";
     for (const path of this.paths) {
       if (path.string.endsWith(".dylib") || /\.so(\.\d)*$/.test(path.string)) {

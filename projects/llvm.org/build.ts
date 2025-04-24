@@ -50,6 +50,7 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         -S ./llvm
         -B ./o
         -G Ninja
+        -Wno-dev
 
         -DCMAKE_INSTALL_PREFIX=${prefix}
 

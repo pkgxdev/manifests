@@ -1,6 +1,6 @@
 import { BuildOptions, unarchive, run, inreplace } from "brewkit";
 
-export default async function ({ prefix, version, deps, tag, props }: BuildOptions) {
+export default async function ({ prefix, version }: BuildOptions) {
   await unarchive(`https://dlcdn.apache.org/apr/apr-${version}.tar.gz`);
   run`./configure --prefix=${prefix} --disable-debug`;
   run`make --jobs ${navigator.hardwareConcurrency}`;
@@ -10,11 +10,8 @@ export default async function ({ prefix, version, deps, tag, props }: BuildOptio
     prefix.string,
     '"$(cd "$(dirname "$0")"/.. && pwd)"');
 
-//   cd ../build-1
-//
-//   sed -i.bak \
-//     -e "s_${prefix}_\$(subst /bin/apr-{{version.major}}-config,,\$(shell command -v apr-{{version.major}}-config))_g" \
-//     -e "s_${PKGX_DIR}_\$(subst /apache.org/apr/v{{version}}/bin/apr-{{version.major}}-config,,\$(shell command -v apr-{{version.major}}-config))_g" \
-//     apr_rules.mk
-//   rm apr_rules.mk.bak
+  inreplace(
+    prefix.join(`build-1/apr_rules.mk`),
+    prefix.string,
+    `$(shell apr-${version.major}-config --prefix)`);
 }

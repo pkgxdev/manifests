@@ -1,0 +1,18 @@
+repository:
+  https://github.com/apache/apr-util
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/apu-{{ version.major }}-config
+
+dependencies:
+  apache.org/apr: ^1
+  openssl.org: ^3
+
+linux:
+  dependencies:
+    libexpat.github.io: ^2
+    sqlite.org: ^3

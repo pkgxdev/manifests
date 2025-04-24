@@ -22,12 +22,15 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
 
   switch (Deno.build.os) {
     case "linux":
-      env_include("llvm.org");
+      // env_include("llvm.org");
 
       //using lld speeds things up, the other keeps us GNU glibc by default
       platform_specific_cmake_args = `
         -DCLANG_DEFAULT_RTLIB=libgcc
         -DCLANG_DEFAULT_LINKER=lld
+        -DDCLANG_DEFAULT_CXX_STDLIB=libstdc++
+        -DCLANG_DEFAULT_UNWINDLIB=libgcc
+        -DLLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON  # needed to find gcc shit at runtime
         `;
 
       // compiler-rt specific stuff
@@ -82,6 +85,8 @@ export default async function build({ prefix, version, tag, deps }: BuildOptions
         -DCLANG_ENABLE_STATIC_ANALYZER=OFF  # recommended by the LLVM build guide
         -DLLVM_ENABLE_Z3_SOLVER=OFF         # required for ^^
         -DCLANG_ENABLE_ARCMT=OFF
+
+        -DLLVM_ENABLE_LIBCXX=OFF   # seems weird but we don’t want this, we delegate to the system
 
         ${platform_specific_cmake_args}
         `;

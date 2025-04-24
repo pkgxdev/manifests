@@ -10,7 +10,7 @@ export default async function ({ prefix, version, deps, tag }: BuildOptions) {
 
   if (Deno.build.os == "linux") {
     // ld.lld: error: undefined reference: __extendhfsf2
-    Deno.env.set("LDFLAGS", "-Wl,--allow-shlib-undefined");
+    extra = "LDFLAGS=-Wl,--allow-shlib-undefined";
   }
 
   run`./configure

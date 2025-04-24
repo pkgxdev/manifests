@@ -19,15 +19,15 @@ export default class Stripper {
     const strip = Deno.build.os == "linux" ? `${Deno.env.get("PKGX_BIN")}/strip` : "strip";
     for (const path of this.paths) {
       if (path.string.endsWith(".dylib") || /\.so(\.\d)*$/.test(path.string)) {
-        run`strip -x ${path}`;
+        run`${strip} -x ${path}`;
       } else if (path.basename().startsWith("perl")) {
         // perl uses symbols in itself for its modules
         //FIXME should be easy to override default fixups and exclude this
-        run`strip -x ${path}`;
+        run`${strip} -x ${path}`;
       } else if (Deno.build.os == "darwin") {
-        run`strip -u -r ${path}`;
+        run`${strip} -u -r ${path}`;
       } else {
-        run`strip -Ss ${path}`;
+        run`${strip} -Ss ${path}`;
       }
     }
   }

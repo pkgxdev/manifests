@@ -6,6 +6,10 @@ on:
     - cron: '*/5 * * * *'  # every 5 minutes
   workflow_dispatch:
 
+concurrency:
+  group: livecheck
+  cancel-in-progress: false
+
 jobs:
   livecheck:
     runs-on:
@@ -26,9 +30,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
   bottle:
-    concurrency:
-      group: ${{ needs.livecheck.outputs.pkgspec }}
-      cancel-in-progress: false
     needs:
       livecheck
     uses:

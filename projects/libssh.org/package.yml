@@ -1,0 +1,10 @@
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+dependencies:
+  openssl.org: ^3
+
+linux:
+  dependencies:
+    zlib.net: ^1

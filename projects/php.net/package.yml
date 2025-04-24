@@ -22,7 +22,6 @@ programs:
   - bin/phpize
 
 dependencies:
-  re2c.org: ^4
   sf.net/bcrypt: ^1
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6

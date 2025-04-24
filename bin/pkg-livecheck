@@ -12,12 +12,16 @@ for await (const project of ls()) {
     get_existing_versions(project)
   ]);
 
-  const newer = released_versions.find(({ version: released }) =>
-    existing_versions.some(existing => released.gt(existing))
-  );
+  const greatest_existing_version = existing_versions.sort().pop() ?? new SemVer([0,0,0]);
+  const greatest_released_version = released_versions.map(({ version }) => version).sort().pop()
 
-  if (newer) {
-    const out = `${project}=${newer.version}`;
+  if (!greatest_released_version) {
+    console.error(`no released versions found for ${project}`);
+    continue;
+  }
+
+  if (greatest_released_version.gt(greatest_existing_version)) {
+    const out = `${project}=${greatest_released_version}`;
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `pkgspec=${out}`, { append: true });
     } else {

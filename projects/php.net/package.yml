@@ -23,25 +23,24 @@ programs:
 
 dependencies:
   # re2c.org: ^3
-  # apache.org/apr: ^1
-  # apache.org/apr-util: ^1
+  apache.org/apr: ^1
+  apache.org/apr-util: ^1
   # bcrypt.sourceforge.net: ^1
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
   libsodium.org: ^1
-  # libzip.org: ^1.9
+  libzip.org: ^1.9
   github.com/kkos/oniguruma: ^6
   openssl.org: ^3
   pcre.org: ^10.30
   unicode.org: ^77
   gnu.org/libiconv: ^1
   kerberos.org: ^1
-  gnome.org/libxml2: ^2
   gnome.org/libxslt: ^1
   libpng.org: ^1
-  # google.com/webp: ^1
-  # ijg.org: ^9
-  # openldap.org: ^2
+  google.com/webp: ^1
+  ijg.org: ^9
+  openldap.org: ^2
 
 linux:
   dependencies:
@@ -49,6 +48,7 @@ linux:
     gnu.org/gcc/libstdcxx: ^14
     sourceware.org/bzip2: ^1
     thrysoee.dk/editline: ^3
+    gnome.org/libxml2: ^2
     sqlite.org: ^3
     zlib.net: ^1
     curl.se: ^8

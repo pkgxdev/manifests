@@ -23,7 +23,7 @@ if (import.meta.main) {
     for await (const { pkg: dep, path } of walk_pkgx_dir(tmpdir.join("pkgs"))) {
       if (dep.project == pkg.project) return { path, pkg: dep };
     }
-    throw new Error();
+    throw new Error("mysteriously, no pkg found for", pkg.project);
   })() as any;
 
   await prep_script(srcroot, installation, tmpdir);

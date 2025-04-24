@@ -1,15 +1,8 @@
 import { run } from "brewkit";
+import env_include from "../../../brewkit/env-include.ts";
 
 export default async function () {
-  // script: |
-//   mv $FIXTURE test.c
-//   cc test.c
-//   ./a.out
-// fixture: |
-//   #include "X11/Xauth.h"
-//   int main(int argc, char* argv[]) {
-//     Xauth auth;
-//     return 0;
-//   }
-// 
+  env_include("x.org/protocol");
+  run`cc ./test.c`;
+  run`./a.out`;
 }

@@ -1,9 +1,8 @@
-import { run } from "brewkit";
+import { backticks } from "brewkit";
+import { assertEquals } from "jsr:@std/assert@1/equals";
 
 export default async function () {
-  // fixture: a _lsimple _RteST_o th_oat
-// script: |
-//   out="$(fribidi --charset=CapRTL --clean --nobreak $FIXTURE)"
-//   test "$out" = "a simple TSet that"
-// 
+  Deno.writeTextFileSync("./test.txt", "a _lsimple _RteST_o th_oat");
+  const out = await backticks`fribidi --charset=CapRTL --clean --nobreak ./test.txt`;
+  assertEquals(out, "a simple TSet that");
 }

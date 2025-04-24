@@ -32,7 +32,7 @@ jobs:
       - uses: ./.github/actions/plan
         id: computer
         with:
-          pkgs: ${{ github.event.inputs.pkgs }}
+          pkgs: ${{ github.event.inputs.pkgs || inputs.pkgs }}
           platforms: ${{ github.event.inputs.platforms }}
 
   bottle:

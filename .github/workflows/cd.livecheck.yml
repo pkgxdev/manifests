@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # we need full history to get commit-ordering
       - uses: denoland/setup-deno@v2
       - name: deno cache
         run: deno cache ./bin/pkg-livecheck
@@ -31,7 +31,7 @@ jobs:
 
   bottle:
     concurrency:
-      group: livecheck-${ needs.check.outputs.pkgspec }
+      group: ${{ needs.check.outputs.pkgspec }}
       cancel-in-progress: true
     needs:
       check

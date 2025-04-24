@@ -9,6 +9,11 @@
 tool=$(basename "$0")
 export _PKGX_DIR="$(cd "$(dirname "$0")/.." && pwd)/pkgs"
 
+# -force_cpusubtype_ALL is no longer supported in clang and is no longer needed
+set -- $(for arg in "$@"; do
+  [ "$arg" != "-force_cpusubtype_ALL" ] && printf '%s\n' "$arg"
+done)
+
 case $tool in
 cc|gcc|clang|c++|g++|clang++)
   exec ruby "$0" "$@"

@@ -21,7 +21,7 @@ for await (const project of ls()) {
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(`pkgspec=${out}`, Deno.env.get("GITHUB_OUTPUT")!);
     } else {
-      console.log();
+      console.log(out);
     }
     Deno.exit(0);
   }

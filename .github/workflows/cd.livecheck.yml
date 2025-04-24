@@ -1,27 +1,37 @@
-name: livecheck
+name: cd·livecheck
+run-name: cd·livecheck
 
 on:
   schedule:
     - cron: '*/5 * * * *'  # every 5 minutes
+
+concurrency:
+  group: livecheck
+  cancel-in-progress: false
 
 jobs:
   check:
     runs-on:
       ubuntu-latest
     outputs:
-      pkgs: ${{ steps.livecheck.outputs.pkgs }}
+      pkgspec: ${{ steps.livecheck.outputs.pkgspec }}
     steps:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
       - run: deno run -A ./bin/pkg-livecheck
         id: livecheck
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
   bottle:
+    concurrency:
+      group: livecheck-${ needs.check.outputs.pkgspec }
+      cancel-in-progress: true
     needs:
       check
     uses:
       ./.github/workflows/cd.bottle.yml
     with:
-      pkgs: ${{ needs.check.outputs.pkgs }}
+      pkgs: ${{ needs.check.outputs.pkgspec }}
     secrets:
       inherit

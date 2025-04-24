@@ -8,6 +8,11 @@ export default async function ({ prefix, version, deps, tag }: BuildOptions) {
     --enable-kernel-poll
     --with-dynamic-trace=dtrace` : '';
 
+  if (Deno.build.os == "linux") {
+    // ld.lld: error: undefined reference: __extendhfsf2
+    Deno.env.set("LDFLAGS", "-Wl,--allow-shlib-undefined");
+  }
+
   run`./configure
         --disable-debug
         --disable-silent-rules

@@ -25,7 +25,7 @@ dependencies:
   # re2c.org: ^3
   apache.org/apr: ^1
   apache.org/apr-util: ^1
-  # bcrypt.sourceforge.net: ^1
+  sf.net/bcrypt: ^1
   gnu.org/gettext: ^0.24
   gnu.org/gmp: ^6
   libsodium.org: ^1

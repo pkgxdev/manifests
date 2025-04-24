@@ -1,0 +1,9 @@
+repository:
+  https://github.com/skvadrik/re2c
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/re2c

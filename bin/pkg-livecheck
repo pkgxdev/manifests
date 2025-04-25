@@ -63,7 +63,7 @@ async function *ls() {
     for (const arg of Deno.args) {
       yield arg;
     }
-  } else for await (const project of pkg_ls()) {
+  } else for await (const project of pkg_ls(true)) {
       yield project;
   }
 }

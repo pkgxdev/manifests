@@ -1,11 +1,11 @@
 #!/usr/bin/env -S pkgx +git deno run -R --allow-run
 
-import { backticks_quiet, platform_partial_path } from "brewkit";
+import { backticks_quiet, platform_partial_path, Path } from "brewkit";
 import { fromFileUrl } from "jsr:@std/path@1/from-file-url";
 import { parse } from "jsr:@std/yaml@1/parse";
 
 if (import.meta.main) {
-    for await (const project of ls()) {
+    for await (const project of ls(Deno.args.includes("--platforms=all"))) {
         if (Deno.args.includes("--print-paths")) {
             const path = fromFileUrl(new URL(`../projects/${project}/package.yml`, import.meta.url));
             console.log(path);
@@ -15,7 +15,7 @@ if (import.meta.main) {
     }
 }
 
-export default function *ls() {
+export default function *ls(allPlatforms = false) {
     const log = backticks_quiet`git log --name-only --pretty=format:'%H' --reverse`;
 
     const projects = log
@@ -26,22 +26,23 @@ export default function *ls() {
 
     const set = new Set();
     for (const project of projects) {
-        if (project == "deno.com") continue;
         if (project == "rustup.rs") continue;
         if (set.has(project)) continue;
         set.add(project);
-        if (Deno.args.includes("--platforms=all") || builds_on_this_platform(project)) {
+        if (builds_on_this_platform(project, allPlatforms)) {
             yield project;
         }
     }
 
-    function builds_on_this_platform(project: string) {
+    function builds_on_this_platform(project: string, allPlatforms: boolean) {
         const filename = fromFileUrl(new URL(`../projects/${project}/package.yml`, import.meta.url));
+        if (!new Path(filename).exists()) return false;
         const data = Deno.readTextFileSync(filename);
         const yaml = (parse(data) as any).platforms;
         if (!Array.isArray(yaml) || yaml.length == 0) return false;
         if (yaml.includes("*")) return true;
         if (yaml.includes(Deno.build.os)) return true;
+        if (allPlatforms) return true;
         if (yaml.includes(platform_partial_path())) return true;
         return false;
     }

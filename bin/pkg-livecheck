@@ -1,7 +1,7 @@
 #!/usr/bin/env -S pkgx --quiet deno^2 run -A
 
 import default_versions from "../brewkit/default-versions.ts";
-import { Path, Range, SemVer } from "brewkit";
+import { Path, Range, SemVer, semver } from "brewkit";
 import pkg_ls from "./pkg-ls";
 
 const srcroot = new Path(import.meta.dirname!).parent();
@@ -12,8 +12,8 @@ for await (const project of ls()) {
     get_existing_versions(project)
   ]);
 
-  const greatest_existing_version = existing_versions.sort().pop() ?? new SemVer([0,0,0]);
-  const greatest_released_version = released_versions.map(({ version }) => version).sort().pop()
+  const greatest_existing_version = existing_versions.sort(semver.compare).pop() ?? new SemVer([0,0,0]);
+  const greatest_released_version = released_versions.map(({ version }) => version).sort(semver.compare).pop()
 
   if (!greatest_released_version) {
     console.error(`no released versions found for ${project}`);
@@ -21,6 +21,7 @@ for await (const project of ls()) {
   }
 
   if (greatest_released_version.gt(greatest_existing_version)) {
+
     const out = `${project}=${greatest_released_version}`;
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `pkgspec=${out}`, { append: true });

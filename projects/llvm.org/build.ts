@@ -120,4 +120,8 @@ function create_bintools_symlinks(bin: Path) {
 
   bin.join("llvm-strip").ln("s", { target: "llvm-objcopy" });
   bin.join("strip").ln("s", { target: "llvm-objcopy" });
+
+  if (Deno.build.os != "windows") {
+    bin.join("lld-link").rm(); // this is a Windows only thing so fuck knows why we get it on Linux/Mac
+  }
 }

@@ -7,6 +7,15 @@ import pkg_ls from "./pkg-ls";
 const srcroot = new Path(import.meta.dirname!).parent();
 
 for await (const project of ls()) {
+  if (Deno.env.get("CI")) switch (project) {
+    case "llvm.org":
+    case "nodejs.org":
+    case "gnu.org/gcc":
+    case "gnu.org/gcc/libstdcxx":
+      console.error("skipping", project, "in CI due to (too) large compile requirements");
+      break;
+  }
+
   const [released_versions, existing_versions] = await Promise.all([
     get_released_versions(project),
     get_existing_versions(project)

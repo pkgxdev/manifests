@@ -31,6 +31,10 @@ platforms:
 dependencies:
   gnu.org/mpc: ^1.3
 
+linux:
+  dependencies:
+    gnu.org/gcc/libstdcxx: ^14
+
 # we don’t provide a shared libgcc or libstdc++
 # we probs should provide a shared libgcc in the future but a share dlibstdc++
 # is a can of worms and we probs should never bother

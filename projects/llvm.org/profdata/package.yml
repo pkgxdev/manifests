@@ -11,5 +11,5 @@ linux:
     zlib.net: ^1
     gnu.org/gcc/libstdcxx: ^14
 
-platforms:
-  - linux/x86-64
+# platforms:
+#   - linux/x86-64

@@ -41,7 +41,7 @@ jobs:
 
   complain:
     needs:
-      livecheck
+      [bottle, livecheck]
     if: ${{ needs.livecheck.outputs.pkgspec && failure() }}
     runs-on:
       ubuntu-latest

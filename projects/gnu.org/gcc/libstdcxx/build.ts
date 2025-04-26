@@ -12,20 +12,17 @@ export default async function build({ prefix, version }: BuildOptions) {
 
   Path.cwd().join("build").mkdir().cd();
 
-  Deno.env.set("CFLAGS",   "-isystem /usr/include -isystem /usr/include/x86_64-linux-gnu");
-  Deno.env.set("CXXFLAGS", "-isystem /usr/include -isystem /usr/include/x86_64-linux-gnu");
-
   run`../configure
         --prefix=${prefix}
         --enable-languages=c,c++
         --disable-multilib
-        --disable-bootstrap
+        --enable-bootstrap  # or it fails
         --disable-nls
         --enable-default-pie
         --enable-pie-tools
         --enable-host-pie
         `;
-  run`make V=1
+  run`make
         --jobs ${navigator.hardwareConcurrency}
         all-target-libstdc++-v3
         all-target-libgcc`;

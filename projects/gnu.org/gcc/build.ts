@@ -22,8 +22,8 @@ export default async function build({ prefix, version }: BuildOptions) {
       `;
   }
 
-  Path.cwd().join("build").mkdir();
-  Deno.chdir("build");
+  Path.cwd().join("build").mkdir().cd();
+
   run`../configure
         --prefix=${prefix}
         --enable-languages=c,c++

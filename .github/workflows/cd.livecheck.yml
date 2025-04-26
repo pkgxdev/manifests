@@ -40,6 +40,8 @@ jobs:
       inherit
 
   complain:
+    permissions:
+      issues: write
     needs:
       [bottle, livecheck]
     if: ${{ needs.livecheck.outputs.pkgspec && failure() }}

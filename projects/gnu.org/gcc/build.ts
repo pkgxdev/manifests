@@ -7,9 +7,12 @@ export default async function build({ prefix, version }: BuildOptions) {
   let extra = "";
 
   if (Deno.build.os == "linux") {
-    Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev");
-    env_include("gnu.org/gcc");
+    const old = Deno.env.get("PKGX_DIST_URL");
+    Deno.env.delete("PKGX_DIST_URL");
+    Deno.env.delete("PKGX_PANTRY_DIR");
+    env_include("gnu.org/gcc^14");
     Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
+    Deno.env.set("PKGX_PANTRY_DIR", old!);
 
     extra = `
       --disable-multilib

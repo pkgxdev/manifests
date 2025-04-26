@@ -87,7 +87,7 @@ export function std_version_convert(
     // common to put the project name or something like it as the prefix
     parsable_tag = tag.replace(/^[a-zA-Z]+-/, "");
   }
-  const version = semver.parse(parsable_tag);
+  const version = semver.parse(parsable_tag) || semver.parse(name);
   if (version) {
     return { version, tag };
   }

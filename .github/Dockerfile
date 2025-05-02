@@ -11,14 +11,14 @@ COPY ./deno.lock /work/deno.lock
 RUN cd /work && find ./brewkit -name \*.ts | xargs pkgx deno cache
 RUN pkgx deno cache /work/.github/scripts/generate-versions
 
-RUN apt-get install libgcc-8-dev --yes
+# RUN apt-get install libgcc-8-dev --yes
 
-RUN dpkg -L libgcc-8-dev | \
-      while read -r file; do \
-        case "$file" in \
-        /usr/include/*|/usr/lib/*|/lib/*) [ -f "$file" ] && echo "$file" | tee;; \
-        esac; \
-      done > files.txt
+# RUN dpkg -L libgcc-8-dev | \
+#       while read -r file; do \
+#         case "$file" in \
+#         /usr/include/*|/usr/lib/*|/lib/*) [ -f "$file" ] && echo "$file" | tee;; \
+#         esac; \
+#       done > files.txt
 
 # we still need glibc for the pkgx ecosystem
 # linux headers are generally needed but we should provide
@@ -45,7 +45,7 @@ RUN dpkg -L libgcc-8-dev | \
 # RUN echo /lib/x86_64-linux-gnu/libtinfo.so.6.1 >> files.txt; \
 #     echo /lib/x86_64-linux-gnu/libtinfo.so.6 >> files.txt
 
-RUN tar czf /root/base.tgz -T files.txt
+# RUN tar czf /root/base.tgz -T files.txt
 
 
 #TODO we need a real bash for `ldd` which apparently is a bash script
@@ -57,13 +57,15 @@ FROM debian:buster-slim AS stage2
 COPY --from=stage1 /usr/local/bin/pkgx /usr/bin/pkgx
 COPY --from=stage1 /root/.pkgx /root/.pkgx
 COPY --from=stage1 /root/.cache/deno /root/.cache/deno
-COPY --from=stage1 /root/base.tgz /root/base.tgz
+# COPY --from=stage1 /root/base.tgz /root/base.tgz
 
 RUN apt-get update && \
-  apt-get install --yes libc6-dev linux-libc-dev libgcc-8-dev libgcc1 && \
-  echo "Yes, do as I say!" | apt-get remove libstdc++6 libncursesw6 ncurses-base ncurses-bin
+  apt-get install --yes libc6-dev linux-libc-dev libgcc-8-dev libgcc1
+
+  #&& \
+  #echo "Yes, do as I say!" | apt-get remove libstdc++6 libncursesw6 ncurses-base ncurses-bin
 
 # restore libgcc-8-dev
-RUN tar xzf /root/base.tgz -C / && rm /root/base.tgz
+# RUN tar xzf /root/base.tgz -C / && rm /root/base.tgz
 
 ENV PKGX_DIST_URL="https://dist.pkgx.dev/v2"

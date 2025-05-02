@@ -15,7 +15,7 @@ export default async function build({ prefix, version, deps }: BuildOptions) {
     // const old = Deno.env.get("PKGX_PANTRY_DIR");
     // Deno.env.delete("PKGX_DIST_URL");
     // Deno.env.delete("PKGX_PANTRY_DIR");
-    // env_include("gnu.org/gcc^14");
+    env_include("gnu.org/gcc^14");
     // Deno.env.set("LD_LIBRARY_PATH", [
     //   deps['gnu.org/mpfr'].prefix.join("lib").string,
     //   deps['gnu.org/mpc'].prefix.join("lib").string,

@@ -28,12 +28,12 @@ programs:
 platforms:
   - linux/x86-64
 
-dependencies:
-  gnu.org/mpc: ^1.3
+# dependencies:
+#   gnu.org/mpc: ^1.3
 
-linux:
-  dependencies:
-    gnu.org/gcc/libstdcxx: ^14
+# linux:
+#   dependencies:
+#     gnu.org/gcc/libstdcxx: ^14
 
 # we don’t provide a shared libgcc or libstdc++
 # we probs should provide a shared libgcc in the future but a share dlibstdc++

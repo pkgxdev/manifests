@@ -4,7 +4,15 @@ function run_f(args: string[]) {
   }
   const cmd = args.shift()!;
 
-  console.error("%c+", "color:yellow", cmd, ...args);
+  const pretty_args = args.map((arg) => {
+    if (arg.includes(" ")) {
+      return arg.replaceAll(/\s+/g, "\\ ");
+    } else {
+      return arg;
+    }
+  });
+
+  console.error("%c+", "color:yellow", cmd, ...pretty_args);
 
   const { success, code } = new Deno.Command(cmd, {
     args,
@@ -79,7 +87,7 @@ function splitArgs(input: string): string[] {
   input = input.replace(/#.*$/gm, "");
 
   while ((match = regex.exec(input)) !== null) {
-    args.push(match[1] || match[2] || match[3]);
+    args.push((match[1] || match[2] || match[3]).trim());
   }
 
   return args;

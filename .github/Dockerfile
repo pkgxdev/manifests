@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y curl
 RUN curl https://pkgx.sh/$(uname)/$(uname -m).tgz | tar xz -C /usr/local/bin
 
 ENV PKGX_DIST_URL="https://dist.pkgx.dev/v2"
-RUN pkgx +llvm.org +patchelf +deno^2 +gnu.org/gcc/libstdcxx^14
+RUN pkgx +llvm.org^19 +patchelf +deno^2 +gnu.org/gcc/libstdcxx^14
 COPY ./brewkit /work/brewkit
 COPY ./.github /work/.github
 COPY ./deno.jsonc /work/deno.jsonc

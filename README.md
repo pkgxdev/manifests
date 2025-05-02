@@ -1,60 +1,54 @@
 # `pantry^2`
 
-- Configuration is hardcoded to /etc
-- We use vendor-built binaries where possible
-  - We assume the vendor knows how to build their product better than us
-  - Means issues are almost always upstream and not ours
-  - Notably excepting when the prebuilt binaries vendor libraries we provide
-- windows/x86-64 support from day 1
-- Relocatable without environment fixes for all base packages
-- If we package a package manager and it provides a tool (in a unpainful way)
-  then pkgx will invoke that other tool to get the thing
-  - eg. `cargo-binstall`, `npx`, `uvx` etc. will be used instead of us
-    packaging them
-  - these other mechanisms are generally _preferred_ by the developer and
-    end-user, we'll just know how to get you the end-product with a consistent
-    CLI
-  - this means we can focus on ensuring the base is as good as possible
-    without distraction from a massive pkg list
-  - We will still index everything and show it at [pkgx.dev/pkgs]
-- Minimizing deps on macOS
-  - we added deps because Linux needed them in v1 due to laziness and urgency
+## Goals
+
+- Better optimized packages
+- Much more careful dependency selection
+  - We have reviewed everything that is transitive thoroughly
+- Leaner, more streamlined packages
+  - Python reduced from 280MB to 78MB
+  - LLVM pruned to just what is needed and split out into multiple packages
+    reduing its size from 1.5GB to 300MB
+- More consistent namespacing
+- More reliable builds
+- More robust bottles
+  - eg. `rpath` fixes are now much more thorough and careful
+- Better configured and more consistently configured packages
+  - In general we set configuration to be `/etc` with user config carve outs
+- Across the board dependency on OpenSSL^3 rather ^1.1.1
+- Use of macOS system libraries where possible
+- Windows native support
+- Faster build infrastructure
+- More minimal pre-requisite footprint on Linux
+- 100% relocatable packages without environment fixes for all base packages
+- Use vendor built binaries where possible and sensible
+  - Provided the vendor does not statically link in libraries this is a
+    better choice since we assume the vendor knows how to build their product
+    better than us
 - No magic
-  - git no longer looks for `git-foo` if you type `git foo`
-  - etc.
-  - we would consider adding these back, but not as _part_ of the package
-    itself. The package itself should solely focus on our other goals and
-    otherwise be vanilla.
-- `pkgx^1,^2` will use pantry^1, `pkgx^3` will use pantry^2
-- building with as minimal images as is possible to ensure we are sure about
-  what goes into our packages
+  - eg. `git` stub that looks to `pkgx` for `git-foo`
+- More flexible build infrastructure
+- Less unwise hacks
+  - eg. symlinking versioned include directories, instead we now set `CPATH`
+    in the package.yaml runtime env
+  - Separating out eg. `gem` from Ruby for purity reasons was a mistake
+- No more packaging for projects without versioning or with careless
+  versioning. Eg. `llama.cpp` and `vim`.
+  - Users still want these so we can instead make them build from source on
+    demand.
+  - It is gross currently since these projects release multiple times *a day*
+
+## Future Goals
+
 - First class `pkgm` support
   - everything should install to `/usr/local` and just work
-- No weird handling for calver
-- no (or much less) pre-reqs on Linux
-  - we only need glibc and libgcc
-  - strictly we don’t need the user to provide libgcc, but us building and
-    using our own is more or a pita than we can handle RN
-- variable deps
-  - eg. a major version requires new deps
-  - eg. heaven forbid, a minor version changes the dep constraint
-- sources tarball locations can vary by version
-- program lists can vary by version
-- no deversioning of inner directories (for `pkgm`)
-- no support for dollar prefixed moustaches in `package.yml`
-- independently versioned things must be independent
-  - generally we are already good at this
-- things without established versioning and/or programs are not valid to be
-  packaged. They go in `pkgo`
+- Zero pre-requisties on Linux
+- Dependencies can vary by version
+- Program lists can vary by version
 - standardize pkgs
   - use XDG and standard dirs on other platforms
   - configure things that install things to install them to
     `${INSTALL_ROOT:-$HOME/.local}` by default
-- more consistent project names
-  - no foo.github.io, just github.com/foo etc.
-  - no strict adherance to homepages, it's more about namespacing
-
-[pkgx.dev/pkgs]: https://pkgx.dev/pkgs
 
 ## Usage
 
@@ -94,18 +88,6 @@ $ ls bin
 
 - glibc, libgcc and their `-dev` pkgs are still required at this time
 
-## Wins
-
-- Python from 280MB to 78MB
-- Cleaner rpath handling across the board
-  - linux rpath fixes were actually broken with `pantry^1`
-- Less env pollution by carefully using `pkgx` during builds rather than
-  importing dep-envs before builds, meaning more reliable builds with less
-  unexpected deps
-- Carefuly pruning of deps and build options for all base deps
-- much tighter python venv handling
-- more XDG adherance for base packages
-
 ### Build Infra Wins
 
 - a pkg depending on itself now works without conflict since destination
@@ -128,34 +110,6 @@ doesn’t cut it, you end up putting constructs in place to facilitate logic and
 complexity mounts and mounts. You may as well just use a real language.
 
 Also we needed a cross platform language to support Windows. Bash is not that.
-
-### Criteria for Inclusion
-
-- We require that packages are versioned.
-- We require that the project bew licensed such that we are permitted to
-  redistribute it.
-- Stuff that is so new that its build instructions are likely to change a lot
-in future may be rejected due to our inability to reliably maintain that.
-- Things that can have other general executors (eg. npx) should be run that
-  way using the `providers` system.
-- Things that do not respect reasonable release schedules may be rejected
-  (eg. we have seen packages release 10+ times a day, every day).
-
-### Requirements
-
-For local builds we need some stuff set up:
-
-* macOS
-  * The Xcode Command Line Tools are expected to be installed
-* Windows
-  * Visual Studio Community Edition with C++
-  * Some things expect `nmake` and thus you will need to run a
-    “developer prompt”
-* Linux
-  * glibc libs and headers
-  * stdc++
-
-Mostly, otherwise we source build tools from `pkgx`.
 
 ### Boostrapping New Platforms
 

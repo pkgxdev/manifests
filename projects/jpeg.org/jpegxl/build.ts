@@ -17,11 +17,13 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
 
   if (Deno.build.os == "linux") {
     // ld.lld: error: undefined reference: __extendhfsf2
-    Deno.env.set("LDFLAGS", "-Wl,--allow-shlib-undefined");
+    // Deno.env.set("LDFLAGS", "-Wl,--allow-shlib-undefined");
   }
 
   run`cmake
+        -G "Unix Makefiles"
         -B bld
+        -DCMAKE_VERBOSE_MAKEFILE=ON
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_INSTALL_PREFIX=${prefix}
         -DBUILD_TESTING=OFF
@@ -29,12 +31,6 @@ export default async function ({ prefix, version, tag }: BuildOptions) {
         -DJPEGXL_ENABLE_BENCHMARK=OFF
         -DJPEGXL_VERSION=${version}
         `;
-  run`cmake --build bld --target install`;
-
-//   linux/x86-64:
-//     ARGS:
-//       - '-DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined,-lstdc++fs'
-//   linux/aarch64:
-//     ARGS:
-//       - '-DCMAKE_EXE_LINKER_FLAGS=-Wl,-lstdc++fs'
+  // run`cmake --build bld --target install`;
+  run`make -C bld`;
 }

@@ -19,8 +19,10 @@ on:
       pkgs:
         required: true
         type: string
+
 env:
   PKGX_DIST_URL: https://dist.pkgx.dev/v2
+  PKGX_USER_AGENT_GROUP: pantry
 
 jobs:
   ingest:
@@ -48,14 +50,17 @@ jobs:
       # 1. actions/checkout uses node which needs libstdc++
       # 2. $HOME is different in the docker image vs. github actions
       - name: Linux Container Prep
+        id: prep
         run: |
           ln -s /root/.pkgx $HOME
           ln -s /root/.cache $HOME
           eval "$(pkgx +gnu.org/gcc/libstdcxx)"
-          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "ld-library-path=$LD_LIBRARY_PATH" >> $GITHUB_OUTPUT
         if: ${{ runner.os == 'Linux' }}
 
       - uses: actions/checkout@v4
+        env:
+          LD_LIBRARY_PATH: ${{ steps.prep.outputs.ld-library-path }}
 
       - uses: ./.github/actions/setup
 
@@ -78,7 +83,7 @@ jobs:
           set -- README*
           if [ "$1" != "README*" ]; then
             for x in "$@"; do
-              aws s3 cp "$x" "s3://dist.tea.xyz/$PROJECT/$x"
+              aws s3 cp "$x" "s3://dist.tea.xyz/v2/$PROJECT/$x"
             done
           fi
         if: ${{ runner.os != 'Windows' }}

@@ -60,19 +60,19 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
     const llvm_bin = new Path(await backticks_quiet`pkgx -q +llvm.org -- which clang`).parent();
     const ln = (tool: string, llvm_tool: string) =>
       bin.join(tool).ln('s', { target: llvm_bin.join(llvm_tool) });
-    // ln('cc', 'clang');
-    // ln('gcc', 'clang');
-    // ln('clang', 'clang');
-    // ln('c++', 'clang++');
-    // ln('g++', 'clang++');
-    // ln('clang++', 'clang++');
-    // ln('cpp', 'clang-cpp');
-    // ln('ld', 'ld.lld');
-    // ln('ar', 'llvm-ar');
-    // ln('as', 'llvm-as');
-    // ln('nm', 'llvm-nm');
-    // ln('strings', 'llvm-strings');
-    // ln('ranlib', 'llvm-ranlib');
+    ln('cc', 'clang');
+    ln('gcc', 'clang');
+    ln('clang', 'clang');
+    ln('c++', 'clang++');
+    ln('g++', 'clang++');
+    ln('clang++', 'clang++');
+    ln('cpp', 'clang-cpp');
+    ln('ld', 'ld.lld');
+    ln('ar', 'llvm-ar');
+    ln('as', 'llvm-as');
+    ln('nm', 'llvm-nm');
+    ln('strings', 'llvm-strings');
+    ln('ranlib', 'llvm-ranlib');
 
     env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
     // stops ./configure from erroring in our container

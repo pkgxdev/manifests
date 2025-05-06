@@ -76,6 +76,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - run: pkgx --sync
+
         # FIXME this uploads for each platform and even though it should be the same file—it’s lame
       - name: cp README
         run: |
@@ -119,8 +121,6 @@ jobs:
           aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
           .github/scripts/generate-versions v2/${{env.PROJECT}}/${{env.PLATFORM}} > versions.txt
           aws s3 cp versions.txt s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/versions.txt
-        env:
-          PKGX_DIST_URL: https://dist.pkgx.dev
 
       - name: cf invalidate
         run:
@@ -130,5 +130,3 @@ jobs:
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/versions.txt
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.gz
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.xz
-        env:
-          PKGX_DIST_URL: https://dist.pkgx.dev

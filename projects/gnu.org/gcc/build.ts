@@ -24,8 +24,6 @@ export default async function build({ prefix, version, deps }: BuildOptions) {
     Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
     Deno.env.set("PKGX_PANTRY_DIR", old!);
 
-    run`pkgx --sync`; // gotta replace the v1 shit above
-
     extra = `
       --disable-multilib
       --build=x86_64-pc-linux-gnu  # or compile fails due to dupe pid_t

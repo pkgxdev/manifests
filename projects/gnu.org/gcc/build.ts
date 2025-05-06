@@ -52,7 +52,7 @@ export default async function build({ prefix, version, deps }: BuildOptions) {
         "--with-pkgversion=pkgx GCC ${version}"
         ${extra}
         `;
-  run`make`; //--jobs ${navigator.hardwareConcurrency}`;
+  run`make --jobs ${navigator.hardwareConcurrency}`;
   run`make install-strip`; // cannot install in parallel
 
   const lib64 = prefix.join("lib64");

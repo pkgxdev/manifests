@@ -83,7 +83,7 @@ jobs:
           set -- README*
           if [ "$1" != "README*" ]; then
             for x in "$@"; do
-              aws s3 cp "$x" "s3://dist.tea.xyz/v2/$PROJECT/$x"
+             pkgx pkgx^1 aws s3 cp "$x" "s3://dist.tea.xyz/v2/$PROJECT/$x"
             done
           fi
         if: ${{ runner.os != 'Windows' }}
@@ -113,14 +113,14 @@ jobs:
 
       - name: s3 sync
         run: |
-          aws s3 cp v${{env.VERSION}}.tar.gz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.gz
-          aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
+          pkgx pkgx^1 aws s3 cp v${{env.VERSION}}.tar.gz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.gz
+          pkgx pkgx^1 aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
           .github/scripts/generate-versions v2/${{env.PROJECT}}/${{env.PLATFORM}} > versions.txt
           aws s3 cp versions.txt s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/versions.txt
 
       - name: cf invalidate
         run:
-          aws cloudfront create-invalidation
+          pkgx pkgx^1 aws cloudfront create-invalidation
           --distribution-id EWF6XUK8J11DP
           --paths
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/versions.txt

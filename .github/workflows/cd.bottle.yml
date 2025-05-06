@@ -83,10 +83,12 @@ jobs:
           set -- README*
           if [ "$1" != "README*" ]; then
             for x in "$@"; do
-             pkgx pkgx^1 aws s3 cp "$x" "s3://dist.tea.xyz/v2/$PROJECT/$x"
+             aws s3 cp "$x" "s3://dist.tea.xyz/v2/$PROJECT/$x"
             done
           fi
         if: ${{ runner.os != 'Windows' }}
+        env:
+          PKGX_DIST_URL: https://dist.pkgx.dev
 
       - name: bottle
         run: |
@@ -113,16 +115,20 @@ jobs:
 
       - name: s3 sync
         run: |
-          pkgx pkgx^1 aws s3 cp v${{env.VERSION}}.tar.gz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.gz
-          pkgx pkgx^1 aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
+          aws s3 cp v${{env.VERSION}}.tar.gz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.gz
+          aws s3 cp v${{env.VERSION}}.tar.xz s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/v${{env.VERSION}}.tar.xz
           .github/scripts/generate-versions v2/${{env.PROJECT}}/${{env.PLATFORM}} > versions.txt
           aws s3 cp versions.txt s3://dist.tea.xyz/v2/${{env.PROJECT}}/${{env.PLATFORM}}/versions.txt
+        env:
+          PKGX_DIST_URL: https://dist.pkgx.dev
 
       - name: cf invalidate
         run:
-          pkgx pkgx^1 aws cloudfront create-invalidation
+          aws cloudfront create-invalidation
           --distribution-id EWF6XUK8J11DP
           --paths
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/versions.txt
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.gz
           /v2/${{ env.PROJECT }}/${{ env.PLATFORM }}/v${{env.VERSION}}.tar.xz
+        env:
+          PKGX_DIST_URL: https://dist.pkgx.dev

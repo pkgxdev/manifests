@@ -1,14 +1,10 @@
 import { env_include, BuildOptions, Path, run, unarchive } from "brewkit";
+import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 
 export default async function build({ prefix, version }: BuildOptions) {
   await unarchive(`https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
 
-//   const old = Deno.env.get("PKGX_DIST_URL");
-//   Deno.env.delete("PKGX_DIST_URL");
-//   Deno.env.delete("PKGX_PANTRY_DIR");
   env_include("gnu.org/gcc^14");
-//   Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
-//   Deno.env.set("PKGX_PANTRY_DIR", old!);
 
   Path.cwd().join("build").mkdir().cd();
 
@@ -30,5 +26,9 @@ export default async function build({ prefix, version }: BuildOptions) {
         install-strip-target-libstdc++-v3
         install-strip-target-libgcc`;
 
-  prefix.join("lib64").isDirectory()?.mv({ to: prefix.lib.rm() });
+  const lib64 = prefix.join("lib64");
+  for await (const { path } of expandGlob(`${lib64}/*`)) {
+    new Path(path).mv({ into: prefix.lib.mkdir() });
+  }
+  lib64.rm();
 }

@@ -76,9 +76,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - run: pkgx --sync
-
-        # FIXME this uploads for each platform and even though it should be the same file—it’s lame
+      # FIXME this uploads for each platform and even though it should be the same file—it’s lame
       - name: cp README
         run: |
           cd $PREFIX/..

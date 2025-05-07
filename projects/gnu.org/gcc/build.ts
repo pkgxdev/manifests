@@ -1,29 +1,13 @@
 import { env_include, BuildOptions, Path, run, unarchive } from "brewkit";
 import { expandGlob } from "jsr:@std/fs@1/expand-glob";
 
-export default async function build({ prefix, version, deps }: BuildOptions) {
+export default async function build({ prefix, version }: BuildOptions) {
   await unarchive(`https://ftpmirror.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.gz`);
 
   let extra = "";
 
-  Object.entries(Deno.env.toObject()).forEach(([k,v]) => {
-    console.error(`${k}=${v}`);
-  });
-
   if (Deno.build.os == "linux") {
-    Deno.env.delete("LD_LIBRARY_PATH");
-    const old = Deno.env.get("PKGX_PANTRY_DIR");
-    Deno.env.delete("PKGX_DIST_URL");
-    Deno.env.delete("PKGX_PANTRY_DIR");
     env_include("gnu.org/gcc^14");
-    Deno.env.set("LD_LIBRARY_PATH", [
-      deps['gnu.org/mpfr'].prefix.join("lib").string,
-      deps['gnu.org/mpc'].prefix.join("lib").string,
-      deps['gnu.org/gmp'].prefix.join("lib").string
-    ].join(":"));  // temporary to stop illegal instructions
-    Deno.env.set("PKGX_DIST_URL", "https://dist.pkgx.dev/v2");
-    Deno.env.set("PKGX_PANTRY_DIR", old!);
-
     extra = `
       --disable-multilib
       --build=x86_64-pc-linux-gnu  # or compile fails due to dupe pid_t

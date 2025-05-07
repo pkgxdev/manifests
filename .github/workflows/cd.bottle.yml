@@ -89,8 +89,6 @@ jobs:
             done
           fi
         if: ${{ runner.os != 'Windows' }}
-        env:
-          PKGX_DIST_URL: https://dist.pkgx.dev
 
       - name: bottle
         run: |

@@ -22,7 +22,7 @@ dependencies:
 linux:
   dependencies:
     invisible-island.net/ncurses: ^6
-    gnu.org/gcc/libstdcxx: '*'
+    gnu.org/gcc/libstdcxx: ^14
 
 env:
   ERL_ROOTDIR: ${{prefix}}/lib/erlang

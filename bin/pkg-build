@@ -75,9 +75,11 @@ async function prep_toolchain(tmpdir: Path, srcroot: Path) {
     ln('ranlib', 'llvm-ranlib');
 
     env["PATH"] = `${bin}:/usr/bin:/bin:/usr/sbin:/sbin`;
+
     // stops ./configure from erroring in our container
     //TODO configure container to not be `root`
     env["FORCE_UNSAFE_CONFIGURE"] = "1";
+
     break;
 
   case 'darwin':

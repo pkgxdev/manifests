@@ -17,59 +17,48 @@ if (Deno.args[0] == '...') {
   const map: Record<string, number> = {};
   const deps_count: Record<string, number> = {};
 
-  for await (const { project } of hooks.usePantry().ls()) {
-    const pkg = hooks.usePantry().project(project);
-    const deps = await pkg.runtime.deps();
-    deps_count[project] = deps.length;
-    for (const dep of deps) {
-      map[dep.project] ??= 0;
-      map[dep.project] += 1;
-    }
-  }
-  for (const [orig_project, count] of Object.entries(map).sort((a, b) => a[1] - b[1])) {
-    const project = map_project_name(orig_project);
+  for await (const { project: og_project } of hooks.usePantry().ls()) {
+    const project = map_project_name(og_project);
     if (!project) continue;
     if (d.join("projects", project, "package.yml").isFile()) continue;
-    console.log(`${project}: ${count} (deps: ${deps_count[orig_project]})`);
+
+    const pkg = hooks.usePantry().project(og_project);
+    const deps = (await (async () => {
+      const yaml = (await pkg.yaml()).dependencies as Record<string, any>;
+      const rv: string[] = [];
+      for (const [project, o] of Object.entries(yaml ?? {})) {
+        switch (project) {
+          case 'linux':
+          case 'linux/x86-64':
+          case 'linux/aarch64':
+          case 'darwin':
+          case 'darwin/x86-64':
+          case 'darwin/aarch64':
+            for (const [project] of Object.entries(o)) {
+              rv.push(project);
+            }
+            break;
+          default:
+            rv.push(project);
+        }
+      }
+      return rv;
+    })()).filter((dep) => {
+      const project = map_project_name(dep);
+      return project && !d.join("projects", project, "package.yml").isFile()
+    });
+    deps_count[project] = deps.length;
+    for (const dep of deps) {
+      map[dep] ??= 0;
+      map[dep] += 1;
+    }
+  }
+
+  for (const [project, count] of Object.entries(map).sort((a, b) => a[1] - b[1])) {
+    console.log(`${project}: ${count} ${deps_count[project] ? `(deps: ${deps_count[project]})` : ''}`);
   }
 
   Deno.exit(0);
-
-  function map_project_name(project: string) {
-    switch (project) {
-      case "x.org/x11": return "x.org/libX11";
-      case "x.org/exts": return "x.org/libXext";
-      case "libexpat.github.io": return "github.com/libexpat";
-      case "pcre.org/v2": return "pcre.org";
-      case "gflags.github.io": return "github.com/gflags";
-      case "rubygems.org": return "ruby-lang.org";
-      case "google.github.io/snappy": return "google.com/snappy";
-      case "giflib.sourceforge.io": return "sf.net/giflib";
-      case "openmp.llvm.org": return "llvm.org/openmp";
-      case "poppler.freedesktop.org": return "freedesktop.org/poppler";
-      case "github.com/google/brotli": return "google.com/brotli";
-      case "pyyaml.org": return "pyyaml.org/libyaml";
-      case "npmjs.com": return "nodejs.org";
-      case "rust-lang.org/cargo": return "rust-lang.org";
-      case "opus-codec.org": return "xiph.org/opus";
-      case "lame.sourceforge.io": return "sf.net/lame";
-
-      // no sane release schedule so fuck this shit
-      case "abseil.io":
-      case "facebook.com/folly":
-      case "protobuf.dev":
-      case "github.com/facebookincubator/fizz":
-        return;
-
-      // no longer an explicit dep
-      case 'pkgx.sh':
-      case "tea.xyz":
-        return;
-
-      default:
-        return project;
-    }
-  }
 }
 
 const project = Deno.args[0];
@@ -78,6 +67,7 @@ const new_project = Deno.args[1] || project;
 let f = Path.home().join("src/pantry/projects", project, "package.yml").isFile();
 if (!f) {
   console.error(`project ${project} or pantry not found`);
+  Deno.exit(1);
 }
 const yaml = parse(f.read()) as any;
 const old_f = f;
@@ -165,3 +155,42 @@ await new Deno.Command("code", {
     d.join("projects", new_project, "package.yml").string
   ],
 }).spawn().status
+
+
+function map_project_name(project: string) {
+  switch (project) {
+    case "x.org/x11": return "x.org/libX11";
+    case "x.org/exts": return "x.org/libXext";
+    case "libexpat.github.io": return "github.com/libexpat";
+    case "pcre.org/v2": return "pcre.org";
+    case "gflags.github.io": return "github.com/gflags";
+    case "rubygems.org": return "ruby-lang.org";
+    case "google.github.io/snappy": return "google.com/snappy";
+    case "giflib.sourceforge.io": return "sf.net/giflib";
+    case "openmp.llvm.org": return "llvm.org/openmp";
+    case "poppler.freedesktop.org": return "freedesktop.org/poppler";
+    case "github.com/google/brotli": return "google.com/brotli";
+    case "pyyaml.org": return "pyyaml.org/libyaml";
+    case "npmjs.com": return "nodejs.org";
+    case "rust-lang.org/cargo": return "rust-lang.org";
+    case "opus-codec.org": return "xiph.org/opus";
+    case "lame.sourceforge.io": return "sf.net/lame";
+    case 'alsa-project.org/alsa-lib': return 'alsa-project.org';
+    case 'github.com/AOMediaCodec/libavif': return 'aomedia.org/libavif';
+
+    // no sane release schedule so fuck this shit
+    case "abseil.io":
+    case "facebook.com/folly":
+    case "protobuf.dev":
+    case "github.com/facebookincubator/fizz":
+      return;
+
+    // no longer an explicit dep
+    case 'pkgx.sh':
+    case "tea.xyz":
+      return;
+
+    default:
+      return project;
+  }
+}

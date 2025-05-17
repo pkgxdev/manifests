@@ -1,0 +1,18 @@
+repository:
+  https://github.com/AOMediaCodec/libavif
+
+homepage:
+  https://aomedia.org/avif/
+
+platforms:
+  - darwin/aarch64
+  - linux/x86-64
+
+programs:
+  - bin/avifenc
+  - bin/avifdec
+
+dependencies:
+  aomedia.org/aom: ^3
+  libpng.org: ^1
+  libjpeg-turbo.org: ^3

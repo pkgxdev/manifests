@@ -15,6 +15,7 @@ export default async function build({ prefix, version }: BuildOptions) {
         --disable-bootstrap
         --disable-nls
         --enable-shared
+        --enable-lto
   #TODO --with-system-zlib
         --with-bugurl=https://github.com/pkgxdev/manifests/issues
         "--with-pkgversion=pkgx GCC ${version}"

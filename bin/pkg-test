@@ -127,7 +127,7 @@ async function prep_script(srcroot: Path, { pkg }: Installation, tmpdir: Path) {
 }
 
 async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installation, tmpdir: Path, runenv: Record<string, string>) {
-  const env: Record<string, string> = {}
+  const env: Record<string, string> = { PATH: runenv.PATH }
 
   let [cmd, ...args]: string[] = (() => {
     if (Deno.build.os !== 'darwin') return [deno];

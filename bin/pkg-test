@@ -180,7 +180,7 @@ async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installat
     tmpdir.join("run-test.ts").string,
     prefix.string,
     pkg.version.toString(),
-    ...Object.entries(runenv).map((value, key) => `${key}=${value}`),
+    ...Object.entries(runenv).map(([key, value]) => `${key}=${value}`),
   );
 
   const cwd = tmpdir.join("testbed").mkdir().string;

@@ -7,9 +7,10 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
   env_include("gnu.org/gcc");
 
   const kernel_headers = Path.cwd().join(`kernel-5.4`);
-  await tmp(async () => {
+  await tmp(async cwd => {
     await unarchive(`https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.tar.xz`);
-    run`make INSTALL_HDR_PATH=${kernel_headers}`;
+    run`make headers`;
+    cwd.join("usr/include").cp({ to: kernel_headers.mkdir()})
   });
 
   Path.cwd().join("build").mkdir().cd();
@@ -25,7 +26,7 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
         --without-selinux
         --with-pkgversion="pkgx glibc-${version}"
         --with-bugurl=https://github.com/pkgxdev/pantry/issues/new
-        --with-headers=${kernel_headers}/include
+        --with-headers=${kernel_headers}
         CFLAGS="-O2 -march=x86-64 -mtune=generic"
         `;
   run`make --jobs ${navigator.hardwareConcurrency}`;

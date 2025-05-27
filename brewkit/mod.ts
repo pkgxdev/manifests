@@ -231,3 +231,16 @@ export { getVersions as gitlab };
 
 import venvify from "./venvify.ts";
 export { venvify };
+
+export async function tmp<T>(fn: (d: Path) => Promise<T>): Promise<T> {
+  //TODO actually base off of original CWD
+  const tmp = Path.cwd().join(Math.random().toString(36).substring(2, 15))
+    .mkdir();
+  try {
+    Deno.chdir(tmp.string);
+    return await fn(tmp);
+  } finally {
+    Deno.chdir(tmp.parent().string);
+    tmp.rm("rf");
+  }
+}

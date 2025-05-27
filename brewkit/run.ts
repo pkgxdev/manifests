@@ -79,15 +79,37 @@ export function backticks_quiet(
 }
 
 function splitArgs(input: string): string[] {
-  const regex = /"([^"]*)"|'([^']*)'|(\S+)/g;
+  // Remove comments
+  input = input.replace(/#.*$/gm, "").trim();
+
   const args: string[] = [];
+  const regex = /(?:[^\s"'=]+=(?:"[^"]*"|'[^']*'|[^\s]+)|"[^"]*"|'[^']*'|[^\s]+)/g;
   let match;
 
-  // Remove comments
-  input = input.replace(/#.*$/gm, "");
-
   while ((match = regex.exec(input)) !== null) {
-    args.push((match[1] || match[2] || match[3]).trim());
+    let token = match[0];
+
+    // Strip outer quotes around right-hand side of `key=val`
+    if (token.includes("=")) {
+      const [key, val] = token.split(/=(.+)/, 2);
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        args.push(`${key}=${val.slice(1, -1)}`);
+      } else {
+        args.push(token);
+      }
+    } else {
+      // Strip quotes for standalone quoted values
+      if (
+        (token.startsWith('"') && token.endsWith('"')) ||
+        (token.startsWith("'") && token.endsWith("'"))
+      ) {
+        token = token.slice(1, -1);
+      }
+      args.push(token);
+    }
   }
 
   return args;

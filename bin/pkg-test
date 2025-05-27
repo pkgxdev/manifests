@@ -87,7 +87,12 @@ async function prep_script(srcroot: Path, { pkg }: Installation, tmpdir: Path) {
     import test_runner from '${srcroot.join("projects", pkg.project, "test.ts").fileURL()}';
     import { Path, SemVer } from 'brewkit';
     const prefix = new Path(Deno.args[0]);
-    const version = new SemVer(prefix.basename());
+    const version = new SemVer(Deno.args[1]);
+
+    for (const envln of Deno.args.slice(2)) {
+      const [key, value] = envln.split("=");
+      Deno.env.set(key, value);
+    }
 
     if (Deno.env.get("GITHUB_ACTIONS")) {
       console.log("::group::env");
@@ -121,7 +126,9 @@ async function prep_script(srcroot: Path, { pkg }: Installation, tmpdir: Path) {
   }
 }
 
-async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installation, tmpdir: Path, env: Record<string, string>) {
+async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installation, tmpdir: Path, runenv: Record<string, string>) {
+  const env: Record<string, string> = {}
+
   let [cmd, ...args]: string[] = (() => {
     if (Deno.build.os !== 'darwin') return [deno];
 
@@ -173,6 +180,7 @@ async function run(deno: string, srcroot: Path, { path: prefix, pkg }: Installat
     tmpdir.join("run-test.ts").string,
     prefix.string,
     pkg.version.toString(),
+    ...Object.entries(runenv).map((value, key) => `${key}=${value}`),
   );
 
   const cwd = tmpdir.join("testbed").mkdir().string;

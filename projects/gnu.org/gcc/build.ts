@@ -18,7 +18,7 @@ export default async function build({ prefix, version }: BuildOptions) {
         --enable-lto
   #TODO --with-system-zlib
         --with-bugurl=https://github.com/pkgxdev/manifests/issues
-        "--with-pkgversion=pkgx GCC ${version}"
+        --with-pkgversion="pkgx GCC ${version}"
         `;
   run`make --jobs ${navigator.hardwareConcurrency}`;
   run`make install-strip`;

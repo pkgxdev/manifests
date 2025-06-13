@@ -11,16 +11,20 @@ dependencies:
   openssl.org: ^3
   tukaani.org/xz: ^5
   github.com/libexpat: ^2  # macOS provides this—but the performance-guided-build fails without it
-  bytereef.org/mpdecimal: ^4
 
 linux:
   dependencies:
+    bytereef.org/mpdecimal: ^4
     sourceware.org/bzip2: ^1
     gnu.org/readline: ^7,^8
     invisible-island.net/ncurses: ^6
     zlib.net: ^1
     sqlite.org: ^3
     sourceware.org/libffi: ^3
+
+darwin:
+  dependencies:
+    bytereef.org/mpdecimal: ^4
 
 programs:
   - bin/python

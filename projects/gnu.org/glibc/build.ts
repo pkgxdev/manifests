@@ -6,9 +6,11 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
   stub("gawk bison");
   env_include("gnu.org/gcc");
 
-  const kernel_headers = Path.cwd().join(`kernel-5.4`);
+  const kernel_version = "5.4";  // LTS 2029
+
+  const kernel_headers = Path.cwd().join(`kernel-${kernel_version}`);
   await tmp(async cwd => {
-    await unarchive(`https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.4.tar.xz`);
+    await unarchive(`https://cdn.kernel.org/pub/linux/kernel/v${kernel_version[0]}.x/linux-${kernel_version}.tar.xz`);
     run`make headers`;
     cwd.join("usr/include").cp({ to: kernel_headers.mkdir()})
   });
@@ -18,7 +20,7 @@ export default async function ({ prefix, tag, version }: BuildOptions) {
   run`../configure
         --prefix=${prefix}
         --disable-debug
-        --enable-kernel=5.4  # LTS 2029
+        --enable-kernel=${kernel_version}
         --disable-dependency-tracking
         --disable-silent-rules
         --disable-werror

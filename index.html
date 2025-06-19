@@ -103,7 +103,11 @@
           const isEdgeConnected = (connectedNodes.has(e.from) && connectedNodes.has(e.to));
           network.body.data.edges.update({
             id: e.id,
-            opacity: isEdgeConnected ? 1 : 0.2
+            color: {
+              color: isEdgeConnected ? '#848484' : 'rgba(132,132,132,0.2)',
+              highlight: '#848484',
+              hover: '#848484'
+            }
           });
         });
       });

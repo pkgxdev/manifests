@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dependency Graph</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <style>
+    #network { width: 100%; height: 100vh; border: 1px solid lightgray; }
+  </style>
+</head>
+<body>
+  <div id="network"></div>
+  <h2>Most Important Packages</h2>
+  <table id="importance">
+    <thead><tr><th>Package</th><th>Importance</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script>
+    async function draw() {
+      const [graphRes, importanceRes] = await Promise.all([
+        fetch('/graph'),
+        fetch('/importance')
+      ]);
+      const graph = await graphRes.json();
+      const importance = Object.fromEntries(await importanceRes.json());
+
+      const nodes = [];
+      const edges = [];
+
+      for (const [project, deps] of Object.entries(graph)) {
+        const count = importance[project] ?? 0;
+        let color = '#97C2FC'; // default color
+        let border = undefined;
+        let dashes = false;
+
+        if (deps.length === 0) {
+          color = '#FFFFFF';
+          border = '#000000';
+          dashes = true;
+        } else if (count > 20) {
+          color = '#FF6B6B';
+        } else if (count > 10) {
+          color = '#FFD93D';
+        } else if (count > 5) {
+          color = '#6BCB77';
+        }
+
+        nodes.push({ id: project, label: project, color, borderWidth: border ? 2 : 1, borderWidthSelected: 2, borderColor: border, shape: 'ellipse', dashes });
+        for (const dep of deps) {
+          edges.push({ id: `${project}->${dep}`, from: project, to: dep, arrows: 'to' });
+        }
+      }
+
+      const container = document.getElementById('network');
+      const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+      const options = { layout: { hierarchical: false } };
+      const network = new vis.Network(container, data, options);
+
+      // Add click handler to dim unrelated nodes/edges
+      network.on('click', function (params) {
+        // Reset all nodes and edges to full opacity first
+        nodes.forEach(n => {
+          network.body.data.nodes.update({
+            id: n.id,
+            opacity: 1,
+            font: { color: '#000000' }
+          });
+        });
+        edges.forEach(e => {
+          network.body.data.edges.update({
+            id: e.id,
+            opacity: 1
+          });
+        });
+
+        if (params.nodes.length === 0) {
+          return;
+        }
+
+        const selected = params.nodes[0];
+        const connectedNodes = new Set([selected]);
+
+        function expand(node) {
+          network.getConnectedNodes(node, 'to').forEach(n => {
+            if (!connectedNodes.has(n)) {
+              connectedNodes.add(n);
+              expand(n);
+            }
+          });
+        }
+        expand(selected);
+
+        nodes.forEach(n => {
+          const isConnected = connectedNodes.has(n.id);
+          network.body.data.nodes.update({
+            id: n.id,
+            opacity: isConnected ? 1 : 0.2,
+            font: { color: isConnected ? '#000000' : 'rgba(0,0,0,0.2)' }
+          });
+        });
+
+        edges.forEach(e => {
+          const isEdgeConnected = (connectedNodes.has(e.from) && connectedNodes.has(e.to));
+          network.body.data.edges.update({
+            id: e.id,
+            opacity: isEdgeConnected ? 1 : 0.2
+          });
+        });
+      });
+    }
+    draw();
+
+    async function loadImportance() {
+      const res = await fetch('/importance');
+      const importance = await res.json();
+
+      const tbody = document.querySelector('#importance tbody');
+      for (const [pkg, count] of importance) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${pkg}</td><td>${count}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+    loadImportance();
+  </script>
+</body>
+</html>

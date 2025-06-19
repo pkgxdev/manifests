@@ -1,0 +1,84 @@
+#!/usr/bin/env -S deno run --allow-read --allow-env --allow-net --allow-run
+
+import { join } from "jsr:@std/path@1";
+import { parse } from "jsr:@std/yaml@^1";
+import { Application, Router, send } from "https://deno.land/x/oak/mod.ts";
+
+const SRCROOT = join(import.meta.dirname!, "..");
+const PROJECTS_DIR = join(SRCROOT, "projects");
+
+async function* walk_dir(path: string): AsyncGenerator<Deno.DirEntry & { path: string }> {
+  for await (const entry of Deno.readDir(path)) {
+    const fullPath = join(path, entry.name);
+    if (entry.isDirectory) {
+      yield* walk_dir(fullPath);
+    } else {
+      yield { ...entry, path: fullPath };
+    }
+  }
+}
+
+async function get_deps(path: string): Promise<string[]> {
+  const data = await Deno.readTextFile(path);
+  const yaml = parse(data) as any;
+  const deps = new Set<string>();
+  for (const project of Object.keys(yaml.dependencies ?? {})) deps.add(project);
+  for (const project of Object.keys(yaml.darwin?.dependencies ?? {})) deps.add(project);
+  for (const project of Object.keys(yaml.linux?.dependencies ?? {})) deps.add(project);
+  for (const project of Object.keys(yaml.windows?.dependencies ?? {})) deps.add(project);
+  return Array.from(deps);
+}
+
+async function buildGraph() {
+  const graph: Record<string, string[]> = {};
+  for await (const entry of walk_dir(PROJECTS_DIR)) {
+    if (!entry.name.endsWith(".yml") && !entry.name.endsWith(".yaml")) continue;
+    const projectName = entry.path
+      .replace(PROJECTS_DIR + "/", "")
+      .replace(/\/package\.ya?ml$/, "");
+    const deps = await get_deps(entry.path);
+    graph[projectName] = deps;
+  }
+  return graph;
+}
+
+function computeImportance(graph: Record<string, string[]>) {
+  const counts = new Map<string, number>();
+
+  for (const deps of Object.values(graph)) {
+    for (const dep of deps) {
+      counts.set(dep, (counts.get(dep) ?? 0) + 1);
+    }
+  }
+
+  for (const pkg of Object.keys(graph)) {
+    counts.set(pkg, counts.get(pkg) ?? 0); // ensure all nodes exist in counts
+  }
+
+  return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+}
+
+// Web server part
+const app = new Application();
+const router = new Router();
+
+router.get("/graph", async (ctx) => {
+  const graph = await buildGraph();
+  ctx.response.body = graph;
+});
+
+router.get("/importance", async (ctx) => {
+  const graph = await buildGraph();
+  const importance = computeImportance(graph);
+  ctx.response.body = importance;
+});
+
+router.get("/", async (ctx) => {
+  await send(ctx, "index.html", { root: "." });
+});
+
+app.use(router.routes());
+app.use(router.allowedMethods());
+
+console.log("Server running on http://localhost:8000");
+await app.listen({ port: 8000 });

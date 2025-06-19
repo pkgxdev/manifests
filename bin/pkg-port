@@ -16,6 +16,7 @@ if (Deno.args.length < 1) {
 if (Deno.args[0] == '...') {
   const map: Record<string, number> = {};
   const deps_count: Record<string, number> = {};
+  const reverseGraph: Record<string, Set<string>> = {};
 
   for await (const { project: og_project } of hooks.usePantry().ls()) {
     const project = map_project_name(og_project);
@@ -31,6 +32,7 @@ if (Deno.args[0] == '...') {
           case 'linux':
           case 'linux/x86-64':
           case 'linux/aarch64':
+            continue; // skip linux only deps for now
           case 'darwin':
           case 'darwin/x86-64':
           case 'darwin/aarch64':
@@ -47,6 +49,12 @@ if (Deno.args[0] == '...') {
       const project = map_project_name(dep);
       return project && !d.join("projects", project, "package.yml").isFile()
     });
+
+    for (const dep of deps) {
+      reverseGraph[dep] ??= new Set();
+      reverseGraph[dep].add(project);
+    }
+
     deps_count[project] = deps.length;
     for (const dep of deps) {
       map[dep] ??= 0;
@@ -54,8 +62,23 @@ if (Deno.args[0] == '...') {
     }
   }
 
-  for (const [project, count] of Object.entries(map).sort((a, b) => a[1] - b[1])) {
-    console.log(`${project}: ${count} ${deps_count[project] ? `(deps: ${deps_count[project]})` : ''}`);
+  function countTransitiveDependents(pkg: string, visited = new Set<string>()): number {
+    if (visited.has(pkg)) return 0;
+    visited.add(pkg);
+    let count = 0;
+    for (const dependent of reverseGraph[pkg] ?? []) {
+      count += 1 + countTransitiveDependents(dependent, visited);
+    }
+    return count;
+  }
+
+  const importance: Record<string, number> = {};
+  for (const pkg of Object.keys(map)) {
+    importance[pkg] = countTransitiveDependents(pkg);
+  }
+
+  for (const [project, count] of Object.entries(importance).sort((a, b) => a[1] - b[1])) {
+    console.log(`${project}: ${count}`);
   }
 
   Deno.exit(0);

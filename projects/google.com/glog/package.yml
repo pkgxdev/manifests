@@ -1,9 +1,0 @@
-name:
-  Google Logging Library
-
-repository:
-  https://github.com/google/glog
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

@@ -1,9 +1,0 @@
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-programs:
-  - bin/libassuan-config
-
-dependencies:
-  gnupg.org/libgpg-error: ^1

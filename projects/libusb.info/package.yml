@@ -1,6 +1,0 @@
-repository:
-  https://github.com/libusb/libusb
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

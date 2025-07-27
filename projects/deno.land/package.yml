@@ -7,15 +7,7 @@ repository:
 programs:
   - bin/deno
 
-linux:
-  companions:
-    - info-zip.org/unzip
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-  - windows/x86-64
-
 # TODO compile deno ourselves and make this the default
+# Fix deno update logic to update via ourselves
 env:
   DENO_INSTALL_ROOT: "{{home}}/.local/bin"

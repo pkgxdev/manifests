@@ -1,9 +1,0 @@
-repository:
-  https://github.com/xiph/vorbis
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-dependencies:
-  xiph.org/ogg: ^1

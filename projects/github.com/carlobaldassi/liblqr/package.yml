@@ -1,9 +1,0 @@
-repository:
-  https://github.com/carlobaldassi/liblqr
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-dependencies:
-  gnome.org/glib: ^2

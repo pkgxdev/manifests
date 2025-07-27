@@ -6,11 +6,3 @@ repository:
 
 programs:
   - bin/xmlwf
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-  - windows/x86-64
-
-deprecated-names:
-  - github.com/libexpat/libexpat

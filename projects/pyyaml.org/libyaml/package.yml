@@ -3,7 +3,3 @@ name:
 
 repository:
   https://github.com/yaml/libyaml
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

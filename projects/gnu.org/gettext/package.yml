@@ -32,7 +32,3 @@ programs:
   - bin/ngettext
   - bin/recode-sr-latin
   - bin/xgettext
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

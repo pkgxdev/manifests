@@ -58,6 +58,8 @@ const path = require("path");
 ///////////////////////////////////////////////////////////////////////
 
 async function get_config(pkgspec) {
+  return { platforms: ["darwin/aarch64"] };
+
   const project = pkgspec.split(/[*^~=@]/)[0];
   const file = path.join(
     path.dirname(path.dirname(path.dirname(path.dirname(__filename)))),
@@ -66,7 +68,7 @@ async function get_config(pkgspec) {
     "package.yml",
   );
   const data = fs.readFileSync(file, "utf8");
-  const yaml = parse(data);
+  const yaml = parse(data) || {};
 
   if (yaml.platforms === "*") {
     return { platforms: ["linux/x86-64", "darwin/aarch64", "windows/x86-64"] };

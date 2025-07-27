@@ -12,7 +12,7 @@ if (import.meta.main) {
 
 export function convert(path: string) {
   const data = Deno.readTextFileSync(path);
-  const yaml = parse(data) as any;
+  const yaml = parse(data) || {} as any;
   const rv: Record<string, any> = {};
 
   // if (!Array.isArray(yaml.platforms) && yaml.platforms != '*') throw new Error("platforms must be specified");

@@ -1,6 +1,0 @@
-repository:
-  https://github.com/xiph/ogg
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

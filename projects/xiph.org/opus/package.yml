@@ -1,9 +1,0 @@
-repository:
-  https://github.com/xiph/opus
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-env:
-  CPATH: '{{prefix}}/include/opus:$CPATH'

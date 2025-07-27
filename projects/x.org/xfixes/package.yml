@@ -1,6 +1,0 @@
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-dependencies:
-  x.org/libX11: ^1.8

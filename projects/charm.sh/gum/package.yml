@@ -1,8 +1,0 @@
-name:
-  Gum
-
-repository:
-  https://github.com/charmbracelet/gum
-
-programs:
-  - bin/gum

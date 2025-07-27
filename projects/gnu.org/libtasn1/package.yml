@@ -1,8 +1,0 @@
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-
-programs:
-  - bin/asn1Coding
-  - bin/asn1Decoding
-  - bin/asn1Parser

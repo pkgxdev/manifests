@@ -1,5 +1,0 @@
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-programs:
-  - bin/sed

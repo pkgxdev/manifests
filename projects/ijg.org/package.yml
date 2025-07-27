@@ -1,9 +1,0 @@
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-programs:
-  - bin/cjpeg
-  - bin/djpeg
-  - bin/jpegtran
-  - bin/rdjpgcom
-  - bin/wrjpgcom

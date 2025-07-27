@@ -1,9 +1,0 @@
-name:
-  libffi
-
-repository:
-  https://github.com/libffi/libffi
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

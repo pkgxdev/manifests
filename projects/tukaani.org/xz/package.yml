@@ -31,8 +31,3 @@ programs:
   - bin/xzgrep
   - bin/xzless
   - bin/xzmore
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64
-  - windows/x86-64

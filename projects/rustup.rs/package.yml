@@ -1,0 +1,20 @@
+name:
+  rustup
+
+repository:
+  https://github.com/rust-lang/rustup
+
+programs:
+  - bin/rustup
+  - bin/cargo
+  - bin/cargo-clippy
+  - bin/cargo-fmt
+  - bin/clippy-driver
+  - bin/rls
+  - bin/rust-analyzer
+  - bin/rust-gdb
+  - bin/rust-gdbgui
+  - bin/rust-lldb
+  - bin/rustc
+  - bin/rustdoc
+  - bin/rustfmt

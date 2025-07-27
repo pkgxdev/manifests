@@ -1,6 +1,0 @@
-repository:
-  https://github.com/nghttp2/nghttp2
-
-platforms:
-  - darwin/aarch64
-  - linux/x86-64

@@ -7,7 +7,7 @@ import pkg_ls from "./pkg-ls";
 const srcroot = new Path(import.meta.dirname!).parent();
 
 for await (const project of ls()) {
-  console.error("checking", project);
+  console.error("> checking", project);
 
   if (Deno.env.get("CI")) switch (project) {
     case "llvm.org":
@@ -37,8 +37,9 @@ for await (const project of ls()) {
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `pkgspec=${out}`, { append: true });
       console.error("::notice::new version found for", project, ":", greatest_released_version.toString());
+    } else {
+      console.log(out);
     }
-    console.log(out);
     Deno.exit(0);
   }
 }

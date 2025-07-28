@@ -28,11 +28,10 @@ jobs:
         id: livecheck
         env:
           GITHUB_TOKEN: ${{ github.token }}
-    # - if: ${{ steps.livecheck.outputs.cancel == '1' }}
-    #   uses: andymckay/cancel-action@0.4
 
   bottle:
-    if: ${{ needs.livecheck.outputs.pkgspec != '[]' && needs.livecheck.outputs.pkgspec != '' }}
+    if:
+      ${{ needs.livecheck.outputs.pkgspec != '' }}
     needs:
       livecheck
     uses:

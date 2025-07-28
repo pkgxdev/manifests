@@ -36,15 +36,19 @@ for await (const project of ls()) {
     const out = `${project}=${greatest_released_version}`;
     if (Deno.env.get("GITHUB_OUTPUT")) {
       Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `pkgspec=${out}`, { append: true });
+      console.error("::notice::new version found for", project, ":", greatest_released_version.toString());
     }
     console.log(out);
     Deno.exit(0);
   }
 }
 
-console.error("nothing new");
+
 if (Deno.env.get("GITHUB_OUTPUT")) {
   Deno.writeTextFileSync(Deno.env.get("GITHUB_OUTPUT")!, `cancel=1`, { append: true });
+  console.error("::warning::no new versions found, cancelling workflow");
+} else {
+  console.error("nothing new");
 }
 
 async function get_released_versions(project: string): Promise<{ version: SemVer }[]> {

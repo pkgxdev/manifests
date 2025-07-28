@@ -32,6 +32,7 @@ jobs:
     #   uses: andymckay/cancel-action@0.4
 
   bottle:
+    if: ${{ needs.livecheck.outputs.pkgspec != '[]' && needs.livecheck.outputs.pkgspec != '' }}
     needs:
       livecheck
     uses:
